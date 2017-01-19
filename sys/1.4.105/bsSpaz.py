@@ -11,37 +11,42 @@ appearances = {}
 def getAppearances(includeLocked=False):
     disallowed = []
     if not includeLocked:
-        # hmm yeah this'll be tough to hack...
-        if not bsInternal._getPurchased('characters.santa'): disallowed.append('Santa Claus')
-        if not bsInternal._getPurchased('characters.frosty'): disallowed.append('Frosty')
-        if not bsInternal._getPurchased('characters.bones'): disallowed.append('Bones')
-        if not bsInternal._getPurchased('characters.bernard'): disallowed.append('Bernard')
-        if not bsInternal._getPurchased('characters.pixie'): disallowed.append('Pixel')
-        if not bsInternal._getPurchased('characters.pascal'): disallowed.append('Pascal')
-        if not bsInternal._getPurchased('characters.actionhero'): disallowed.append('Todd McBurton')
-        if not bsInternal._getPurchased('characters.taobaomascot'): disallowed.append('Taobao Mascot')
-        if not bsInternal._getPurchased('characters.agent'): disallowed.append('Agent Johnson')
-        if not bsInternal._getPurchased('characters.jumpsuit'): disallowed.append('Lee')
-        if not bsInternal._getPurchased('characters.assassin'): disallowed.append('Zola')
-        if not bsInternal._getPurchased('characters.wizard'): disallowed.append('Grumbledorf')
-        if not bsInternal._getPurchased('characters.cowboy'): disallowed.append('Butch')
-        if not bsInternal._getPurchased('characters.witch'): disallowed.append('Witch')
-        if not bsInternal._getPurchased('characters.warrior'): disallowed.append('Warrior')
-        if not bsInternal._getPurchased('characters.superhero'): disallowed.append('Middle-Man')
-        if not bsInternal._getPurchased('characters.alien'): disallowed.append('Alien')
-        if not bsInternal._getPurchased('characters.oldlady'): disallowed.append('OldLady')
-        if not bsInternal._getPurchased('characters.gladiator'): disallowed.append('Gladiator')
-        if not bsInternal._getPurchased('characters.wrestler'): disallowed.append('Wrestler')
-        if not bsInternal._getPurchased('characters.operasinger'): disallowed.append('Gretel')
-        if not bsInternal._getPurchased('characters.pixie'): disallowed.append('Pixie')
-        if not bsInternal._getPurchased('characters.robot'): disallowed.append('Robot')
-        if not bsInternal._getPurchased('characters.cyborg'): disallowed.append('B-9000')
-        if not bsInternal._getPurchased('characters.bunny'): disallowed.append('Easter Bunny')
-        if not bsInternal._getPurchased('characters.kronk'): disallowed.append('Kronk')
-        if not bsInternal._getPurchased('characters.zoe'): disallowed.append('Zoe')
-        if not bsInternal._getPurchased('characters.jackmorgan'): disallowed.append('Jack Morgan')
-        if not bsInternal._getPurchased('characters.mel'): disallowed.append('Mel')
-        if not bsInternal._getPurchased('characters.snakeshadow'): disallowed.append('Snake Shadow')
+        #Bacon Changed start
+        #Original:
+        # # hmm yeah this'll be tough to hack...
+        # if not bsInternal._getPurchased('characters.santa'): disallowed.append('Santa Claus')
+        # if not bsInternal._getPurchased('characters.frosty'): disallowed.append('Frosty')
+        # if not bsInternal._getPurchased('characters.bones'): disallowed.append('Bones')
+        # if not bsInternal._getPurchased('characters.bernard'): disallowed.append('Bernard')
+        # if not bsInternal._getPurchased('characters.pixie'): disallowed.append('Pixel')
+        # if not bsInternal._getPurchased('characters.pascal'): disallowed.append('Pascal')
+        # if not bsInternal._getPurchased('characters.actionhero'): disallowed.append('Todd McBurton')
+        # if not bsInternal._getPurchased('characters.taobaomascot'): disallowed.append('Taobao Mascot')
+        # if not bsInternal._getPurchased('characters.agent'): disallowed.append('Agent Johnson')
+        # if not bsInternal._getPurchased('characters.jumpsuit'): disallowed.append('Lee')
+        # if not bsInternal._getPurchased('characters.assassin'): disallowed.append('Zola')
+        # if not bsInternal._getPurchased('characters.wizard'): disallowed.append('Grumbledorf')
+        # if not bsInternal._getPurchased('characters.cowboy'): disallowed.append('Butch')
+        # if not bsInternal._getPurchased('characters.witch'): disallowed.append('Witch')
+        # if not bsInternal._getPurchased('characters.warrior'): disallowed.append('Warrior')
+        # if not bsInternal._getPurchased('characters.superhero'): disallowed.append('Middle-Man')
+        # if not bsInternal._getPurchased('characters.alien'): disallowed.append('Alien')
+        # if not bsInternal._getPurchased('characters.oldlady'): disallowed.append('OldLady')
+        # if not bsInternal._getPurchased('characters.gladiator'): disallowed.append('Gladiator')
+        # if not bsInternal._getPurchased('characters.wrestler'): disallowed.append('Wrestler')
+        # if not bsInternal._getPurchased('characters.operasinger'): disallowed.append('Gretel')
+        # if not bsInternal._getPurchased('characters.pixie'): disallowed.append('Pixie')
+        # if not bsInternal._getPurchased('characters.robot'): disallowed.append('Robot')
+        # if not bsInternal._getPurchased('characters.cyborg'): disallowed.append('B-9000')
+        # if not bsInternal._getPurchased('characters.bunny'): disallowed.append('Easter Bunny')
+        # if not bsInternal._getPurchased('characters.kronk'): disallowed.append('Kronk')
+        # if not bsInternal._getPurchased('characters.zoe'): disallowed.append('Zoe')
+        # if not bsInternal._getPurchased('characters.jackmorgan'): disallowed.append('Jack Morgan')
+        # if not bsInternal._getPurchased('characters.mel'): disallowed.append('Mel')
+        # if not bsInternal._getPurchased('characters.snakeshadow'): disallowed.append('Snake Shadow')
+        #Original
+        pass
+        #Bacon Changed End
     return [s for s in appearances.keys() if s not in disallowed]
 
 gPowerupWearOffTime = 20000
@@ -132,7 +137,7 @@ class SpazFactory(object):
 
        punchSound
           A standard punch bs.Sound.
-       
+
        punchSoundsStrong
           A tuple of stronger sounding punch bs.Sounds.
 
@@ -156,7 +161,7 @@ class SpazFactory(object):
 
        rollerMaterial
           A bs.Material applied to the invisible roller ball body that a bs.Spaz uses for locomotion.
-    
+
        punchMaterial
           A bs.Material applied to the 'fist' of a bs.Spaz.
 
@@ -187,17 +192,17 @@ class SpazFactory(object):
                                    bs.getSound('bigImpact2'))
         self.singlePlayerDeathSound = bs.getSound('playerDeath')
         self.punchSound = bs.getSound('punch01')
-        
+
         self.punchSoundsStrong = (bs.getSound('punchStrong01'),
                                   bs.getSound('punchStrong02'))
-        
+
         self.punchSoundStronger = bs.getSound('superPunch')
-        
+
         self.swishSound = bs.getSound('punchSwish')
         self.blockSound = bs.getSound('block')
         self.shatterSound = bs.getSound('shatter')
         self.splatterSound = bs.getSound('splatter')
-        
+
         self.spazMaterial = bs.Material()
         self.rollerMaterial = bs.Material()
         self.punchMaterial = bs.Material()
@@ -208,7 +213,7 @@ class SpazFactory(object):
         objectMaterial = bs.getSharedObject('objectMaterial')
         playerMaterial = bs.getSharedObject('playerMaterial')
         regionMaterial = bs.getSharedObject('regionMaterial')
-        
+
         # send footing messages to spazzes so they know when they're on solid ground
         # eww this should really just be built into the spaz node
         self.rollerMaterial.addActions(
@@ -269,7 +274,7 @@ class SpazFactory(object):
             conditions=( (('weAreYoungerThan', 51),'and',('theyAreDifferentNodeThanUs',)),
                          'and',('theyDontHaveMaterial',regionMaterial)),
             actions=( ('modifyNodeCollision','collide',False)))
-        
+
         self.spazMedia = {}
 
         # lets load some basic rules (allows them to be tweaked from the master server)
@@ -279,10 +284,10 @@ class SpazFactory(object):
         self.punchPowerScale = bsInternal._getAccountMiscReadVal('rpp',1.2)
         self.punchPowerScaleGloves = bsInternal._getAccountMiscReadVal('rppg',1.4)
         self.maxShieldSpilloverDamage = bsInternal._getAccountMiscReadVal('rsms',500)
-        
+
     def _getStyle(self,character):
         return appearances[character].style
-        
+
     def _getMedia(self,character):
 
         t = appearances[character]
@@ -313,7 +318,7 @@ class SpazFactory(object):
 class Spaz(bs.Actor):
     """
     category: Game Flow Classes
-    
+
     Base class for various Spazzes.
     A Spaz is the standard little humanoid character in the game.
     It can be controlled by a player or by AI, and can have
@@ -326,7 +331,7 @@ class Spaz(bs.Actor):
        node
           The 'spaz' bs.Node.
     """
-    
+
     pointsMult = 1
     curseTime = 5000
 
@@ -340,15 +345,15 @@ class Spaz(bs.Actor):
         """
         Create a new spaz with the requested color, character, etc.
         """
-        
+
         bs.Actor.__init__(self)
         activity = self.getActivity()
-        
+
         factory = self.getFactory()
 
         # we need to behave slightly different in the tutorial
         self._demoMode = demoMode
-        
+
         self.playBigDeathSound = False
 
         # translate None into empty player-ref
@@ -356,7 +361,7 @@ class Spaz(bs.Actor):
 
         # scales how much impacts affect us (most damage calcs)
         self._impactScale = 1.0
-        
+
         self.sourcePlayer = sourcePlayer
         self._dead = False
         if self._demoMode: # preserve old behavior
@@ -372,12 +377,12 @@ class Spaz(bs.Actor):
         materials = [factory.spazMaterial,
                      bs.getSharedObject('objectMaterial'),
                      bs.getSharedObject('playerMaterial')]
-        
+
         rollerMaterials = [factory.rollerMaterial,
                            bs.getSharedObject('playerMaterial')]
-        
+
         extrasMaterials = []
-        
+
         if canAcceptPowerups:
             pam = bs.Powerup.getFactory().powerupAcceptMaterial
             materials.append(pam)
@@ -461,14 +466,14 @@ class Spaz(bs.Actor):
         self._droppedBombCallbacks = []
         self.punchCallback = None
         self.pickUpPowerupCallback = None
-        
+
     def addDroppedBombCallback(self,call):
         """
         Add a call to be run whenever this Spaz drops a bomb.
         The spaz and the newly-dropped bomb are passed as arguments.
         """
         self._droppedBombCallbacks.append(call)
-                            
+
     def isAlive(self):
         """
         Method override; returns whether ol' spaz is still kickin'.
@@ -533,11 +538,11 @@ class Spaz(bs.Actor):
                                                    0.75*t:c1,
                                                    1.0*t:c2})
             combine.connectAttr('output',self._scoreText,'color')
-            
+
         bs.animate(self._scoreText,'scale',{0:startScale,200:0.02})
         self._scoreTextHideTimer = bs.Timer(1000,bs.WeakCall(self._hideScoreText))
 
-        
+
     def onJumpPress(self):
         """
         Called to 'press jump' on this spaz;
@@ -592,7 +597,7 @@ class Spaz(bs.Actor):
         used for player or AI connections.
         """
         if not self.node.exists() or self.frozen or self.node.knockout > 0.0: return
-        
+
         if self.punchCallback is not None:
             self.punchCallback(self)
         t = bs.getGameTime()
@@ -609,7 +614,7 @@ class Spaz(bs.Actor):
         """
         if self.node.exists():
             bs.playSound(sound, volume, self.node.position)
-        
+
     def onPunchRelease(self):
         """
         Called to 'release punch' on this spaz;
@@ -624,7 +629,7 @@ class Spaz(bs.Actor):
         used for player or AI connections.
         """
         if not self.node.exists(): return
-        
+
         if self._dead or self.frozen: return
         if self.node.knockout > 0.0: return
         self.node.bombPressed = True
@@ -632,7 +637,7 @@ class Spaz(bs.Actor):
 
     def onBombRelease(self):
         """
-        Called to 'release bomb' on this spaz; 
+        Called to 'release bomb' on this spaz;
         used for player or AI connections.
         """
         if not self.node.exists(): return
@@ -669,7 +674,7 @@ class Spaz(bs.Actor):
         """
         if not self.node.exists(): return
         self.node.handleMessage("move",x,y)
-        
+
     def onMoveUpDown(self,value):
         """
         Called to set the up/down joystick amount on this spaz;
@@ -745,9 +750,9 @@ class Spaz(bs.Actor):
         if not self.node.exists():
             bs.printError('Can\'t equip shields; no node.')
             return
-        
+
         factory = self.getFactory()
-        if self.shield is None: 
+        if self.shield is None:
             self.shield = bs.newNode('shield',owner=self.node,
                                      attrs={'color':(0.3,0.2,2.0),'radius':1.3})
             self.node.connectAttr('positionCenter',self.shield,'position')
@@ -772,7 +777,7 @@ class Spaz(bs.Actor):
                 bs.playSound(self.getFactory().shieldDownSound,1.0,position=self.node.position)
         else:
             self.shieldDecayTimer = None
-        
+
     def handleMessage(self,m):
         self._handleMessageSanityCheck()
 
@@ -877,7 +882,7 @@ class Spaz(bs.Actor):
                 self.node.hurt = 0
                 self._lastHitTime = None
                 self._numTimesHit = 0
-                
+
             self.node.handleMessage("flash")
             if m.sourceNode.exists():
                 m.sourceNode.handleMessage(bs.PowerupAcceptMessage())
@@ -901,7 +906,7 @@ class Spaz(bs.Actor):
             if self.frozen and not self.shattered and self.node.exists():
                 self.frozen = False
                 self.node.frozen = 0
-                
+
         elif isinstance(m,bs.HitMessage):
             if not self.node.exists(): return
             if self.node.invincible == True:
@@ -914,7 +919,7 @@ class Spaz(bs.Actor):
             if self._lastHitTime is None or gameTime-self._lastHitTime > 1000:
                 self._numTimesHit += 1
                 self._lastHitTime = gameTime
-            
+
             mag = m.magnitude * self._impactScale
             velocityMag = m.velocityMagnitude * self._impactScale
 
@@ -991,7 +996,7 @@ class Spaz(bs.Actor):
 
                 # if damage was significant, lets show it
                 if damage > 350: bsUtils.showDamageCount('-'+str(int(damage/10))+"%",m.pos,m.forceDirection)
-                                               
+
                 # lets always add in a super-punch sound with boxing gloves just to differentiate them
                 if m.hitSubType == 'superPunch':
                     bs.playSound(self.getFactory().punchSoundStronger,1.0,
@@ -1045,7 +1050,7 @@ class Spaz(bs.Actor):
                                             m.forceDirection[1]*2.0,
                                             m.forceDirection[2]*2.0),
                                   count=min(10,1+int(damage*0.01)),scale=0.4,spread=0.1);
-                
+
             if self.hitPoints > 0:
 
                 # its kinda crappy to die from impacts, so lets reduce impact damage
@@ -1081,7 +1086,7 @@ class Spaz(bs.Actor):
 
         elif isinstance(m,_BombDiedMessage):
             self.bombCount += 1
-        
+
         elif isinstance(m,bs.DieMessage):
             wasDead = self._dead
             self._dead = True
@@ -1122,7 +1127,7 @@ class Spaz(bs.Actor):
                 # ...however we want to actually apply force in the direction our fist
                 # is moving so it looks better.. so we still pass that along as a direction
                 # ..perhaps a time-averased fist-velocity would work too?.. should try that.
-                
+
                 # if its something besides another spaz, just do a muffled punch sound
                 if node.getNodeType() != 'spaz':
                     sounds = self.getFactory().impactSoundsMedium
@@ -1212,14 +1217,14 @@ class Spaz(bs.Actor):
         self._pickUp(bomb.node)
 
         for c in self._droppedBombCallbacks: c(self,bomb)
-        
+
         return bomb
 
     def _pickUp(self,node):
         if self.node.exists() and node.exists():
             self.node.holdBody = 0 # needs to be set before holdNode
             self.node.holdNode = node
-        
+
     def setLandMineCount(self,count):
         """
         Set the number of land-mines this spaz is carrying.
@@ -1240,7 +1245,7 @@ class Spaz(bs.Actor):
 
         # convert None to an empty player-ref
         if sourcePlayer is None: sourcePlayer = bs.Player(None)
-        
+
         if self._cursed and self.node.exists():
             self.shatter(extreme=True)
             self.handleMessage(bs.DieMessage())
@@ -1265,7 +1270,7 @@ class Spaz(bs.Actor):
                                       'radius':0.5,
                                       'heightAttenuated':False,
                                       'color': (0.8,0.8,1.0)})
-            
+
             bs.animate(light,'intensity',{0:3.0, 40:0.5, 80:0.07, 300:0})
             bs.gameTimer(300,light.delete)
             # emit ice chunks..
@@ -1298,14 +1303,14 @@ class Spaz(bs.Actor):
         else: sounds = self.getFactory().impactSoundsMedium
         s = sounds[random.randrange(len(sounds))]
         bs.playSound(s,position=pos,volume=5.0)
-        
+
     def _getBombTypeTex(self):
         bombFactory = bs.Powerup.getFactory()
         if self.bombType == 'sticky': return bombFactory.texStickyBombs
         elif self.bombType == 'ice': return bombFactory.texIceBombs
         elif self.bombType == 'impact': return bombFactory.texImpactBombs
         else: raise Exception()
-        
+
     def _flashBillboard(self,tex):
         self.node.billboardTexture = tex
         self.node.billboardCrossOut = False
@@ -1417,7 +1422,7 @@ class PlayerSpazHurtMessage(object):
 class PlayerSpaz(Spaz):
     """
     category: Game Flow Classes
-    
+
     A bs.Spaz subclass meant to be controlled by a bs.Player.
 
     When a PlayerSpaz dies, it delivers a bs.PlayerSpazDeathMessage
@@ -1437,7 +1442,7 @@ class PlayerSpaz(Spaz):
         """
         # convert None to an empty player-ref
         if player is None: player = bs.Player(None)
-        
+
         Spaz.__init__(self,color=color,highlight=highlight,character=character,sourcePlayer=player,startInvincible=True,powerupsExpire=powerupsExpire)
         self.lastPlayerAttackedBy = None # FIXME - should use empty player ref
         self.lastAttackedTime = 0
@@ -1453,7 +1458,7 @@ class PlayerSpaz(Spaz):
 
     def __superHandleMessage(self,m):
         super(PlayerSpaz,self).handleMessage(m)
-        
+
     def getPlayer(self):
         """
         Return the bs.Player associated with this spaz.
@@ -1473,7 +1478,7 @@ class PlayerSpaz(Spaz):
         """
 
         player = self.getPlayer()
-        
+
         # reset any currently connected player and/or the player we're now wiring up
         if self._connectedToPlayer is not None:
             if player != self._connectedToPlayer: player.resetInput()
@@ -1505,7 +1510,7 @@ class PlayerSpaz(Spaz):
 
         self._connectedToPlayer = player
 
-        
+
     def disconnectControlsFromPlayer(self):
         """
         Completely sever any previously connected
@@ -1550,7 +1555,7 @@ class PlayerSpaz(Spaz):
                 self.lastPlayerAttackedBy = pickedUpBy
                 self.lastAttackedTime = bs.getGameTime()
                 self.lastAttackedType = ('pickedUp','default')
-            
+
         elif isinstance(m,bs.DieMessage):
 
             # report player deaths to the game
@@ -1581,14 +1586,14 @@ class PlayerSpaz(Spaz):
                                 killerPlayer = self.getPlayer()
                             else:
                                 killerPlayer = None
-                            
+
                 if killerPlayer is not None and not killerPlayer.exists():
                     killerPlayer = None
 
                 # only report if both the player and the activity still exist
                 if killed and activity is not None and self.getPlayer().exists():
                     activity.handleMessage(PlayerSpazDeathMessage(self, killed, killerPlayer, m.how))
-                    
+
             self.__superHandleMessage(m) # augment standard behavior
 
         # keep track of the player who last hit us for point rewarding
@@ -1612,7 +1617,7 @@ class RespawnIcon(object):
     An icon with a countdown that appears alongside the screen;
     used to indicate that a bs.Player is waiting to respawn.
     """
-    
+
     def __init__(self,player,respawnTime):
         """
         Instantiate with a given bs.Player and respawnTime (in milliseconds)
@@ -1657,7 +1662,7 @@ class RespawnIcon(object):
                                                      'opacity':1.0,
                                                      'absoluteScale':True,
                                                      'attach':'topRight' if onRight else 'topLeft'}))
-        
+
         bs.animate(self._image.node,'opacity',{0:0,200:0.7})
 
         self._name = bs.NodeActor(bs.newNode('text',
@@ -1672,7 +1677,7 @@ class RespawnIcon(object):
                                                     'color':bs.getSafeColor(icon['tintColor']),
                                                     'scale':0.5,
                                                     'position':(-40-hOffs if onRight else 40+hOffs,-205+49+offs)}))
-        
+
         bs.animate(self._name.node,'scale',{0:0,100:0.5})
 
         self._text = bs.NodeActor(bs.newNode('text',
@@ -1685,7 +1690,7 @@ class RespawnIcon(object):
                                                     'vAttach':'top',
                                                     'color':bs.getSafeColor(icon['tintColor']),
                                                     'text':''}))
-        
+
         bs.animate(self._text.node,'scale',{0:0,100:0.9})
 
         self._respawnTime = bs.getGameTime()+respawnTime
@@ -1698,11 +1703,11 @@ class RespawnIcon(object):
             if self._text.node.exists():
                 self._text.node.text = str(remaining)
         else: self._clear()
-            
+
     def _clear(self):
         self._visible = False
         self._image = self._text = self._timer = self._name = None
-        
+
 
 
 class SpazBotPunchedMessage(object):
@@ -1755,7 +1760,7 @@ class SpazBotDeathMessage(object):
         self.how = how
 
 
-        
+
 class SpazBot(Spaz):
     """
     category: Bot Classes
@@ -1823,7 +1828,7 @@ class SpazBot(Spaz):
         self._lastJumpTime = 0
 
         if self.startCursed: self.curse()
-            
+
     def _getTargetPlayerPt(self):
         """ returns the default player pt we're targeting """
         bp = bs.Vector(*self.node.position)
@@ -1854,7 +1859,7 @@ class SpazBot(Spaz):
         """
         Should be called periodically to update the spaz' AI
         """
-        
+
         if self.updateCallback is not None:
             if self.updateCallback(self) == True:
                 return # true means bot has been handled
@@ -1917,7 +1922,7 @@ class SpazBot(Spaz):
                     self.node.pickUpPressed = True
                     self.node.pickUpPressed = False
                     return
-            
+
         targetPtRaw,targetVel = self._getTargetPlayerPt()
 
         if targetPtRaw is None:
@@ -2048,7 +2053,7 @@ class SpazBot(Spaz):
             # if we're static, always charge (which for us means barely move)
             elif self.static:
                 self._mode = 'wait'
-                
+
             # if we're too close to charge (and arent in the middle of an existing charge) run away
             elif dist < self.chargeDistMin and not self._chargeClosingIn:
                 # ..unless we're near an edge, in which case we got no choice but to charge..
@@ -2081,7 +2086,7 @@ class SpazBot(Spaz):
                 self.node.jumpPressed = True
                 self.node.jumpPressed = False
 
-                
+
             # throw punches when real close
             if dist < (1.6 if self._running else 1.2) and canAttack:
                 if random.random() < self.punchiness:
@@ -2104,7 +2109,7 @@ class SpazBot(Spaz):
         # keeping activities or other things alive..
         self.updateCallback = None
 
-        
+
     def handleMessage(self,m):
         self._handleMessageSanityCheck()
 
@@ -2133,7 +2138,7 @@ class SpazBot(Spaz):
                 self.lastPlayerAttackedBy = pickedUpBy
                 self.lastAttackedTime = bs.getGameTime()
                 self.lastAttackedType = ('pickedUp','default')
-            
+
         elif isinstance(m,bs.DieMessage):
 
             # report normal deaths for scoring purposes
@@ -2168,7 +2173,7 @@ class SpazBot(Spaz):
 class BomberBot(SpazBot):
     """
     category: Bot Classes
-    
+
     A bot that throws regular bombs
     and occasionally punches.
     """
@@ -2178,7 +2183,7 @@ class BomberBot(SpazBot):
 class BomberBotLame(BomberBot):
     """
     category: Bot Classes
-    
+
     A less aggressive yellow version of bs.BomberBot.
     """
     color=gLameBotColor
@@ -2192,7 +2197,7 @@ class BomberBotLame(BomberBot):
 class BomberBotStaticLame(BomberBotLame):
     """
     category: Bot Classes
-    
+
     A less aggressive yellow version of bs.BomberBot
     who generally stays in one place.
     """
@@ -2202,7 +2207,7 @@ class BomberBotStaticLame(BomberBotLame):
 class BomberBotStatic(BomberBot):
     """
     category: Bot Classes
-    
+
     A version of bs.BomberBot
     who generally stays in one place.
     """
@@ -2213,7 +2218,7 @@ class BomberBotStatic(BomberBot):
 class BomberBotPro(BomberBot):
     """
     category: Bot Classes
-    
+
     A more aggressive red version of bs.BomberBot.
     """
     pointsMult = 2
@@ -2229,7 +2234,7 @@ class BomberBotPro(BomberBot):
 class BomberBotProShielded(BomberBotPro):
     """
     category: Bot Classes
-    
+
     A more aggressive red version of bs.BomberBot
     who starts with shields.
     """
@@ -2239,7 +2244,7 @@ class BomberBotProShielded(BomberBotPro):
 class BomberBotProStatic(BomberBotPro):
     """
     category: Bot Classes
-    
+
     A more aggressive red version of bs.BomberBot
     who generally stays in one place.
     """
@@ -2249,7 +2254,7 @@ class BomberBotProStatic(BomberBotPro):
 class BomberBotProStaticShielded(BomberBotProShielded):
     """
     category: Bot Classes
-    
+
     A more aggressive red version of bs.BomberBot
     who starts with shields and
     who generally stays in one place.
@@ -2260,7 +2265,7 @@ class BomberBotProStaticShielded(BomberBotProShielded):
 class ToughGuyBot(SpazBot):
     """
     category: Bot Classes
-    
+
     A manly bot who walks and punches things.
     """
     character = 'Kronk'
@@ -2274,7 +2279,7 @@ class ToughGuyBot(SpazBot):
 class ToughGuyBotLame(ToughGuyBot):
     """
     category: Bot Classes
-    
+
     A less aggressive yellow version of bs.ToughGuyBot.
     """
     color=gLameBotColor
@@ -2286,7 +2291,7 @@ class ToughGuyBotLame(ToughGuyBot):
 class ToughGuyBotPro(ToughGuyBot):
     """
     category: Bot Classes
-    
+
     A more aggressive red version of bs.ToughGuyBot.
     """
     color=gProBotColor
@@ -2300,7 +2305,7 @@ class ToughGuyBotPro(ToughGuyBot):
 class ToughGuyBotProShielded(ToughGuyBotPro):
     """
     category: Bot Classes
-    
+
     A more aggressive version of bs.ToughGuyBot
     who starts with shields.
     """
@@ -2310,7 +2315,7 @@ class ToughGuyBotProShielded(ToughGuyBotPro):
 class NinjaBot(SpazBot):
     """
     category: Bot Classes
-    
+
     A speedy attacking melee bot.
     """
 
@@ -2328,7 +2333,7 @@ class NinjaBot(SpazBot):
 class BunnyBot(SpazBot):
     """
     category: Bot Classes
-    
+
     A speedy attacking melee bot.
     """
 
@@ -2346,11 +2351,11 @@ class BunnyBot(SpazBot):
     throwDistMin = 9999
     throwDistMax = 9999
     pointsMult = 2
-    
+
 class NinjaBotPro(NinjaBot):
     """
     category: Bot Classes
-    
+
     A more aggressive red bs.NinjaBot.
     """
     color=gProBotColor
@@ -2362,7 +2367,7 @@ class NinjaBotPro(NinjaBot):
 class NinjaBotProShielded(NinjaBotPro):
     """
     category: Bot Classes
-    
+
     A more aggressive red bs.NinjaBot
     who starts with shields.
     """
@@ -2372,7 +2377,7 @@ class NinjaBotProShielded(NinjaBotPro):
 class ChickBot(SpazBot):
     """
     category: Bot Classes
-    
+
     A slow moving bot with impact bombs.
     """
     character = 'Zoe'
@@ -2389,7 +2394,7 @@ class ChickBot(SpazBot):
 class ChickBotStatic(ChickBot):
     """
     category: Bot Classes
-    
+
     A bs.ChickBot who generally stays in one place.
     """
     static = True
@@ -2398,7 +2403,7 @@ class ChickBotStatic(ChickBot):
 class ChickBotPro(ChickBot):
     """
     category: Bot Classes
-    
+
     A more aggressive red version of bs.ChickBot.
     """
     color=gProBotColor
@@ -2416,7 +2421,7 @@ class ChickBotPro(ChickBot):
 class ChickBotProShielded(ChickBotPro):
     """
     category: Bot Classes
-    
+
     A more aggressive red version of bs.ChickBot
     who starts with shields.
     """
@@ -2426,7 +2431,7 @@ class ChickBotProShielded(ChickBotPro):
 class MelBot(SpazBot):
     """
     category: Bot Classes
-    
+
     A crazy bot who runs and throws sticky bombs.
     """
     character = 'Mel'
@@ -2447,7 +2452,7 @@ class MelBot(SpazBot):
 class MelBotStatic(MelBot):
     """
     category: Bot Classes
-    
+
     A crazy bot who throws sticky-bombs but generally stays in one place.
     """
     static = True
@@ -2455,7 +2460,7 @@ class MelBotStatic(MelBot):
 class PirateBot(SpazBot):
     """
     category: Bot Classes
-    
+
     A bot who runs and explodes in 5 seconds.
     """
     character = 'Jack Morgan'
@@ -2472,7 +2477,7 @@ class PirateBot(SpazBot):
 class PirateBotNoTimeLimit(PirateBot):
     """
     category: Bot Classes
-    
+
     A bot who runs but does not explode on his own.
     """
     curseTime = -1
@@ -2480,16 +2485,16 @@ class PirateBotNoTimeLimit(PirateBot):
 class PirateBotShielded(PirateBot):
     """
     category: Bot Classes
-    
+
     A bs.PirateBot who starts with shields.
     """
     defaultShields = True
     pointsMult = 5
-    
+
 class BotSet(object):
     """
     category: Bot Classes
-    
+
     A container/controller for one or more bs.SpazBots.
     """
     def __init__(self):
@@ -2524,7 +2529,7 @@ class BotSet(object):
         self.addBot(spaz)
         self._spawningCount -= 1
         if onSpawnCall is not None: onSpawnCall(spaz)
-        
+
     def haveLivingBots(self):
         """
         Returns whether any bots in the set are alive or in the process of spawning.
@@ -2576,12 +2581,12 @@ class BotSet(object):
         # dont do this if the activity is shutting down or dead
         activity = bs.getActivity(exceptionOnNone=False)
         if activity is None or activity.isFinalized(): return
-        
+
         for i in range(len(self._botLists)):
             for b in self._botLists[i]:
                 b.handleMessage(bs.DieMessage(immediate=True))
             self._botLists[i] = []
-        
+
     def celebrate(self,duration):
         """
         Tell all living bots in the set to celebrate momentarily
@@ -2594,7 +2599,7 @@ class BotSet(object):
 
     def startMoving(self):
         self._botUpdateTimer = bs.Timer(50,bs.WeakCall(self._update),repeat=True)
-                    
+
     def stopMoving(self):
         """
         Tell all bots to stop moving and stops
@@ -2608,7 +2613,7 @@ class BotSet(object):
                 if b.node.exists():
                     b.node.moveLeftRight = 0
                     b.node.moveUpDown = 0
-        
+
     def finalCelebrate(self):
         """
         Tell all bots in the set to stop what they were doing
