@@ -230,6 +230,33 @@ class ThawMessage(object):
     to thaw out.
     """
     pass
+    
+class HealMessage(object):
+    """
+    category: Message Classes
+    
+    Heals to 100% health, removes curse and thaws frozen players.
+    On bombs, it removes them without detonating them.
+    """
+    pass
+    
+class BurnMessage(object):
+    """
+    category: Message Classes
+    
+    Tells an object to become lit.
+    (used with Fire Bomb)
+    """
+    pass
+    
+class ExtinguishMessage(object):
+    """
+    category: Message Classes
+    
+    Tells an object to extinguish itself.
+    (used to cancel the fire debuff)
+    """
+    pass
 
 class HitMessage(object):
     """
@@ -1595,8 +1622,13 @@ class JoiningActivity(Activity):
         Activity.onTransitionIn(self)
         self._background = bsUtils.Background(fadeTime=500,startFaded=True,showLogo=True)
         self._tipsText = bsUtils.TipsText()
-        bs.playMusic('CharSelect')
-
+        if isinstance(bs.getSession(),bs.FreeForAllSession):
+            bs.playMusic('CharSelectFFA')
+        elif isinstance(bs.getSession(),bs.CoopSession):
+            bs.playMusic('CharSelectCOOP')
+        elif isinstance(bs.getSession(),bs.TeamsSession):
+            bs.playMusic('CharSelectTEAMS')
+        else: bs.playMusic('CharSelectCOOP')
         self._joinInfo = self.getSession()._lobby._createJoinInfo()
 
         bsInternal._setAnalyticsScreen('Joining Screen')
@@ -2510,10 +2542,13 @@ class GameActivity(Activity):
         """
         Standard powerup drop.
         """
+        try: pd = bs.getConfig()['Powerup Distribution']
+        except Exception: pd = 'JRMP'
         # drop one powerup per point
         pts = self.getMap().powerupSpawnPoints
         for i,pt in enumerate(pts):
-            bs.gameTimer(i*400,bs.WeakCall(self._standardDropPowerup,i))
+            if (pd != 'No Powerups'):
+                bs.gameTimer(i*400,bs.WeakCall(self._standardDropPowerup,i))
 
     def _standardDropTnt(self):
         """

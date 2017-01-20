@@ -9,7 +9,7 @@ from bsUtils import getLanguage, writeConfig, openURL, WeakCall, Call, animate, 
     Lstr, uni, utf8, playMusic, PopupText, getConfig, getNormalizedColor, isPointInBox, getTimeString,\
     printError, printErrorOnce, printException, getSharedObject, isBrowserLikelyAvailable, OnScreenTimer, OnScreenCountdown
 from bsGame import Team, OutOfBoundsMessage, DieMessage, StandMessage, PickUpMessage, DropMessage, PickedUpMessage,\
-    DroppedMessage, ShouldShatterMessage, ImpactDamageMessage, FreezeMessage, ThawMessage, HitMessage,\
+    DroppedMessage, ShouldShatterMessage, ImpactDamageMessage, FreezeMessage, ThawMessage, HealMessage,  HitMessage,\
     Actor, NodeActor, Session, Activity, GameActivity
 from bsCoopGame import CoopSession, CoopGameActivity, Level
 from bsTeamGame import TeamBaseSession, FreeForAllSession, TeamsSession, TeamGameActivity, TeamGameResults
@@ -21,8 +21,9 @@ from bsScoreBoard import ScoreBoard
 from bsScoreSet import PlayerScoredMessage
 from bsSpaz import SpazFactory, RespawnIcon, Spaz, PlayerSpaz, PlayerSpazHurtMessage, PlayerSpazDeathMessage, BotSet, SpazBot, BunnyBot, SpazBotDeathMessage, SpazBotPunchedMessage, BomberBot, BomberBotLame, BomberBotStaticLame, BomberBotStatic, BomberBotPro,\
                    BomberBotProShielded, BomberBotProStatic, BomberBotProStaticShielded, ToughGuyBot, ToughGuyBotLame, ToughGuyBotPro,\
-                   ToughGuyBotProShielded, NinjaBot,NinjaBotPro, NinjaBotProShielded, ChickBot, ChickBotStatic, ChickBotPro,\
-                   ChickBotProShielded, MelBot, MelBotStatic, PirateBot, PirateBotNoTimeLimit, PirateBotShielded
+                   ToughGuyBotProShielded, NinjaBot, NinjaBotPro, NinjaBotProShielded, ChickBot, ChickBotStatic, ChickBotPro,\
+                   ChickBotProShielded, MelBot, MelDuperBot, MelBotStatic, PirateBot, PirateBotNoTimeLimit, PirateBotShielded, FrostyBot, FrostyBotStatic,\
+                   FrostyBotShielded, AgentBot, AgentBotShielded, CyborgBot, SpyBot, LooieBot, LooieBotShielded
 from bsVector import Vector
 
 # change everything's listed module to ours

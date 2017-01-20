@@ -135,7 +135,7 @@ class TutorialActivity(bs.Activity):
         
     def onTransitionIn(self):
         bs.Activity.onTransitionIn(self)
-        bs.playMusic('CharSelect',continuous=True)
+        bs.playMusic('ForwardMarch',continuous=True)
         self._map = self._mapType()
 
     def onBegin(self):
@@ -401,10 +401,11 @@ class TutorialActivity(bs.Activity):
                     if self._num in a._spazzes:
                         a._spazzes[self._num].handleMessage(bs.DieMessage(immediate=True))
 
-                    s = a._spazzes[self._num] = bs.Spaz(color=self._color, startInvincible=self._flash, demoMode=True)
+                    s = a._spazzes[self._num] = bs.Spaz(color=self._color,startInvincible=self._flash)
                     # FIXME - should extend spaz to support Lstr names
                     s.node.name = self._name.evaluate() if type(self._name) is bs.Lstr else self._name
                     s.node.nameColor = self._color
+                    s.node.demoMode = True
                     s.handleMessage(bs.StandMessage(pos,self._angle))
                     if self._makeCurrent:
                         a._currentSpaz = s

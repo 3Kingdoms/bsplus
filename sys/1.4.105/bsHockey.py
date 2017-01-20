@@ -140,6 +140,7 @@ class HockeyGame(bs.TeamGameActivity):
     def onBegin(self):
         bs.TeamGameActivity.onBegin(self)
 
+        self._excludePowerups = ['speed']
         self.setupStandardTimeLimit(self.settings['Time Limit'])
         self.setupStandardPowerupDrops()
 

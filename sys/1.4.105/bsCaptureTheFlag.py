@@ -80,7 +80,9 @@ class CTFGame(bs.TeamGameActivity):
         else: return ('return ${ARG1} flags',self.settings['Score to Win'])
 
     def onTransitionIn(self):
-        bs.TeamGameActivity.onTransitionIn(self, music='Epic' if self.settings['Epic Mode'] else 'FlagCatcher')
+        # If Epic mode is turned off, pick a random CTF music for that one round
+        self.randomCTFmusic = ['FlagCatcher', 'FlagDropper', 'FlagSlip', 'FlagBomber', 'FlagRunner', 'Survival']
+        bs.TeamGameActivity.onTransitionIn(self, music='Epic' if self.settings['Epic Mode'] else random.choice(self.randomCTFmusic))
 
     def onTeamJoin(self,team):
 

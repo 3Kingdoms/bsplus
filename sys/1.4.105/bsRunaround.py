@@ -255,9 +255,7 @@ class RunaroundGame(bs.CoopGameActivity):
         # our TNT spawner (if applicable)
         if self._haveTnt: self._tntSpawner = bs.TNTSpawner(position=self._tntSpawnPosition)
 
-        # make sure to stay out of the way of menu/party buttons in the corner
-        interfaceType = bs.getEnvironment()['interfaceType']
-        lOffs = -80 if interfaceType == 'small' else -40 if interfaceType == 'medium' else 0
+        lOffs = -20 if bs.getEnvironment()['interfaceType'] == 'small' else 0
 
         self._livesBG = bs.NodeActor(bs.newNode('image',
                                                 attrs={'texture':self._heartTex,
@@ -265,7 +263,7 @@ class RunaroundGame(bs.CoopGameActivity):
                                                        'modelTransparent':self._heartModelTransparent,
                                                        'attach':'topRight',
                                                        'scale':(90,90),
-                                                       'position':(-110+lOffs,-50),
+                                                       'position':(-100+lOffs,-50),
                                                        'color':(1,0.2,0.2)}))
         vr = bs.getEnvironment()['vrMode']
         self._startLives = 10
@@ -278,7 +276,7 @@ class RunaroundGame(bs.CoopGameActivity):
                                                          'flatness':1.0 if vr else 0.5,
                                                          'shadow':1.0 if vr else 0.5,
                                                          'vrDepth':10,
-                                                         'position':(-113+lOffs,-69),
+                                                         'position':(-103+lOffs,-69),
                                                          'scale':1.3,
                                                          'text':str(self._lives)}))
 

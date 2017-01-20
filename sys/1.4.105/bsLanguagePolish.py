@@ -1,6 +1,41 @@
 # -*- coding: utf-8 -*-
 
 values = {
+    # Powerup Names
+    # These are used to show what powerup you collected if you weren't wasting time in the How To Play menu
+    'tripleBombs':'Potrójne Bomby',
+    'landMine':'Miny Lądowe',
+    'healBomb':'Bomba Leczenia',
+    'impactBomb':'Bomba Dotykowa',
+    'stickyBomb':'Bomba Klejowa',
+    'rangerBomb':'Zasięgowiec',
+    'combatBomb':'Bomba Bojowa',
+    'dynamitePack':'Paczka Dynamitu',
+    'knockerBomb':'Nokautor',
+    'grenade':'Granat',
+    'punch':'Rękawice Bokserskie',
+    'shield':'Osłona Energetyczna',
+    'curse':'Przeklęty!',
+    'iceBomb':'Lodowa Bomba',
+    'fireBomb':'Ognista Bomba',
+    'health':'Apteczka',
+    'overdrive':'Doładowanie',
+    'hijump':'Wystrzał',
+    'speed':'Buty Szybkości',
+    'blastBuff':'Większe Wybuchy',
+    
+    # Unlock Message
+    'characterUnlocked':'Odblokowałeś nową postać!',
+    'missionUnlocked':'Odblokowałeś nowy poziom!',
+    
+    # Critical Hit!
+    'crit':'KRYTYCZNE!',
+
+    #Quick Play Button
+    'selectGame':'Wybierz grę',
+    'quickGame':'Szybka Gra',
+    
+    #The rest
     'accountSettingsWindow':{
         'accountProfileText':'(profil konta)',
         'accountsText':'Konta',
@@ -63,11 +98,11 @@ values = {
     'achievementText':'Osiągnięcia',
     'achievements':{
         'Boom Goes the Dynamite':{
-            'description':'Zabij 3 wrogów używając TNT',
-            'descriptionComplete':'Zabiłeś 3 wrogów używając TNT',
-            'descriptionFull':'Zabij 3 wrogów za pomocą TNT w trybie ${LEVEL}',
-            'descriptionFullComplete':'Zabiłeś 3 wrogów za pomocą TNT w trybie ${LEVEL}',
-            'name':'Uwaga Leci Dynamit'
+            'description':'Zabij 3 wrogów używając Reaktora',
+            'descriptionComplete':'Zabiłeś 3 wrogów używając Reaktora',
+            'descriptionFull':'Zabij 3 wrogów za pomocą Reaktora w trybie ${LEVEL}',
+            'descriptionFullComplete':'Zabiłeś 3 wrogów za pomocą Reaktora w trybie ${LEVEL}',
+            'name':'Uwaga Leci Bomba'
         },
         'Boxer':{
             'description':'Wygraj bez używania bomb',
@@ -286,11 +321,11 @@ values = {
             'name':'Super Cios'
         },
         'TNT Terror':{
-            'description':'Zabij 6 wrogów używając TNT',
-            'descriptionComplete':'Zabiłeś 6 wrogów używając TNT',
-            'descriptionFull':'Zabij 6 wrogów używając TNT w trybie ${LEVEL}',
-            'descriptionFullComplete':'Zabiłeś 6 wrogów używając TNT w trybie ${LEVEL}',
-            'name':'Terror TNT'
+            'description':'Zabij 6 wrogów używając Reaktora',
+            'descriptionComplete':'Zabiłeś 6 wrogów używając Reaktora',
+            'descriptionFull':'Zabij 6 wrogów używając Reaktora w trybie ${LEVEL}',
+            'descriptionFullComplete':'Zabiłeś 6 wrogów używając Reaktora w trybie ${LEVEL}',
+            'name':'Terror Reaktorowy'
         },
         'Team Player':{
             'descriptionFull':'Rozpocznij grę drużynową z czwórką lub większą ilością graczy',
@@ -338,6 +373,14 @@ values = {
             'descriptionFull':'Przetrwaj wszystkie fale w trybie ${LEVEL}',
             'descriptionFullComplete':'Przetrwałeś wszystkie fale w trybie ${LEVEL}',
             'name':'Zwycięstwo w ${LEVEL}'
+        },
+        #My Achievements
+        'Make It Through':{
+            'description':'Przeżyj Koszmar',
+            'descriptionComplete':'Przeżyłeś Koszmar',
+            'descriptionFull':'Przeżyj wszystkie fale Koszmaru',
+            'descriptionFullComplete':'Przeżyłeś wszystkie fale Koszmaru',
+            'name':'Koszmar: Dojdź do Końca'
         }
     },
     'achievementsRemainingText':'Pozostałe Osiągnięcia:',
@@ -369,7 +412,6 @@ values = {
     'betaValidatedText':'Wersja Beta zatwierdzona; Dobrej zabawy!',
     'bombBoldText':'BOMBA',
     'bombText':'Bomba',
-    'boostText':'Dopalacz',
     'bsRemoteConfigureInAppText':'${REMOTE_APP_NAME} jest konfigurowany w samej aplikacji.',
     'buttonText':'Przycisk',
     'canWeDebugText':('Chcesz aby BombSquad automatycznie raportował błędy,\n'
@@ -535,11 +577,10 @@ values = {
         'titleText':'Kooperacja',
         'toRankedText':'Do awansu',
         'totalText':'Suma',
-        'tournamentInfoText':('Graj o wysokie wyniki z innymi graczami z twojej ligi.\n'
-                              '\n'
-                              'Nagrody dostają gracze\n'
-                              'z najlepszymi wynikami\n'
-                              'kiedy zawody się kończą.'),
+        'tournamentInfoText':('Zmodyfikowany BombSquad nie pozwala.\n'
+                              'na zapisywanie wyników turnieju.\n\n'
+                              'Zmarnujesz kupony na grę. Jeśli chcesz\n'
+                              'zagrać, zrób turniej w niezmodyfikowanej grze.'), #JRMP
         'welcome1Text':('Witaj w ${LEAGUE}. Możesz podnieść swój ligowy\n'
                         'ranking zdobywając gwiazdki, kompletując osiągnięcia\n'
                         'i wygrywając trofea w turniejach.'),
@@ -557,7 +598,7 @@ values = {
         'additionalMusicFromText':'Dodatkowa muzyka - ${NAME}',
         'allMyFamilyText':'Całej mojej rodzinie i wszystkim znajomym, którzy graniem pomogli w testach',
         'codingGraphicsAudioText':'Kodowanie, grafika i udźwiękowienie - ${NAME}',
-        'languageTranslationsText':'Tłumaczenia na inne języki:',
+        'languageTranslationsText':'Zawartość paczki:',
         'legalText':'Prawa autorskie:',
         'publicDomainMusicViaText':'Podkład muzyczny - ${NAME}',
         'softwareBasedOnText':'To oprogramowanie jest częściowo oparte na pracy ${NAME}',
@@ -599,7 +640,6 @@ values = {
     'defaultNewGameListNameText':'Moja lista rozgrywek trybu ${PLAYMODE}',
     'defaultNewTeamGameListNameText':'Moja nowa rozgrywka zespołowa',
     'defaultTeamGameListNameText':'Domyślna rozgrywka zespołowa',
-    'deleteText':'Usuń',
     'denyText':'Odmów',
     'desktopResText':'Rozdzielczość ekranu',
     'difficultyEasyText':'Łatwy',
@@ -608,12 +648,10 @@ values = {
     'difficultyHardUnlockOnlyText':('Ten poziom może zostać odblokowany tylko w trudnym trybie.\n'
                                     'Czy uważasz, że posiadasz to czego wymaga?!'),
     'directBrowserToURLText':'Proszę, otwórz przeglądarkę na podanym adresie:',
-    'disableRemoteAppConnectionsText':'Wyłącz łączenia aplikacji BS-Remote',
     'disableXInputDescriptionText':'Pozwala na podłączenie 4 kontrolerów, ale może nie działać.',
     'disableXInputText':'Wyłącz XInput',
     'doneText':'Gotowe',
     'drawText':'Remis',
-    'duplicateText':'Duplikuj',
     'editGameListWindow':{
         'addGameText':('Dodaj\n'
                        'grę'),
@@ -701,7 +739,6 @@ values = {
         'useMusicFileText':'Plik muzyczny (mp3, itp.)',
         'useMusicFolderText':'Katalog plików muzycznych'
     },
-    'editText':'Edytuj',
     'endText':'Koniec',
     'enjoyText':'Miłej zabawy!',
     'epicDescriptionFilterText':'${DESCRIPTION} Epickie zwolnione tempo.',
@@ -711,9 +748,8 @@ values = {
     'errorText':'Błąd',
     'errorUnknownText':'nieznany błąd',
     'exitGameText':'Wyjść z ${APP_NAME}?',
-    'exportSuccessText':'\'${NAME}\' eksportowane.',
     'externalStorageText':'Pamięć zewnętrzna',
-    'failText':'Niepowodzenie',
+    'failText':'Próbowałeś',
     'fatalErrorText':('O nie, czegoś brakuje lub jest uszkodzone.\n'
                       'Spróbuj przeinstalować grę lub skontaktuj się \n'
                       'poprzez ${EMAIL} dla uzyskania pomocy.'),
@@ -744,7 +780,6 @@ values = {
     'gameListWindow':{
         'cantDeleteDefaultText':'Nie możesz usunąć domyślnej listy rozgrywek!',
         'cantEditDefaultText':'Nie można edytować domyślnej listy rozgrywek! Powiel ją lub utwórz nową.',
-        'cantShareDefaultText':'Nie możesz udostępnić domyślnej listy rozgrywek.',
         'deleteConfirmText':'Usunąć "${LIST}"?',
         'deleteText':('Usuń\n'
                       'listę'),
@@ -790,7 +825,6 @@ values = {
         'bluetoothJoinText':'Dołącz poprzez BT',
         'bluetoothText':'Bluetooth',
         'checkingText':'sprawdzam...',
-        'dedicatedServerInfoText':'Dla najlepszych wyników ustaw serwer dedykowany. Zobacz jak na bombsquadgame.com/server.',
         'disconnectClientsText':('Spowoduje to rozłączenie ${COUNT} graczy\n'
                                  'będących na imprezie. Jesteś pewny?'),
         'earnTicketsForRecommendingAmountText':('Znajomi dostaną ${COUNT} kuponów jeżeli wypróbują grę\n'
@@ -854,14 +888,11 @@ values = {
         'partyInviteText':('${NAME} zaprosił Cię abyś\n'
                            'dołączył do ich imprezy.'),
         'partyNameText':'Nazwa Imprezy',
-        'partySizeText':'ilość graczy',
         'partyStatusCheckingText':'sprawdzanie statusu...',
         'partyStatusJoinableText':'twoja impreza jest teraz widoczna przez internet',
         'partyStatusNoConnectionText':'nie można się podłączyć',
         'partyStatusNotJoinableText':'twoja impreza jest niedostępna przez internet',
         'partyStatusNotPublicText':'twoja impreza nie jest publiczna',
-        'pingText':'ping',
-        'portText':'Port',
         'requestingAPromoCodeText':'Żądanie kodu...',
         'sendDirectInvitesText':'Ślij bezpośrednie zaproszenia',
         'sendThisToAFriendText':'Wyslij ten kod do znajomego:',
@@ -940,11 +971,10 @@ values = {
         'bombInfoText':('- Bomba -\n'
                         'Silniejsza niż ciosy, lecz\n'
                         'z powodu obrażeń może Cię\n'
-                        'wpędzić do grobu. Dla\n'
-                        'lepszego efektu wyrzuć\n'
-                        'ją sekundę przed\n'
-                        'wypaleniem się lontu.'),
-        'canHelpText':'${APP_NAME} może Ci w tym pomóc',
+                        'wpędzić do grobu. Dla lepszego efektu\n'
+                        'wyrzuć ją sekundę przed\n'
+						'wypaleniem się lontu.'),
+        'canHelpText':'Odjazdowa Paczka spełni Twoje marzenia!',
         'controllersInfoText':('Możesz zagrać w ${APP_NAME} ze znajomymi poprzez sieć lub na tym\n'
                                'samym urządzeniu jeśli masz wystarczająco dużo kontrolerów.\n'
                                '${APP_NAME} obsługuje wiele z nich; możesz nawet użyć smartfonów\n'
@@ -972,14 +1002,14 @@ values = {
                            'wykorzystana do przyłączenia się zainteresowanych do wersji VR aby\n'
                            'pokazać jak wygląda rozgrywka.'),
         'devicesText':'Urządzenia',
-        'friendsGoodText':('Dobrze ich mieć. ${APP_NAME} sprawia największą frajdę\n'
-                           'z kilkoma graczami. Gra może obsłużyć do 8 graczy jednocześnie.'),
+        'friendsGoodText':('Ze znajomymi można grać przez sieć tylko z innymi posiadaczami Odjazdowej Paczki.\n'
+						   'Maksymalnie osiem osób może grać jednocześnie.'),
         'friendsText':'Znajomych',
         'jumpInfoText':('- Skok -\n'
                         'Podskocz aby pokonać małe luki,\n'
                         'rzucać wyżej i dalej oraz wyrażać\n'
                         'swoją radość.'),
-        'orPunchingSomethingText':'chcesz walnąć w coś lub rzucić się z klifu albo przykleić komuś bombkę.',
+        'orPunchingSomethingText':'albo wyobrazić to sobie, wymodelować i potem wysadzić to w grze.',
         'pickUpInfoText':('- Podnoszenie -\n'
                           'Podnieś flagi, wrogów lub cokolwiek\n'
                           'innego nie przytwierdzonego do\n'
@@ -990,8 +1020,8 @@ values = {
         'powerupCurseDescriptionText':('Lepiej jej unikaj.\n'
                                        'Chyba, że chcesz spróbować?'),
         'powerupCurseNameText':'Klątwa',
-        'powerupHealthDescriptionText':('Przywraca pełne zdrowie tak\n'
-                                        'bardzo potrzebne na polu bitwy.'),
+        'powerupHealthDescriptionText':('Przywraca pełne zdrowie,\n'
+                                        'bo gry komputerowe.'),
         'powerupHealthNameText':'Apteczka',
         'powerupIceBombsDescriptionText':('Słabsze od normalnych bomb lecz\n'
                                           'zamrażają wrogów, którzy stają\n'
@@ -1005,15 +1035,33 @@ values = {
                                            'zatrzymania szybkich wrogów.'),
         'powerupLandMinesNameText':'Miny Lądowe',
         'powerupPunchDescriptionText':('Sprawiają, że ciosy są silniejsze,\n'
-                                       'szybsze i ogólnie mocniejsze.'),
+                                       'ale wolniejsze, nagradzajac za celne uderzenia.'),
         'powerupPunchNameText':'Rękawice Bokserskie',
         'powerupShieldDescriptionText':('Pochłania groźne obrażenia,\n'
                                         'więc jest niezastąpiona.'),
         'powerupShieldNameText':'Tarcza Energetyczna',
+        'powerupCombatBombsDescriptionText':('Dwusekundowy lont.\n'
+                                             'Perfekcyjne narzędzie walki.'),
+        'powerupCombatBombsNameText':'Bomby Bojowe',
         'powerupStickyBombsDescriptionText':('Przyklejają się do wszystkiego\n'
                                              'co dotkną. Niezły ubaw.'),
         'powerupStickyBombsNameText':'Bomby Przylepne',
-        'powerupsSubtitleText':'Oczywiście, gra bez bonusów byłaby niekompletna:',
+        'powerupKnockerBombsDescriptionText':('Wyrzuca graczy i bomby w zasięgu.\n'
+                                             'Zadaje niestety mizerne obrażenia.'), #JRMP
+        'powerupKnockerBombsNameText':'Nokautor', #JRMP
+        'powerupDynamitePackDescriptionText':('Tworzą wybuchowy plus.\n'
+                                             'Wyczyszczą marszującą piechotę.'),
+        'powerupDynamitePackNameText':'Paczka Dynamitu',
+        'powerupRangerBombsDescriptionText':('Większy zasięg, te same obrażenia.\n'
+                                             'Dasz radę przeczekać 4 sekundy?'),
+        'powerupRangerBombsNameText':'Zasięgowce',
+        'powerupOverdriveDescriptionText':('Otrzymaj więcej życia niż przy apteczce.\n'
+                                             'Proszę tylko nie przedawkować. Serio.'),
+        'powerupOverdriveNameText':'Doładowanie',
+        'powerupHealBombsDescriptionText':('Leczą i naprawiają, ale tylko raz.\n'
+                                             'Trzymać z dala od wrogów.'),
+        'powerupHealBombsNameText':'Bomby Leczące',
+        'powerupsSubtitleText':'Tyle bonusów, pozwól, że ci je przedstawię:',
         'powerupsText':'Bonusy',
         'punchInfoText':('- Cios -\n'
                          'Ciosy robią większe obrażenia\n'
@@ -1022,33 +1070,23 @@ values = {
         'runInfoText':('- Bieganie -\n'
                        'Przytrzymaj dowolny przycisk aby biec. Przyciski boczne lub triggery (o ile je masz) działają\n'
                        'lepiej. Bieganie pozwala na szybsze przemieszczanie lecz trudniej kierować, więc uwaga na klify.'),
-        'someDaysText':'Czasami masz chęć przyłożenia komuś, wysadzenia kogoś w powietrze,',
-        'titleText':'Pomoc ${APP_NAME}',
+        'someDaysText':'Czasami masz chęć stworzenia czegoś, ożywienia tego,',
+        'titleText':'Pomoc Odjazdowej Paczki',
         'toGetTheMostText':'Aby w pełni korzystać z tej gry, musisz mieć:',
         'welcomeText':'Witaj w ${APP_NAME}!'
     },
     'holdAnyButtonText':'<przytrzymaj dowolny przycisk>',
     'holdAnyKeyText':'<przytrzymaj dowolny klawisz>',
     'hostIsNavigatingMenusText':'- ${HOST} nawiguje w menu jako szef -',
-    'importPlaylistCodeInstructionsText':'Użyj tego kodu, by zimportować tą listę w innym miejscu:',
-    'importPlaylistSuccessText':'Zimportowano playlistę \'${NAME}\' rozgrywek ${TYPE}',
-    'importText':'Importuj',
-    'importingText':'Importowanie...',
-    'inGameClippedNameText':('w grze widoczne jako\n'
-                             '"${NAME}"'),
     'installDiskSpaceErrorText':('BŁĄD: Niemożliwe dokończenie instalacji.\n'
                                  'Być może mało miejsca w pamięci urządzenia.\n'
                                  'Zrób więcej miejsca i spróbuj jeszcze raz.'),
     'internal':{
         'arrowsToExitListText':'wciśnij ${LEFT} lub ${RIGHT} aby opuścić listę',
         'buttonText':'przycisk',
-        'cantKickHostError':'Nie możesz wyrzucić hosta.',
-        'chatBlockedText':'${NAME} jest zablokowany na czacie na ${TIME} sekund.',
-        'connectedToGameText':'Dołączono do "${NAME}"',
         'connectedToPartyText':'${NAME}\'s wbił się na imprezę!',
         'connectingToPartyText':'Łączenie...',
         'connectionFailedHostAlreadyInPartyText':'Połączenie nieudane; host jest na innej imprezie.',
-        'connectionFailedPartyFullText':'Połączenie nieudane; impreza jest pełna.',
         'connectionFailedText':'Połączenie nieudane.',
         'connectionFailedVersionMismatchText':('Połączenie nieudane; host pracuje na innej wersji gry.\n'
                                                'Upewnij się, że masz aktualne wersje i spróbuj ponownie.'),
@@ -1066,15 +1104,12 @@ values = {
         'errorPlayingMusicText':'Błąd odtwarzania muzyki: ${MUSIC}',
         'errorResettingAchievementsText':'Niemożliwe wyczyszczenie osiągnięć online; spróbuj ponownie później.',
         'hasMenuControlText':'${NAME} ma obecnie kontrolę menu.',
-        'incompatibleNewerVersionHostText':('Serwer posiada nowszą wersję gry.\n'
-                                            'Zaaktualizuj do najnowszej wersji i spróbuj ponownie.'),
         'incompatibleVersionHostText':('Host pracuje na innej wersji gry.\n'
                                        'Upewnij się, że masz aktualne wersje gry i spróbuj ponownie.'),
         'incompatibleVersionPlayerText':('${NAME} pracuje na innej wersji gry.\n'
                                          'Upewnij się, że masz aktualne wersje gry i spróbuj ponownie.'),
         'invalidAddressErrorText':'Błąd: nieprawidłowy adres.',
         'invalidNameErrorText':'Błąd: nieprawidłowa nazwa.',
-        'invalidPortErrorText':'Błąd: nieprawidłowy port.',
         'invitationSentText':'Zaproszenie wysłane.',
         'invitationsSentText':'${COUNT} wysłanych zaproszeń.',
         'joinedPartyInstructionsText':('Znajomy dołączył na imprezę.\n'
@@ -1084,13 +1119,11 @@ values = {
         'kickIdlePlayersWarning1Text':('${NAME} zostanie wyrzucony za ${COUNT} sekund jeśli dalej\n'
                                        'będzie bezczynnie patrzył.'),
         'kickIdlePlayersWarning2Text':'(możesz wyłączyć opcję w Ustawieniach -> Zaawansowane)',
-        'leftGameText':'Opuściłeś \'${NAME}\'.',
         'leftPartyText':'${NAME}\'s opuścił imprezę.',
         'noMusicFilesInFolderText':'Katalog nie zawiera plików muzycznych.',
         'playerJoinedPartyText':'${NAME} wbił się na imprezę!',
         'playerLeftPartyText':'${NAME} opuścił imprezę.',
         'rejectingInviteAlreadyInPartyText':'Odrzucono zaproszenie (już na imprezie).',
-        'serverRestartingText':'RESTARTOWANIE. Dołącz za chwilę.',
         'signInErrorText':'Błąd zapisania się.',
         'signInNoConnectionText':'Zapisanie się niemożliwe. (brak połączenia z internetem?)',
         'teamNameText':'Zespół ${NAME}',
@@ -1100,7 +1133,6 @@ values = {
                                       'Jeśli to pomyłka, stuknij \'Menu->Opuść grę\'.'),
         'touchScreenText':'Ekran dotykowy',
         'trialText':'trial',
-        'unableToResolveHostText':'Błąd: nie można odnaleźć hosta.',
         'unavailableNoConnectionText':'Obecnie niedostępne (sprawdź połączenie internetowe).',
         'vrOrientationResetCardboardText':('Użyj tego aby zresetować orientację VR.\n'
                                            'Aby zagrać w grę będziesz potrzebować zewnętrznego kontrolera.'),
@@ -1111,14 +1143,6 @@ values = {
     'jumpText':'Skok',
     'keepText':'Zachowaj',
     'keepTheseSettingsText':'Zachować te ustawienia?',
-    'kickOccurredText':'${NAME} został wyrzucony.',
-    'kickQuestionText':'Wyrzucić ${NAME}?',
-    'kickText':'Wyrzuć',
-    'kickVoteFailedNotEnoughVotersText':'Za mało graczy, by rozpocząć głosowanie.',
-    'kickVoteFailedText':'Głosowanie nie powiodło się.',
-    'kickVoteStartedText':'Głosowanie za wyrzuceniem gracza ${NAME}.',
-    'kickVoteText':'Głosuj za wyrzuceniem',
-    'kickWithChatText':'Wpisz ${YES} na czacie żeby wyrzucić i ${NO} żeby nie wyrzucać.',
     'killsTallyText':'${COUNT} zabitych',
     'killsText':'Zabitych',
     'kioskWindow':{
@@ -1159,12 +1183,6 @@ values = {
     'levelUnlockedText':'Poziom Odblokowany!',
     'livesBonusText':'Bonusowe Życie',
     'loadingText':'ładowanie',
-    'loadingTryAgainText':'Wczytywanie; spróbuj ponownie za chwilę...',
-    'macControllerSubsystemBothText':'Oba naraz (nie zalecane)',
-    'macControllerSubsystemClassicText':'Klasyczne',
-    'macControllerSubsystemDescriptionText':'(zmień to, jeśli kontrolery nie działają)',
-    'macControllerSubsystemMFiText':'Zrobione-dla-iOS/Mac',
-    'macControllerSubsystemTitleText':'Wsparcie Kontrolerów',
     'mainMenu':{
         'creditsText':'Info',
         'demoMenuText':'Menu Demo',
@@ -1187,7 +1205,6 @@ values = {
     'mapSelectTitleText':'Mapy ${GAME}',
     'mapText':'Mapa',
     'maxConnectionsText':'Maksymalne Połączenia',
-    'maxPartySizeText':'Maksymalna ilość graczy',
     'maxPlayersText':'Maksymalna ilość graczy',
     'mostValuablePlayerText':'Najwartościowszy gracz',
     'mostViolatedPlayerText':'Gracz najbardziej sprofanowany',
@@ -1205,12 +1222,10 @@ values = {
     'nameScoresText':'${NAME} zdobył punkty!',
     'nameSuicideKidFriendlyText':'${NAME} przypadkowo zginął.',
     'nameSuicideText':'${NAME} popełnił samobójstwo.',
-    'nameText':'Nazwa',
     'nativeText':'Natywna',
     'newPersonalBestText':'Nowy rekord życiowy!',
-    'newTestBuildAvailableText':('Dostępna jest nowa wersja! (${VERSION} build ${BUILD}).\n'
-                                 'Pobierz ją z ${ADDRESS}'),
-    'newText':'Nowy',
+    'newTestBuildAvailableText':('Witaj w Odjazdowej Paczce!\n'
+                                 'Miłej zabawy!'),
     'newVersionAvailableText':'Dostępna jest nowa wersja ${APP_NAME}! (${VERSION})',
     'nextAchievementsText':'Następne osiągnięcia:',
     'nextLevelText':'Następny poziom',
@@ -1236,6 +1251,23 @@ values = {
     'okText':'Ok',
     'onText':'On',
     'onslaughtRespawnText':'${PLAYER} odrodzi się w fali ${WAVE}',
+    # Nightmare Wave Names
+    'nWave1':'Rozgrzewka',
+    'nWave2':'Trzy Male Swinki',
+    'nWave3':'Faceci w Czerni',
+    'nWave4':'Leca Bomby!',
+    'nWave5':'Dilerzy Bolu',
+    'nWave6':'Ta swinia...',
+    'nWave7':'Imprezka',
+    'nWave8':'KURLIKI',
+    'nWave9':'Cos Okropnego',
+    'nWave10':'Tylek z lodu',
+    'nWave11':'IIIIIIdioci',
+    'nWave12':'GRUBE SWINIE!',
+    'nWave13':'Burza z Bombami!',
+    'nWave14':'KURLIKI (znowu)',
+    'nWave15':'Mocniejsi Dilerzy Bolu',
+    'nWave16':'NO GIN JUZ!',
     'orText':'${A} lub ${B}',
     'outOfText':'(#${RANK} na ${ALL})',
     'ownFlagAtYourBaseWarning':('Twoja flaga musi być w\n'
@@ -1269,7 +1301,7 @@ values = {
         'twoToEightPlayersText':'2-8 graczy'
     },
     'playerCountAbbreviatedText':'${COUNT} graczy',
-    'playerDelayedJoinText':'${PLAYER} wejdzie do gry przy następnej rundzie.',
+    'playerDelayedJoinText':'${PLAYER} wejdzie do gry przy następnej rozgrywce.',
     'playerInfoText':'Info o graczu',
     'playerLeftText':'${PLAYER} opuścił grę.',
     'playerLimitReachedText':'Limit ${COUNT} graczy osiągnięty, nie można się przyłączyć.',
@@ -1362,6 +1394,7 @@ values = {
     'rankText':'Ranking',
     'ratingText':'Ocena',
     'reachWave2Text':'Aby zdobyć punkty dotrwaj do 2 fali.',
+    'reachWave8Text':'Aby zdobyć punkty dotrwaj do 8 fali.',
     'readyText':'gotowy',
     'recentText':'Ostatnie',
     'remainingInTrialText':'pozostań w wersji trial',
@@ -1446,6 +1479,7 @@ values = {
         'audioText':'Audio',
         'controllersText':'Kontrolery',
         'graphicsText':'Grafika',
+        'jrmpText':'Opcje JRMP', # JRMP
         'playerProfilesMovedText':'Notka: Profile graczy zostały przeniesione do menu profili w menu głównym.',
         'playerProfilesText':'Profile Gracza',
         'titleText':'Ustawienia'
@@ -1457,6 +1491,7 @@ values = {
         'enablePackageModsDescriptionText':'(aktywuje dodatkowe możliwości modowania ale wyłącza grę sieciową)',
         'enablePackageModsText':'Włącz lokalne pakiety modów',
         'enterPromoCodeText':'Wpisz kod promocyjny',
+        'modpackWebpageText':'Strona Paczki',
         'forTestingText':'Uwaga: wartości stosowane do testów będą utracone po wyjściu z gry.',
         'helpTranslateText':('Tłumaczenia ${APP_NAME} na inne języki są wysiłkiem społeczności\n'
                              'fanów tej gry. Jeśli chcesz przyczynić się lub poprawić istniejące\n'
@@ -1479,8 +1514,20 @@ values = {
         'translationUpdateNeededText':'** obecnie używany język wymaga jego zaktualizowania! **',
         'vrTestingText':'Testowanie VR'
     },
-    'shareText':'Udostępnij',
-    'sharingText':'Udostępnianie...',
+    'jrmpSettingsWindow':{ #JRMP
+        'titleText':'Opcje Paczki',
+        'powerupPopupsText':'Informacja Bonusów (tekst po zebraniu)',
+        'offensiveCurseSoundText':'Ofensywny Dźwięk Klątwy',
+        'cameraShakeText':'Trzęsienie Kamery',
+        'easyModeText':'Tryb Łatwy (wyłącz trudne bonusy)',
+        'powerupDistributionText':'Spawny Bonusów',
+        'powerupDistributionDesc':('Ta opcja wpłwa tylko na gry niekooperacyjne.\n'
+                                    'Uruchom nową rundę/tryb gry, by zaaplikować.'),
+        'jrmpText':'Paczka',
+        'classicText':'Klasyczny',
+        'competetiveText':'Kompetetywny',
+        'noPowerupsText':'Bez Bonusów',
+        'someOptionsNotCoop':'Część opcji nie działa w trybach Kooperacyjnych.',
     'showText':'Wyświetl',
     'signInForPromoCodeText':'Musisz się zalogować do konta aby kody promocyjne zadziałały.',
     'signInWithGameCenterText':('By użyć konta Game Center\n'
@@ -1489,11 +1536,13 @@ values = {
     'singlePlayerCountText':'1 gracz',
     'soloNameFilterText':'Solówka ${NAME}',
     'soundtrackTypeNames':{
-        'CharSelect':'Wybór postaci',
+        'CharSelectCOOP':'Wybór postaci (Kooperacja)',
+        'CharSelectTEAMS':'Wybór postaci (Drużynowe)',
+        'CharSelectFFA':'Wybór postaci (FFA)',
         'Chosen One':'Wybraniec',
         'Epic':'Tryb gier epickich',
         'Epic Race':'Epicki Wyścig',
-        'FlagCatcher':'Przechwyć Flagę',
+        'FlagCatcher':'CTF Orkiestralna',
         'Flying':'Wesoła Twórczość',
         'Football':'Futbol',
         'ForwardMarch':'Szturm',
@@ -1503,12 +1552,21 @@ values = {
         'Marching':'Otaczanie',
         'Menu':'Menu główne',
         'Onslaught':'Atak',
-        'Race':'Wyścig',
+        'Race':'Wyścig Orkiestralna',
         'Scary':'Król Wzgórza',
         'Scores':'Ekran Wyników',
-        'Survival':'Eliminacja',
+        'Survival':'Cichy Film',
         'ToTheDeath':'Mecz Śmierci',
-        'Victory':'Ekran Wyników Końcowych'
+        'Victory':'Ekran Wyników Końcowych',
+        'Toilet':'Donut z Toalety',
+        'FlagDropper':'CTF Syntezator',
+        'FlagSlip':'CTF Przestrzenny / Wyścig',
+        'FlagBomber':'CTF Szalony',
+        'FlagRunner':'CTF Bieg',
+        'Where Eagles Dare':'Tylko dla Orłów',
+        'Last Stand':'Ostatni Przetrwały!',
+        'Nightmare':'Koszmar',
+        'Marathon':'Maraton',
     },
     'spaceKeyText':'spacja',
     'storagePermissionAccessText':'To wymaga dostępu do pamięci masowej',
@@ -1522,8 +1580,6 @@ values = {
                                        '\'${INF_RUNAROUND}\' w trybie kooperacji'),
         'bombSquadProFeaturesText':'Cechy:',
         'bombSquadProNameText':'${APP_NAME} Pro',
-        'bombSquadProNewDescriptionText':('• Usuwa reklamy w grze\n'
-                                          '• Zawiera także:'),
         'buyText':'Kupuj',
         'charactersText':'Postacie',
         'comingSoonText':'Wkrótce...',
@@ -1535,6 +1591,7 @@ values = {
         'gameUpgradesText':'Aktualizacje Gry',
         'getCoinsText':'Zdobądź monety',
         'holidaySpecialText':'Okazjonalne Specjały',
+        'jrmpText':'Ekskluzywne dla Odjazdowej Paczki (pieniądze idą do twórców gry i modpacka)', #JRMP
         'howToSwitchCharactersText':'(idź do "${SETTINGS} -> ${PLAYER_PROFILES}" aby przypisać i dostosować postacie)',
         'howToUseIconsText':'(Stwórz profil globalny (w opcjach profilowych) aby tego użyć)',
         'howToUseMapsText':'Użyj tych plansz w twoich listach gier free-for-all/drużynowych',
@@ -1582,7 +1639,7 @@ values = {
     'telnetAccessGrantedText':'Dostęp telnet włączony.',
     'telnetAccessText':'Dostęp telnet wykryty; zezwolić?',
     'testBuildErrorText':'Ta wersja testowa nie jest już dłużej aktywna; sprawdź dostępność nowej wersji.',
-    'testBuildText':'Wersja Testowa',
+    'testBuildText':'Odjazdowa Paczka',
     'testBuildValidateErrorText':'Niemożliwe zatwierdzenie wersji testowej. (brak internetu?)',
     'testBuildValidatedText':'Wersja Testowa Zatwierdzona! Miłej zabawy!',
     'thankYouText':'Dziękuję za Twoje wsparcie! Miłej rozrywki!!',
@@ -1603,9 +1660,9 @@ values = {
     'tournamentEntryText':'Wejście do Turnieju',
     'tournamentResultsRecentText':'Najnowsze wyniki Turnieju',
     'tournamentStandingsText':'Klasyfikacja Turnieju',
-    'tournamentText':'Turniej',
+    'tournamentText':'Turnieje nie są dostępne w Odjazdowej Paczce', #JRMP
     'tournamentTimeExpiredText':'Czas Turnieju wygasł',
-    'tournamentsText':'Turnieje',
+    'tournamentsText':'Turnieje nie są dostępne w Odjazdowej Paczce', #JRMP
     'translations':{
         'characterNames':{
             'Agent Johnson':'Agent Johnson',
@@ -1622,7 +1679,8 @@ values = {
             'Kronk':'Kronk',
             'Lee':'Lee',
             'Lucky':'Lucky',
-            'Mel':'Mel',
+            'Spy':'Szpieg',
+            'Mel':'Gruba Świnia',
             'Middle-Man':'Middle-Man',
             'Minimus':'Minimus',
             'Pascal':'Pascal',
@@ -1752,7 +1810,9 @@ values = {
             'secure all ${ARG1} flags':'zabezpiecz wszystkie ${ARG1} flagi',
             'secure the flag for ${ARG1} seconds':'zabezpiecz flagę przez ${ARG1} sekund',
             'touch ${ARG1} flags':'dotknij ${ARG1} flag',
-            'touch 1 flag':'dotknij 1 flagę'
+            'touch 1 flag':'dotknij 1 flagę',
+            'Survive the apocalypse!':'Przeżyj apokalipsę!',
+            'Stick bombs to enemies and blow them up!':'Przyklej bomby do wrogów i wysadź ich!',
         },
         'gameNames':{
             'Assault':'Szturm',
@@ -1760,10 +1820,10 @@ values = {
             'Chosen One':'Wybraniec',
             'Conquest':'Podbój',
             'Death Match':'Mecz Śmierci',
-            'Easter Egg Hunt':'Polowanie na Jaja',
             'Elimination':'Eliminacja',
             'Football':'Futbol',
             'Hockey':'Hokej',
+			'Easter Egg Hunt':'Polowanie na Jaja',
             'Keep Away':'Trzymaj się z dala',
             'King of the Hill':'Król Wzgórza',
             'Meteor Shower':'Deszcz Meteorytów',
@@ -1772,8 +1832,25 @@ values = {
             'Race':'Wyścig',
             'Runaround':'Otaczanie',
             'Target Practice':'Ćwiczenie Celności',
-            'The Last Stand':'Ostatni Bastion'
-        },
+            'The Last Stand':'Ostatni Bastion',
+			'Air Strike':'Nalot',
+            'Arms Race':'Wyścig Zbrojeń',
+            'Bomb on my Head':'Głowa to Bomba',
+            'Bomberman':'Bomberman',
+            'Boxing':'Boks',
+            'Brain Freeze':'Mózgomróz',
+            'Fight of Faith':'Bitwa Wiary',
+            'Frozen One':'Zamrożony',
+            'Ice Deathmatch':'Mrożący Mecz Śmierci',
+            'Magic Box':'Magiczna Skrzynia',
+            'Puck Deathmatch':'Mecz Śmierci Krążkami',
+            'Super Smash':'Super Smash',
+            'Soccer':'Piłka',
+            'Suicide Bomber':'自杀爆炸袭击',
+            'Terrorist':'Terrorysta',
+            'Nightmare':'Koszmar',
+            'Stickies!':'Klejaki!'
+			},
         'inputDeviceNames':{
             'Keyboard':'Klawiatura P1',
             'Keyboard P2':'Klawiatura P2'
@@ -1793,7 +1870,6 @@ values = {
             'Gibberish':'Język testowy dewelopera',
             'Hindi':'Hinduski',
             'Hungarian':'Węgierski',
-            'Indonesian':'Indonezyjski',
             'Italian':'Włoski',
             'Japanese':'Japoński',
             'Korean':'Koreański',
@@ -1818,18 +1894,27 @@ values = {
             'Courtyard':'Dziedziniec',
             'Crag Castle':'Zamek nad Urwiskiem',
             'Doom Shroom':'Fatum Grzyba',
+			'Duel Wood':'Drewniany Ring',
             'Football Stadium':'Stadion Futbolowy',
             'Happy Thoughts':'Wesoła Twórczość',
             'Hockey Stadium':'Hala Hokejowa',
             'Lake Frigid':'Lodowate Jeziorko',
             'Monkey Face':'Małpia Twarz',
+			'Pillar Bases':'Pilarowe Bazy',
             'Rampage':'Szał',
+            'Bacon Greece':'Bekon po Grecku',
             'Roundabout':'Wokoło',
             'Step Right Up':'Podchody',
             'The Pad':'Płyta',
             'Tip Top':'Tip Top',
+			'Toilet Donut':'Donut z Toalety',
             'Tower D':'Wieża D',
-            'Zigzag':'ZygZag'
+            'Zigzag':'ZygZag',
+			'Morning':'Poranek',
+			'Hovering Plank-o-Wood':'Latający Kawał Drewna',
+			'Where Eagles Dare':'Tylko dla Orłów',
+            'Mush Feud':'Pole Grzybowe',
+            'A Space Odyssey':'Odyseja Kosmiczna'
         },
         'playlistNames':{
             'Just Epic':'Tylko rozgrywki Epickie',
@@ -1848,7 +1933,6 @@ values = {
         },
         'serverResponses':{
             'A code has already been used on this account.':'Kod został już użyty na tym koncie.',
-            'A reward has already been given for that address.':'Nagroda została już wręczona na tym adresie.',
             'Account linking successful!':'Łączenie kont zakończone sukcesem!',
             'Accounts are already linked.':'Konta są już połączone.',
             'An error has occurred; please contact support@froemling.net.':'Wystąpił błąd; skontaktuj się z support@froemling.net.',
@@ -1871,7 +1955,7 @@ values = {
             'Cheating detected; scores and prizes suspended for ${COUNT} days.':'Oszukiwanie wykryte; punkty i nagrody zawieszone na ${COUNT} dni.',
             'Could not establish a secure connection.':'Nie udało się nawiązać bezpiecznego połączenia.',
             'Daily maximum reached.':'Dzienne maksimum wykorzystane.',
-            'Entering tournament...':'Wchodzenie do turnieju...',
+            'Entering tournament...':'Zmarnowałeś kupony. Gratulacje!',
             'Invalid code.':'Nieprawidłowy kod.',
             'Invalid payment; purchase canceled.':'Nieprawidłowa zapłata; zamówienie anulowane.',
             'Invalid promo code.':'Nieprawidłowy kod promocyjny.',
@@ -1879,7 +1963,6 @@ values = {
             'Invalid tournament entry; score will be ignored.':'Nieprawidłowe wejście do turnieju; wynik będzie zignorowany.',
             'Max number of playlists reached.':'Osiągnięto maksymalną ilość playlist.',
             'Max number of profiles reached.':'Osiągnięto maksymalną liczbę profili.',
-            'Maximum friend code rewards reached.':'Osiągnięto limit kodów promocyjnych.',
             'Profile "${NAME}" upgraded successfully.':'Nazwa "${NAME}" zapisana pomyślnie.',
             'Profile could not be upgraded.':'Profil nie może być zmieniony.',
             'Purchase successful!':'Udany zakup!',
@@ -1907,9 +1990,7 @@ values = {
                                                    'To pozwoli Ci zapisać istniejący postęp.\n'
                                                    'Uwaga: To nie może zostać cofnięte!!!'),
             'You already own this!':'Już to posiadasz!',
-            'You can join in ${COUNT} seconds.':'Możesz dołączyć w ciągu ${COUNT} sekund.',
             'You don\'t have enough tickets for this!':'Nie masz wystarczająco dużo kuponów!',
-            'You don\'t own that.':'Nie posiadasz tego.',
             'You got ${COUNT} tickets!':'Masz ${COUNT} kuponów!',
             'You got a ${ITEM}!':'Otrzymałeś ${ITEM}!',
             'You have been promoted to a new league; congratulations!':'Zostałeś awansowany do nowej ligi; gratulacje!',
@@ -1939,7 +2020,6 @@ values = {
             'Chosen One Time':'Czas bycia Wybrańcem',
             'Enable Impact Bombs':'Uaktywnij Bomby Dotykowe',
             'Enable Triple Bombs':'Uaktywnij Potrójne Bomby',
-            'Entire Team Must Finish':'Cała drużyna musi ukończyć',
             'Epic Mode':'Tryb Epicki',
             'Flag Idle Return Time':'Powrót flagi po jej upuszczeniu',
             'Flag Touch Return Time':'Powrót flagi po jej dotknięciu',
@@ -1949,6 +2029,7 @@ values = {
             'Lives Per Player':'Życia na gracza',
             'Long':'Długi',
             'Longer':'Dłuższy',
+            'Fair':'Sprawiedliwy',
             'Mine Spawning':'Czas założenia miny',
             'No Mines':'Bez Min',
             'None':'Żaden',
@@ -1960,16 +2041,16 @@ values = {
             'Shorter':'Krótszy',
             'Solo Mode':'Tryb pojedyńczego gracza',
             'Target Count':'Liczba docelowa',
-            'Time Limit':'Limit czasowy'
+            'Time Limit':'Limit czasowy',
+            'Bomb Limit':'Limit bomb'
         },
         'statements':{
-            '${TEAM} is disqualified because ${PLAYER} left':'${TEAM} zostali zdyskwalifikowani, gdyż ${PLAYER} wyszedł',
             'Killing ${NAME} for skipping part of the track!':'Zabito ${NAME} za pominięcie części toru!'
         },
         'teamNames':{
-            'Bad Guys':'Czarne charaktery',
+            'Bad Guys':'Głupki',
             'Blue':'Niebiescy',
-            'Good Guys':'Pozytywni bohaterzy',
+            'Good Guys':'Ziomale',
             'Red':'Czerwoni'
         },
         'tips':{
@@ -1988,7 +2069,6 @@ values = {
                                                                        'on tylko znaczenie wizualne. Wobec tego dobierz taki, który Ci odpowiada.'),
             'Don\'t get too cocky with that energy shield; you can still get yourself thrown off a cliff.':'Nie bądź zbyt pewny siebie mając tarczę energetyczną; wciąż ktoś może Cię zrzucić z klifu.',
             'Don\'t run all the time.  Really.  You will fall off cliffs.':'Nie biegaj cały czas, bo spadniesz z klifu.',
-            'Don\'t spin for too long; you\'ll become dizzy and fall.':'Nie obracaj się za długo; zakręci ci się w głowie i spadniesz.',
             'Hold any button to run.  (Trigger buttons work well if you have them)':('Przytrzymaj dowolny przycisk aby biec. (Triggery działają równie\n'
                                                                                      'dobrze (jeśli je masz)).'),
             ('Hold down any button to run. You\'ll get places faster\n'
@@ -2060,7 +2140,7 @@ values = {
                                                           'do przodu. Pozwoli to na jej dalsze wyrzucenie.'),
             ('Take out a group of enemies by\n'
              'setting off a bomb near a TNT box.'):('Pozbądź się grupy wrogów poprzez\n'
-                                                    'rzucenie bomby blisko skrzyni TNT.'),
+                                                    'rzucenie bomby blisko reaktora atomowego.'),
             ('The head is the most vulnerable area, so a sticky-bomb\n'
              'to the noggin usually means game-over.'):('Głowa jest najbardziej wrażliwym obszarem ciała, więc przyklejona\n'
                                                         'do niej przylepna bomba zazwyczaj oznacza koniec dla ofiary.'),
@@ -2091,12 +2171,83 @@ values = {
             ('You take damage when you whack your head on things,\n'
              'so try to not whack your head on things.'):('Przyjmujesz obrażenia jeśli uderzasz głową w różne\n'
                                                           'rzeczy, więc staraj się tego nie robić.'),
-            'Your punches do much more damage if you are running or spinning.':'Twoje ciosy zadadzą więcej obrażeń, jeśli będziesz biegać lub się kręcić.'
+            'Your punches do much more damage if you are running or spinning.':'Twoje ciosy zadadzą więcej obrażeń, jeśli będziesz biegać lub się kręcić.',
+			##Additional Tips
+			'Try making your bombs explode on targets head for instant kills.':('Postaraj się, by twoja bomba wybuchła na głowie celu, by natychmiast go zgładzić.'),
+			('Don\'t spam your Punch button while having Boxing Gloves.\n'
+             'Take your time. One hit is enough to stun someone.'):('Nie wciskaj szybko bicia mając rękawice bokserskie.\n'
+																	'Poczekaj chwilę, bo jedno uderzenie może ogłuszyć wroga.'),
+			('Making arcs while running increases your speed.\n'
+            'After that you can jump through most gaps!'):('Robienie łuków podczas biegania przyspiesza cię.\n'
+														   'Z taką prędkością przeskoczysz większość dziur!'),
+			('Land Mines placed even in the most random places you can\n'
+             'imagine can make some serious threat.'):('Miny położone w nawet najbardziej losowych miejscach jakie\n'
+													   'możesz sobie wyobrazić wciąż mogą stanowić zagrożenie.'),
+			('To get succesful in melee combat, try fooling your foe\n'
+            'by grabbing them or hitting him in inpredictable intervals'):('Jeżeli nie idzie ci w walce wręcz, spróbuj oszukać swojego\n'
+																		   'wroga poprzez nieprzewidywalne łapanie i bicie.'),
+			('Impact Bombs in the right hands can be one of the most\n'
+            'powerful weapons. Just aim direct hits and you\'ll be fine!'):('Dobrze użyte Bomby Kontaktowe mogą być najniebezpieczniejszą bronią\n'
+																			'w grze. Po prostu trafiaj bezpośrednio w wrogów i będzie spoko!'),
+			('Sticky Bombs can block passages for short amount of time.\n'
+            'You can use this while you\'re chased down.'):('Bomby Klejowe mogą na krótko blokować przejścia.\n'
+															'Użyj tego, gdy cię ścigają.'),
+			('No matter how far from the Ice Bomb explosion you are,\n'
+            'the slightest injury from it will freeze you.'):('Nie ważne jak daleko od wybuchu Lodowej Bomby jesteś,\n'
+															  'małe zranienie od niej zamrozi cię.'),
+			('Bombs are the lightest to throw, followed by players,\n'
+			'TNT boxes and flags.'):('Bomby są najlepsze do rzucania, zaraz po graczach,\n'
+									'reaktorach atomowych i flagach.'),
+			('If you want to be sure you\'ll not fall while running,\n'
+			'try releasing the run button for a brief moment.'):('Jeżeli boisz się, że spadniesz podczas biegania,\n'
+																'spróbuj puścić przycisk biegania na krótką chwilę.'),
+			('If you jump in a precise moment after landing, you\'ll jump higher!\n'
+			'Use this to evade attacks or get to hard to reach places.'):('Jeżeli skoczysz w dobrym momencie zaraz po lądowaniu, skoczysz wyżej!\n'
+																'wykorzystaj to, by unikac ataków i dostac się w trudno dostępne miejsca.'),
+			('Enemies wielding Boxing Gloves aren\'t as strong is caught\nStunning and throwing is easier unless he aims his fist well.'):('Wrogowie z Rekawicami Bokserskimi nie sa az tak silni, jesli sa trzymani.\nOgluszenie i rzut jest latwiejsze, chyba, ze uderzy pierwszy.'),
+            ('Ranger Bomb is great for taking out groups of foes.\nIt can save your last life in cooperative modes, like Runaround.'):('Zasięgowiec to świetna bomba do czyszczenia grup wrogów.\nMoże ocalić ci ostatnie życie w trybach kooperacyjnych, na przykład w Otaczaniu.'),
+            ('If you\'re cursed, avoid touching the Overdrive.\nIt\'ll combust you instantly, if you do.'):('Jeżeli jesteś przeklęty, unikaj bonusu Doładowania.\nWysadzi cię natychmiast.'),
+            ('Overdrive can double your health pool!\nUse it if you\'re going to take a lot of damage.'):('Doładowanie może podwoić twoją ilość zdrowia!\nUżyj go, zanim otrzymasz sporo obrażeń.'),
+            ('Energy Shield, unlike Overdrive, can protect you from stuns.\nEnergy Shield protects you more, but Overdrive will do that for longer.'):('Osłona ochroni cię przez ogłuszeniem, ale nie Doładowanie.\nOsłona ochroni cię lepiej, ale Doładowanie zrobi to na dłużej.'),
+            ('Use your Ranger Bomb at the right time. Too late or too soon is a suicidal move.'):('Użyj Zasięgowca w odpowiednim momencie. Za wcześnie lub za późno to samobójczy ruch'),
+            ('To hit somebody with a Dynamite Pack, he or she has to stand in a very specific spot.\nThis weapon is best suited for tight paths and cornered enemies.'):('By trafić kogoś Paczką Dynamitu, cel musi stać w bardzo specyficznym miejscu.\nTa broń jest najlepsza w ciasnych ścieżkach i wrogach w ślepym zaułku.'),
+            ('Combat Bombs are a great alternative for Impact Bombs. Just time the two-second fuse right and you\'re \ngoing to do more damage with one explosion than with Impact Bombs.'):('Bomby Bojowe to świetna alternatywa Bomb Kontaktowych. Odlicz tylko dobrze dwusekundowy lont i pojedynczy\n wybuch zada więcej obrażeń niż Bomby Kontaktowe.'),
+            ('If a Dynamite Pack is coming your way, just stand diagonally, so you\'ll receive less damage... and survive!'):('Jeśli leci do ciebie Paczka Dynamitu, stań po przekątnej.\nDzięki temu otrzymasz mniejsze obrażenia... i przeżyjesz!'),
+            ('If you can deal more than 100% of damage with fists in one hit, you\ll be rewarded.\nAfter that you can be proud of yourself.'):('Jeśli dasz radę zadać powyżej 100% obrażeń z pięści w jednym\nuderzeniu, zostaniesz solidnie nagrodzony. Po takim pokazie możesz być z siebie dumny.'),
+            ('If you forgot the website\'s URL of the Joyride Modpack,\ngo to Advanced Settings and look for Modpack Website button'):('Jeśli zapomniałeś adresu strony paczki, wejdź w Zaawansowane opcje i poszukaj przycisku Strona Paczki'),
+            ('If you can\'t time your throws right, don\'t use Ranger Bombs.\nThese are the most difficult bombs in the game to use.'):('Jeśli masz kłopoty z rzucaniem bomb, odpuść sobie Zasięgowca.\nTo są najtrudniejsze bomby do użycia w grze.'),
+            ('Bomb types other than default are highly situational.\nAfter collecting a new bomb type, you have to know where it\'ll shine the most.\nOtherwise it\'s a downgrade to the normal bomb.'):('Typy bomb inne niż domyślne są niezwykle sytuacyjne.\nJeśli zdobędziesz nowy rodzaj bomb, zastanów się, kiedy będzie najskuteczniejsza.\nW innym przypadku są to słabsze wesje bomby domyślnej.'),
+            ('If you have a health boost from Overdrive, you can use Land Mines to quickly get to really high places.'):('Jeżeli masz nadwyżkę zdrowie po zebraniu Doładowania, możesz użyć Miny do dostać się w naprawdę wysokie miejsca.'),
+            #Nightmare 'Tips'
+            ('Are you sure you are brave enough to beat this stage?'):('Jesteś pewien, że jesteś na tyle odważny, by mnie pokonać?'),
+            ('Go back to kindergarten! I\'m really serious!'):('Wracaj do przedszkola! Mówię poważnie!'),
+            ('You should bring somebody with you, so I can kick your butt even more!'):('Powinieneś kogoś ze sobą wziąć, bym skopał ci tyłek jeszcze bardziej!'),
+            ('You can\'t argue with me! I\'m a frickin code!'):('Nie dyskutuj ze mną! Jestem tylko kodem!'),
+            ('You\'re doomed! Give up now!'):('Śmierć nadchodzi! Poddaj się!'),
+            ('This minigame is impossible. Why you\'re playing it?'):('Ta minigra jest niemożliwa. Czemu w nią grasz?'),
+            ('99% of BombSquad players can\'t even compete with me!'):('99% graczy BombSquada nie potrafi ze mną walczyć!'),
+            #Healing Bombs tips
+            ('Remember that you can only throw one Healing Bomb.\nBefore you get it, plan ahead.'):('Pamiętaj, że możesz rzucić tylko jedną Bombę Leczenia.\nZanim go zbierzesz, zaplanuj swoją akcję.'),
+            ('Healing Bombs don\'t appear in Free For All games.\nYou wouldn\'t want to heal enemies, right?.'):('Bomby Leczące nie pojawiają się w trybach Free-For-All.\nNie chcesz chyba leczyć wrogów, prawda?'),
+            ('Healing Bombs can thaw your teammates, fix damaged Energy Shields\nand remove bombs without detonating them.'):('Bomby Leczenia topią lód, naprawiają uszkodzone Osłony\ni usuwają pobliskie bomby bez wysadzania ich.'),
+            #Grenade tips
+            ('Grenades are limited! You only have two of them, so don\'t waste them!'):('Granaty są skończone! Masz tylko dwie sztuki, więc nie zmarnuj ich!'),
+            ('Use Grenades to quickly take out an Energy Shield wielding enemy.'):('Użyj Granatów, by szybko pozbyć się wrogów z Osłoną.'),
+            #JRMP Options tips
+            ('In Options you can change JRMP specific features of the modpack.'):('W Ustawieniach możesz zmienić opcje związane z paczką JRMP.'),
+            ('If you memorised all the powerups, you can disable Powerup Popups in the JRMP Options menu'):('Jeśli zapamiętałeś wszystkie bonusy, możesz wyłączyć Informacje Bonusów w opcjach JRMP.'),
+            #Bigger Blasts powerup tips
+            ('Land Mines + Bigger Blasts = Instant Death Land Mines'):('Miny Lądowe + Bonus Większych Wybuchów = Miny Śmierci'),
+            ('Bigger Blasts powerup may seem useless, but every single\ninch of additional blast radius counts.'):('Bonus Większych Wybuchów może wydawać się zbędny, ale każdy\ncentymetr dodatkowego zasięgu ma znaczenie.'),
+            ('Hi-Jump + Blast Radius = Super Hi-Jump'):('Wyskok + Bonus Większych Wybuchów = Super Wyskok'),
+            #Speed Boots tips
+            ('Speed Boots make your bomb throws further, but less accurate.'):('Buty Szybkości sprawiają, że rzucasz bomby dalej, ale mnie celnie.'),
+            ('Speed Boots last only 15 seconds and replaces Boxing Gloves.\nTake the powerup that will be the most valuable at that moment.'):('Buty Szybkości wystarczą na 15 sekund i zamieniają Rękawice Bokserskie.\nWeź ten bonus, który bardziej ci się przyda w tym momencie.'),
+            ('Speed Boots make your punches faster, but a little bit weaker.'):('Buty Szybkości sprawiają, że twoje pięści są szybsze, ale nieco słabsze.'),
         }
     },
     'trialPeriodEndedText':('Wersja trial wygasła. Czy chcesz zakupić\n'
                             'BombSquad i kontynuować grę?'),
-    'trophiesRequiredText':'Potrzebujesz przynajmniej ${NUMBER} zdobyczy.',
     'trophiesText':'Zdobycze',
     'trophiesThisSeasonText':'Zdobycze w tym sezonie',
     'tutorial':{
@@ -2141,7 +2292,7 @@ values = {
         'toSkipPressAnythingText':'(stuknij lub naciśnij cokolwiek aby pominąć samouczek)'
     },
     'twoKillText':'PODWÓJNE ZABÓJSTWO!',
-    'unavailableText':'niedostępne',
+    'unavailableText':'',
     'unconfiguredControllerDetectedText':'Wykryto nieskonfigurowany kontroler:',
     'unlockThisInTheStoreText':'To musi zostać odblokowane w sklepie.',
     'unlockThisText':'Żeby to odblokować, potrzebujesz:',
@@ -2157,16 +2308,13 @@ values = {
     'usingItunesTurnRepeatAndShuffleOnText':'Upewnij się, że w ustawieniach iTunes tasowanie utworów i powtarzanie całości jest włączone.',
     'validatingBetaText':'Legalizowanie wersji Beta...',
     'validatingTestBuildText':'Sprawdzanie wersji testowej...',
+    #Nightmare victory text
+    'survivedText':'Przeżyłeś.',
     'victoryText':'Zwycięstwo!',
-    'voteDelayText':'Nie możesz zagłosować przez następne ${NUMBER} sekund',
-    'voteInProgressText':'Głosowanie jest już w toku.',
-    'votedAlreadyText':'Już zagłosowałeś',
-    'votesNeededText':'Potrzeba ${NUMBER} głosów',
     'vsText':'vs.',
     'waitingForHostText':'(oczekiwanie na ${HOST} aby kontynuować)',
     'waitingForLocalPlayersText':'Oczekiwanie na lokalnych graczy...',
     'waitingForPlayersText':'oczekiwanie na dołączenie graczy...',
-    'waitingInLineText':'Czekanie w kolejce (impreza pełna)...',
     'watchAVideoText':'Zobacz Filmik',
     'watchAnAdText':'Obejrzyj reklamę',
     'watchWindow':{
@@ -2255,4 +2403,5 @@ values = {
     'yesAllowText':'Tak, Pozwól!',
     'yourBestScoresText':'Twoje najlepsze wyniki',
     'yourBestTimesText':'Twoje najlepsze czasy'
+    }
 }

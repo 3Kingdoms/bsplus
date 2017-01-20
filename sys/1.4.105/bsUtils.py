@@ -1,7 +1,6 @@
 import bs
 import weakref
 import os
-import sys
 import thread
 import threading
 import time
@@ -87,7 +86,7 @@ class Lstr(object):
 
         if type(self._args.get('value')) is ourType:
             raise Exception("'value' must be a regular string; not an Lstr")
-
+        
         if 'subs' in self._args:
             subsNew = []
             for key,value in keywds['subs']:
@@ -113,7 +112,7 @@ class Lstr(object):
         if 'subs' in keywds:
             keywds['s'] = keywds['subs']
             del keywds['subs']
-
+        
     def evaluate(self):
         """
         Evaluates the Lstr and returns a flat string in the current language.
@@ -129,7 +128,7 @@ class Lstr(object):
         it with a simple flattened string or do string manipulation on it.
         """
         return True if ('value' in self._args and not self._args.get('subs',[])) else False
-
+    
     def _getJson(self):
         try:
             return uni(json.dumps(self._args,separators=(',',':')))
@@ -142,8 +141,8 @@ class Lstr(object):
 
     def __repr__(self):
         return '<bs.Lstr: '+self._getJson()+'>'
-
-
+    
+    
 def printException(*args,**keywds):
     """
     category: General Utility Functions
@@ -199,7 +198,7 @@ def printErrorOnce(*args,**keywds):
     if errStr not in gErrorsPrinted:
         gErrorsPrinted.add(errStr)
         printError(*args,**keywds)
-
+        
 def getConfig():
     """
     category: General Utility Functions
@@ -222,7 +221,7 @@ def getSharedObject(name):
     'globals': returns the 'globals' bs.Node, containing various global controls & values.
 
     'objectMaterial': a bs.Material that should be applied to any small, normal, physical objects
-                      such as bombs, boxes, players, etc. Other materials often check for the
+                      such as bombs, boxes, players, etc. Other materials often check for the 
                       presence of this material as a prerequisite for performing certain actions
                       (such as disabling collisions between initially-overlapping objects)
 
@@ -302,12 +301,12 @@ def getSharedObject(name):
                 obj = bs.newNode('sessionGlobals')
             else: raise Exception("unrecognized shared object (session context): '"+name+"'")
         else: raise Exception("no current activity or session context")
-
+        
 
     # ok, got a shiny new shared obj; store it for quick access next time
     sharedObjs[name] = obj
     return obj
-
+    
 def getHumanReadableUserScriptsPath():
     "Return a human readable path to user-scripts (NOT a valid filesystem path)"
     env = bs.getEnvironment()
@@ -321,7 +320,7 @@ def getHumanReadableUserScriptsPath():
         if extStoragePath is not None and env['userScriptsDirectory'].startswith(extStoragePath):
             path = '<'+bs.Lstr(resource='externalStorageText').evaluate()+'>'+env['userScriptsDirectory'][len(extStoragePath):]
     return path
-
+    
 def showUserScripts():
     "Open or at least nicely print the location of the user-scripts directory"
     env = bs.getEnvironment()
@@ -352,11 +351,11 @@ def showUserScripts():
                 bs.androidMediaScanFile(fileName)
         except Exception:
             bs.printException('error writing aboutThisFolder stuff')
-
+        
     # on a few platforms we try to open the dir in the UI
     if env['platform'] in ['mac','windows']:
         bsInternal._openDirExternally(env['userScriptsDirectory'])
-
+        
     # otherwise we just print a pretty version of it
     else:
         bs.screenMessage(getHumanReadableUserScriptsPath())
@@ -512,7 +511,7 @@ class WeakMethod :
     def __str__(self):
         return '<bs.WeakMethod object; call='+str(self.f)+'>'
 
-
+    
 _gLanguageTarget = None
 _gLanguageMerged = None
 
@@ -540,9 +539,9 @@ def _ensureHaveAccountPlayerProfile():
     # if the short version of our account name currently cant be displayed by the game, cancel..
     if not bsInternal._haveChars(bsInternal._getAccountDisplayString(full=False)):
         return
-
+    
     config = bs.getConfig()
-
+    
     if 'Player Profiles' not in config or '__account__' not in config['Player Profiles']:
         # create a spaz with a nice default purply color
         bsInternal._addTransaction({'type':'ADD_PLAYER_PROFILE',
@@ -551,12 +550,12 @@ def _ensureHaveAccountPlayerProfile():
                                                'color':(0.5,0.25,1.0),
                                                'highlight':(0.5,0.25,1.0)}})
         bsInternal._runTransactions()
-
+    
 # used internally
 def _handleRemoteAchievementList(completedAchievements):
     import bsAchievement
     bsAchievement.setCompletedAchievements(completedAchievements)
-
+    
 def _getRemoteAppName():
     env = bs.getEnvironment()
     # on ali we point at their custom app instead of BSRemote
@@ -564,7 +563,7 @@ def _getRemoteAppName():
         return u'\u963f\u91cc\u7535\u89c6'
     else:
         return bs.Lstr(resource='remote_app.app_name')
-
+    
 def _shouldSubmitDebugInfo():
     try: return bs.getConfig()['Submit Debug Info']
     except Exception: return True
@@ -593,7 +592,7 @@ def _handleRunChallengeGame(game,force=False,args={}):
     campaignName,levelName = game.split(':')
     campaign = bsCoopGame.getCampaign(campaignName)
     levels = campaign.getLevels()
-
+    
     # if this campaign is sequential, make sure we've completed the one before this
     if campaign.isSequential() and not force:
         for i in range(len(levels)):
@@ -607,7 +606,7 @@ def _handleRunChallengeGame(game,force=False,args={}):
     bsUI.gCoopSessionArgs = {'campaign':campaignName,'level':levelName}
     for argName,argVal in args.items():
         bsUI.gCoopSessionArgs[argName] = argVal
-
+    
     def _fadeEnd():
         import bsCoopGame
         try: bsInternal._newHostSession(bsCoopGame.CoopSession)
@@ -615,7 +614,7 @@ def _handleRunChallengeGame(game,force=False,args={}):
             bs.printException()
             import bsMainMenu
             bsInternal._newHostSession(bsMainMenu.MainMenuSession)
-
+            
     bsInternal._fadeScreen(False,time=250,endCall=_fadeEnd)
     return True
 
@@ -644,160 +643,151 @@ def isBrowserLikelyAvailable():
     platform = env['platform']
     subplatform = env['subplatform']
     touchscreen = bsInternal._getInputDevice('TouchScreen','#1',exceptionOnNone=False)
-
+    
     # ouya has a browser... but its sucks so lets say no.
     if platform == 'android' and subplatform == 'ouya': return False
-
+    
     # if we're on a vr device or an android device with no touchscreen, assume no browser
     if env['vrMode'] or (platform == 'android' and touchscreen is None): return False
 
     # anywhere else assume we've got one
     return True
-
-def _getDefaultFreeForAllPlaylist():
+    
+def _getDefaultFreeForAllPlaylist(): # JRMP FFA Default Playlist
     return [
          {
             'settings':{
                'Epic Mode':False,
-               'Kills to Win Per Player':10,
-               'Respawn Times':1.0,
-               'Time Limit':300,
-               'map':'Doom Shroom'
-            },
-            'type':'bsDeathMatch.DeathMatchGame'
-         },
-         {
-            'settings':{
-               'Chosen One Gets Gloves':True,
-               'Chosen One Gets Shield':False,
-               'Chosen One Time':30,
-               'Epic Mode':0,
-               'Respawn Times':1.0,
-               'Time Limit':300,
-               'map':'Monkey Face'
-            },
-            'type':'bsChosenOne.ChosenOneGame'
-         },
-         {
-            'settings':{
-               'Hold Time':30,
-               'Respawn Times':1.0,
-               'Time Limit':300,
-               'map':'Zigzag'
-            },
-            'type':'bsKingOfTheHill.KingOfTheHillGame'
-         },
-         {
-            'settings':{
-               'Epic Mode':False,
-               'map':'Rampage'
-            },
-            'type':'bsMeteorShower.MeteorShowerGame'
-         },
-         {
-            'settings':{
-               'Epic Mode':1,
-               'Lives Per Player':1,
-               'Respawn Times':1.0,
-               'Time Limit':120,
-               'map':'Tip Top'
-            },
-            'type':'bsElimination.EliminationGame'
-         },
-         {
-            'settings':{
-               'Hold Time':30,
-               'Respawn Times':1.0,
-               'Time Limit':300,
-               'map':'The Pad'
-            },
-            'type':'bsKeepAway.KeepAwayGame'
-         },
-         {
-            'settings':{
-               'Epic Mode':True,
-               'Kills to Win Per Player':10,
-               'Respawn Times':0.25,
-               'Time Limit':120,
-               'map':'Rampage'
-            },
-            'type':'bsDeathMatch.DeathMatchGame'
-         },
-         {
-            'settings':{
-               'Bomb Spawning':1000,
-               'Epic Mode':False,
-               'Laps':3,
-               'Mine Spawn Interval':4000,
-               'Mine Spawning':4000,
-               'Time Limit':300,
-               'map':'Big G'
-            },
-            'type':'bsRace.RaceGame'
-         },
-         {
-            'settings':{
-               'Hold Time':30,
-               'Respawn Times':1.0,
-               'Time Limit':300,
-               'map':'Happy Thoughts'
-            },
-            'type':'bsKingOfTheHill.KingOfTheHillGame'
-         },
-         {
-            'settings':{
-               'Enable Impact Bombs':1,
-               'Enable Triple Bombs':False,
-               'Target Count':2,
-               'map':'Doom Shroom'
-            },
-            'type':'bsTargetPractice.TargetPracticeGame'
-         },
-         {
-            'settings':{
-               'Epic Mode':False,
-               'Lives Per Player':5,
-               'Respawn Times':1.0,
-               'Time Limit':300,
-               'map':'Step Right Up'
-            },
-            'type':'bsElimination.EliminationGame'
-         },
-         {
-            'settings':{
-               'Epic Mode':False,
-               'Kills to Win Per Player':10,
+               'Lives Per Player':4,
                'Respawn Times':1.0,
                'Time Limit':300,
                'map':'Crag Castle'
             },
-            'type':'bsDeathMatch.DeathMatchGame'
+            'type':'bsElimination.EliminationGame'
          },
          {
-            'map':'Lake Frigid',
             'settings':{
-               'Bomb Spawning':0,
                'Epic Mode':False,
-               'Laps':6,
-               'Mine Spawning':2000,
+               'Lives Per Player':4,
+               'Respawn Times':1.0,
                'Time Limit':300,
-               'map':'Lake Frigid'
+               'map':'Toilet Donut'
             },
-            'type':'bsRace.RaceGame'
-         }
+            'type':'bsElimination.EliminationGame'
+         },
+         {
+            'settings':{
+               'Epic Mode':False,
+               'Lives Per Player':4,
+               'Respawn Times':1.0,
+               'Time Limit':300,
+               'map':'Bacon Greece'
+            },
+            'type':'bsElimination.EliminationGame'
+         },
+         {
+			'settings':{
+               'Epic Mode':False,
+               'Lives Per Player':4,
+               'Respawn Times':1.0,
+               'Time Limit':300,
+               'map':'Mush Feud'
+            }, 
+            'type':'bsElimination.EliminationGame'
+        },
+        {
+			'settings':{
+               'Allow Negative Scores':False,
+               'Epic Mode':False,
+               'Kills to Win Per Player':10,
+               'Respawn Times':0.5,
+               'Time Limit':300,
+               'map':'Crag Castle'
+            }, 
+            'type':'bsDeathMatch.DeathMatchGame'
+        },
+        {
+			'settings':{
+               'Allow Negative Scores':False,
+               'Epic Mode':False,
+               'Kills to Win Per Player':10,
+               'Respawn Times':0.5,
+               'Time Limit':300,
+               'map':'Step Right Up'
+            }, 
+            'type':'bsDeathMatch.DeathMatchGame'
+        },
+        {
+			'settings':{
+               'Epic Mode':False,
+               'Lives Per Player':4,
+               'Respawn Times':1.0,
+               'Time Limit':300,
+               'map':'Pillar Bases'
+            }, 
+            'type':'bsElimination.EliminationGame'
+        }
       ]
 
-def _getDefaultTeamsPlaylist():
+def _getDefaultTeamsPlaylist(): # JRMP Teams Default Playlist
     return [
          {
             'settings':{
                'Epic Mode':False,
                'Flag Idle Return Time':30,
-               'Flag Touch Return Time':0,
+               'Flag Touch Return Time':2,
                'Respawn Times':1.0,
                'Score to Win':3,
                'Time Limit':600,
-               'map':'Bridgit'
+               'map':'Pillar Bases'
+            },
+            'type':'bsCaptureTheFlag.CTFGame'
+         },
+         {
+            'settings':{
+               'Epic Mode':False,
+               'Flag Idle Return Time':30,
+               'Flag Touch Return Time':2,
+               'Respawn Times':1.0,
+               'Score to Win':3,
+               'Time Limit':600,
+               'map':'Bacon Greece'
+            },
+            'type':'bsCaptureTheFlag.CTFGame'
+         },
+         {
+            'settings':{
+               'Epic Mode':False,
+               'Flag Idle Return Time':30,
+               'Flag Touch Return Time':2,
+               'Respawn Times':1.0,
+               'Score to Win':3,
+               'Time Limit':600,
+               'map':'Roundabout'
+            },
+            'type':'bsCaptureTheFlag.CTFGame'
+         },
+         {
+            'settings':{
+               'Epic Mode':False,
+               'Flag Idle Return Time':30,
+               'Flag Touch Return Time':2,
+               'Respawn Times':1.0,
+               'Score to Win':3,
+               'Time Limit':600,
+               'map':'Crag Castle'
+            },
+            'type':'bsCaptureTheFlag.CTFGame'
+         },
+         {
+            'settings':{
+               'Epic Mode':False,
+               'Flag Idle Return Time':30,
+               'Flag Touch Return Time':2,
+               'Respawn Times':1.0,
+               'Score to Win':3,
+               'Time Limit':300,
+               'map':'Where Eagles Dare'
             },
             'type':'bsCaptureTheFlag.CTFGame'
          },
@@ -806,37 +796,45 @@ def _getDefaultTeamsPlaylist():
                'Epic Mode':False,
                'Respawn Times':1.0,
                'Score to Win':3,
-               'Time Limit':600,
-               'map':'Step Right Up'
+               'Time Limit':300,
+               'map':'Bacon Greece'
             },
             'type':'bsAssault.AssaultGame'
          },
          {
             'settings':{
-               'Balance Total Lives':False,
                'Epic Mode':False,
-               'Lives Per Player':3,
                'Respawn Times':1.0,
-               'Solo Mode':True,
-               'Time Limit':600,
-               'map':'Rampage'
-            },
-            'type':'bsElimination.EliminationGame'
-         },
-         {
-            'settings':{
-               'Epic Mode':False,
-               'Kills to Win Per Player':5,
-               'Respawn Times':1.0,
+               'Score to Win':3,
                'Time Limit':300,
-               'map':'Roundabout'
+               'map':'Zigzag'
             },
-            'type':'bsDeathMatch.DeathMatchGame'
+            'type':'bsAssault.AssaultGame'
+         },
+         {
+            'settings':{
+               'Epic Mode':False,
+               'Respawn Times':1.0,
+               'Time Limit':600,
+               'map':'Step Right Up'
+            },
+            'type':'bsConquest.ConquestGame'
+         },
+         {
+            'settings':{
+               'Epic Mode':False,
+               'Bomb Limit':2,
+               'Respawn Times':1.0,
+               'Score to Win':8,
+               'Time Limit':300,
+               'map':'Toilet Donut'
+            },
+            'type':'bsStickies.StickiesGame'
          },
          {
             'settings':{
                'Respawn Times':1.0,
-               'Score to Win':1,
+               'Score to Win':2,
                'Time Limit':600,
                'map':'Hockey Stadium'
             },
@@ -844,198 +842,24 @@ def _getDefaultTeamsPlaylist():
          },
          {
             'settings':{
-               'Hold Time':30,
-               'Respawn Times':1.0,
-               'Time Limit':300,
-               'map':'Monkey Face'
-            },
-            'type':'bsKeepAway.KeepAwayGame'
-         },
-         {
-            'settings':{
-               'Balance Total Lives':False,
-               'Epic Mode':True,
-               'Lives Per Player':1,
-               'Respawn Times':1.0,
-               'Solo Mode':False,
-               'Time Limit':120,
-               'map':'Tip Top'
-            },
-            'type':'bsElimination.EliminationGame'
-         },
-         {
-            'settings':{
-               'Epic Mode':False,
-               'Respawn Times':1.0,
-               'Score to Win':3,
-               'Time Limit':300,
-               'map':'Crag Castle'
-            },
-            'type':'bsAssault.AssaultGame'
-         },
-         {
-            'settings':{
-               'Epic Mode':False,
-               'Kills to Win Per Player':5,
-               'Respawn Times':1.0,
-               'Time Limit':300,
-               'map':'Doom Shroom'
-            },
-            'type':'bsDeathMatch.DeathMatchGame'
-         },
-         {
-            'settings':{
-               'Epic Mode':False,
-               'map':'Rampage'
-            },
-            'type':'bsMeteorShower.MeteorShowerGame'
-         },
-         {
-            'settings':{
-               'Epic Mode':False,
-               'Flag Idle Return Time':30,
-               'Flag Touch Return Time':0,
                'Respawn Times':1.0,
                'Score to Win':2,
                'Time Limit':600,
-               'map':'Roundabout'
+               'map':'Basketball Stadium'
             },
-            'type':'bsCaptureTheFlag.CTFGame'
-         },
-         {
-            'settings':{
-               'Respawn Times':1.0,
-               'Score to Win':21,
-               'Time Limit':600,
-               'map':'Football Stadium'
-            },
-            'type':'bsFootball.FootballTeamGame'
-         },
-         {
-            'settings':{
-               'Epic Mode':True,
-               'Respawn Times':0.25,
-               'Score to Win':3,
-               'Time Limit':120,
-               'map':'Bridgit'
-            },
-            'type':'bsAssault.AssaultGame'
-         },
-         {
-            'map':'Doom Shroom',
-            'settings':{
-               'Enable Impact Bombs':1,
-               'Enable Triple Bombs':False,
-               'Target Count':2,
-               'map':'Doom Shroom'
-            },
-            'type':'bsTargetPractice.TargetPracticeGame'
-         },
-         {
-            'settings':{
-               'Hold Time':30,
-               'Respawn Times':1.0,
-               'Time Limit':300,
-               'map':'Tip Top'
-            },
-            'type':'bsKingOfTheHill.KingOfTheHillGame'
-         },
-         {
-            'settings':{
-               'Epic Mode':False,
-               'Respawn Times':1.0,
-               'Score to Win':2,
-               'Time Limit':300,
-               'map':'Zigzag'
-            },
-            'type':'bsAssault.AssaultGame'
-         },
-         {
-            'settings':{
-               'Epic Mode':False,
-               'Flag Idle Return Time':30,
-               'Flag Touch Return Time':0,
-               'Respawn Times':1.0,
-               'Score to Win':3,
-               'Time Limit':300,
-               'map':'Happy Thoughts'
-            },
-            'type':'bsCaptureTheFlag.CTFGame'
-         },
-         {
-            'settings':{
-               'Bomb Spawning':1000,
-               'Epic Mode':True,
-               'Laps':1,
-               'Mine Spawning':2000,
-               'Time Limit':300,
-               'map':'Big G'
-            },
-            'type':'bsRace.RaceGame'
-         },
-         {
-            'settings':{
-               'Epic Mode':False,
-               'Kills to Win Per Player':5,
-               'Respawn Times':1.0,
-               'Time Limit':300,
-               'map':'Monkey Face'
-            },
-            'type':'bsDeathMatch.DeathMatchGame'
-         },
-         {
-            'settings':{
-               'Hold Time':30,
-               'Respawn Times':1.0,
-               'Time Limit':300,
-               'map':'Lake Frigid'
-            },
-            'type':'bsKeepAway.KeepAwayGame'
-         },
-         {
-            'settings':{
-               'Epic Mode':False,
-               'Flag Idle Return Time':30,
-               'Flag Touch Return Time':3,
-               'Respawn Times':1.0,
-               'Score to Win':2,
-               'Time Limit':300,
-               'map':'Tip Top'
-            },
-            'type':'bsCaptureTheFlag.CTFGame'
-         },
-         {
-            'settings':{
-               'Balance Total Lives':False,
-               'Epic Mode':False,
-               'Lives Per Player':3,
-               'Respawn Times':1.0,
-               'Solo Mode':False,
-               'Time Limit':300,
-               'map':'Crag Castle'
-            },
-            'type':'bsElimination.EliminationGame'
-         },
-         {
-            'settings':{
-               'Epic Mode':True,
-               'Respawn Times':0.25,
-               'Time Limit':120,
-               'map':'Zigzag'
-            },
-            'type':'bsConquest.ConquestGame'
+            'type':'bsBasketball.BasketballTeamGame'
          }
       ]
 
 def _readConfig():
     global gConfigFileIsHealthy
     global _gConfig
-
+    
     configFilePath = bs.getEnvironment()['configFilePath']
     configContents = ''
-
+    
     try:
-
+        
         oldConfigPath = configFilePath[:-5]
         if os.path.exists(configFilePath):
             f = open(configFilePath,'rb')
@@ -1043,7 +867,7 @@ def _readConfig():
             f.close()
             _gConfig = json.loads(configContents.decode('utf-8',errors='ignore')) # supply unicode input to force unicode output
             # while we're here, if they have an old-style config, rename it so they know its old
-            if os.path.exists(oldConfigPath) and not os.path.exists(oldConfigPath+'.old'):
+            if os.path.exists(oldConfigPath):
                 try: os.rename(oldConfigPath,oldConfigPath+'.old')
                 except Exception,e: print 'unable to rename old non-json config:',e
         else:
@@ -1060,9 +884,9 @@ def _readConfig():
                 # no new file; no old file. start fresh
                 _gConfig = {}
         gConfigFileIsHealthy = True
-
+        
     except Exception,e:
-
+        
         print 'error reading config file at time '+str(bs.getRealTime())+': \''+configFilePath+'\':\n',e
         # whenever this happens lets back up the broken one just in case it gets overwritten accidentally
         print 'backing up current config file to \''+configFilePath+".broken\'"
@@ -1087,7 +911,7 @@ def _readConfig():
             print 'successfully read backup config.'
         except Exception,e:
             print 'EXC reading prev backup config:',e
-
+            
 
 def _prettifyList(l,indent=0,multiLine=True):
     bits = []
@@ -1150,12 +974,12 @@ gAllowingPackageMods = None
 gPackageModsAdded = set()
 
 def _getModulesWithCall(callName,whiteList=None,blackList=None):
-
+    
     # first off, see if we're allowing low-level mods if we havn't
     global gAllowingPackageMods
     if gAllowingPackageMods is None:
         gAllowingPackageMods = bsInternal._getSetting('Enable Package Mods')
-
+        
     haveMods = False
     env = bs.getEnvironment()
     scriptDirs = [env['systemScriptsDirectory'],env['userScriptsDirectory']]
@@ -1173,7 +997,7 @@ def _getModulesWithCall(callName,whiteList=None,blackList=None):
                 bs.printException('error listing dir during _getModulesWithCall(): \''+d+'\'')
                 dirlist = []
         else: dirlist = []
-
+        
         for name in dirlist:
             packageDir = d+'/'+name
             if os.path.isdir(packageDir) and name != 'sys':
@@ -1216,7 +1040,7 @@ def _getModulesWithCall(callName,whiteList=None,blackList=None):
 
                     # if there's a white-list, make sure this *is* on it
                     if (whiteList is None or moduleName in whiteList):
-
+                        
                         # avoid importing language modules here to save a bit of time/memory..
                         if (name.endswith('.py') and not name.startswith('bsLanguage')):
                             if name in namesImported:
@@ -1247,7 +1071,7 @@ def _getModulesWithCall(callName,whiteList=None,blackList=None):
                                         bs.screenMessage(txt,color=(1,0.5,0))
             except Exception:
                 bs.printException('Error importing game module \''+name+'\'')
-
+                
     bsInternal._setHaveMods(haveMods)
     return modules
 
@@ -1256,15 +1080,10 @@ def getGameTypes():
     allGames = []
     modules = _getModulesWithCall('bsGetGames')
     for module in modules:
-        #Bacon Changed Start
-        #Original:
-        # if ((module.__name__ != 'bsMeteorShower' or bsInternal._getPurchased('games.meteor_shower'))
-        #     and (module.__name__ != 'bsTargetPractice' or bsInternal._getPurchased('games.target_practice'))
-        #     and (module.__name__ != 'bsNinjaFight' or bsInternal._getPurchased('games.ninja_fight'))
-        #     and (module.__name__ != 'bsEasterEggHunt' or bsInternal._getPurchased('games.easter_egg_hunt'))):
-        #Original
-        if True:
-        #Bacon Changed End
+        if ((module.__name__ != 'bsMeteorShower' or bsInternal._getPurchased('games.meteor_shower'))
+            and (module.__name__ != 'bsTargetPractice' or bsInternal._getPurchased('games.target_practice'))
+            and (module.__name__ != 'bsNinjaFight' or bsInternal._getPurchased('games.ninja_fight'))
+            and (module.__name__ != 'bsEasterEggHunt' or bsInternal._getPurchased('games.easter_egg_hunt'))):
             allGames += module.bsGetGames()
     return allGames
 
@@ -1281,7 +1100,7 @@ def _getNextTip():
     t = gTips.pop()
     return t
 
-def _getAllTips():
+def _getAllTips(): #JRMP
     tips =  [
         'If you are short on controllers, install the \'${REMOTE_APP_NAME}\' app\non your mobile devices to use them as controllers.',
         'Create player profiles for yourself and your friends with\nyour preferred names and appearances instead of using random ones.',
@@ -1301,13 +1120,55 @@ def _getAllTips():
         'Don\'t get too cocky with that energy shield; you can still get yourself thrown off a cliff.',
         'Many things can be picked up and thrown, including other players.  Tossing\nyour enemies off cliffs can be an effective and emotionally fulfilling strategy.',
         'Ice bombs are not very powerful, but they freeze\nwhoever they hit, leaving them vulnerable to shattering.',
-        'Don\'t spin for too long; you\'ll become dizzy and fall.',
         'Run back and forth before throwing a bomb\nto \'whiplash\' it and throw it farther.',
         'Punches do more damage the faster your fists are moving,\nso try running, jumping, and spinning like crazy.',
         'In hockey, you\'ll maintain more speed if you turn gradually.',
         'The head is the most vulnerable area, so a sticky-bomb\nto the noggin usually means game-over.',
         'Hold down any button to run. You\'ll get places faster\nbut won\'t turn very well, so watch out for cliffs.',
         'You can judge when a bomb is going to explode based on the\ncolor of sparks from its fuse:  yellow..orange..red..BOOM.',
+        #Additional hints
+        'Try making your bombs explode on target\'s head for instant kills.',
+		'Don\'t spam your Punch button while having Boxing Gloves.\nTake your time. One hit is enough to stun someone.',
+		'Making arcs while running increases your speed.\nAfter that you can jump through most gaps!',
+		'Land Mines placed even in the most random places you can\nimagine can make some serious threat.',
+		'To get succesful in melee combat, try fooling your foe\nby grabbing them or hitting him in inpredictable intervals',
+		'Impact Bombs in the right hands can be one of the most\npowerful weapons. Just aim direct hits and you\'ll be fine!',
+		'Sticky Bombs can block passages for short amount of time.\nYou can use this while you\'re chased down.',
+		'No matter how far from the Ice Bomb explosion you are,\nthe slightest injury from it will freeze you.',
+		'Bombs are the lightest to throw, followed by players,\nTNT boxes and flags.',
+		'If you want to be sure you\'ll not fall while running,\ntry releasing the run button for a brief moment.',
+		'If you jump in a precise moment after landing, you\'ll jump higher!\nUse this to evade attacks or get to hard to reach places.',
+        'Ranger Bomb is great for taking out groups of foes.\nIt can save your last life in cooperative modes, like Runaround.',
+        'If you\'re cursed, avoid touching the Overdrive.\nIt\'ll combust you instantly, if you do.',
+        'Overdrive can double your health pool!\nUse it if you\'re going to take a lot of damage.',
+        'Energy Shield, unlike Overdrive, can protect you from stuns.\nEnergy Shield protects you more, but Overdrive will do that for longer.',
+        'Use your Ranger Bomb at the right time. Too late or too soon is a suicidal move.',
+        'To hit somebody with a Dynamite Pack, he or she has to stand in a very specific spot.\nThis weapon is best suited for tight paths and cornered enemies.',
+        'Combat Bombs are a great alternative for Impact Bombs. Just time the two-second fuse right and you\'re \ngoing to do more damage with one explosion than with Impact Bombs.',
+        'If a Dynamite Pack is coming your way, just stand diagonally, so you\'ll receive less damage... and survive!',
+        'If you can deal more than 90% of damage with fists in one hit, you\ll be rewarded.\nAfter that you can be proud of yourself.',
+        'If you forgot the website\'s URL of the Joyride Modpack,\ngo to Advanced Settings and look for Modpack Website button',
+        'If you can\'t time your throws right, don\'t use Ranger Bombs.\nThese are the most difficult bombs in the game to use.',
+        'Bomb types other than default are highly situational. After collecting a new bomb type, you have to know where it\'ll shine the most.\nOtherwise it\'s a downgrade to the normal bomb.',
+        'If you have a health boost from Overdrive, you can use Land Mines to quickly get to really high places.',
+        #Healing Bombs tips
+        'Remember that you can only throw one Healing Bomb.\nBefore you get it, plan ahead.',
+        'Healing Bombs don\'t appear in Free For All games.\nYou wouldn\'t want to heal enemies, right?.',
+        'Healing Bombs can thaw your teammates, fix damaged Energy Shields\nand remove bombs without detonating them.',
+        #Grenade tips
+        'Grenades are limited! You only have two of them, so don\'t waste them!',
+        'Use Grenades to quickly take out an Energy Shield wielding enemy.',
+        #JRMP Options tips
+        'In Options you can change JRMP specific features of the modpack.',
+        'If you memorised all the powerups, you can disable Powerup Popups in the JRMP Options menu'
+        #Bigger Blasts powerup tips
+        'Land Mines + Bigger Blasts = Instant Death Land Mines',
+        'Bigger Blasts powerup may seem useless, but every single\ninch of additional blast radius counts.',
+        'Hi-Jump + Blast Radius = Super Hi-Jump',
+        #Speed Boots tips
+        'Speed Boots make your bomb throws further, but less accurate.',
+        'Speed Boots last only 15 seconds and replaces Boxing Gloves.\nTake the powerup that will be the most valuable at that moment.',
+        'Speed Boots make your punches faster, but a little bit weaker.',
         ]
     ua = bs.getEnvironment()['userAgentString']
 
@@ -1322,7 +1183,7 @@ def _getAllTips():
 
     if bs.getEnvironment()['platform'] in ['mac','android']:
         tips += ['Tired of the soundtrack?  Replace it with your own!\nSee Settings->Audio->Soundtrack']
-
+        
         # auto-kick players applies to desktop and ouya
     # if bs.getEnvironment()['interfaceType'] == 'large' or 'OUYA' in ua:
     #     tips += [
@@ -1342,16 +1203,12 @@ def _getUnOwnedGameTypes():
         import bsUI
         import bsInternal
         unOwnedGames = set()
-        #Bacon Changed Start
-        #Original:
-        # if bs.getEnvironment()['subplatform'] != 'headless':
-        #     for section in bsUI._getStoreLayout()['minigames']:
-        #         for m in section['items']:
-        #             if not bsInternal._getPurchased(m):
-        #                 mInfo = bsUI._getStoreItem(m)
-        #                 unOwnedGames.add(mInfo['gameType'])
-        #Original
-        #Bacon Changed End
+        if bs.getEnvironment()['subplatform'] != 'headless':
+            for section in bsUI._getStoreLayout()['minigames']:
+                for m in section['items']:
+                    if not bsInternal._getPurchased(m):
+                        mInfo = bsUI._getStoreItem(m)
+                        unOwnedGames.add(mInfo['gameType'])
         return unOwnedGames
     except Exception:
         bs.printException("error calcing un-owned games")
@@ -1369,9 +1226,9 @@ def _filterPlaylist(playlist,sessionType,addResolvedType=False,removeUnOwned=Tru
     else:
         unOwnedMaps = []
         unOwnedGameTypes = []
-
+        
     #print 'got',unOwnedGameTypes
-
+    
     for i,gamespec in enumerate(copy.deepcopy(playlist)):
 
         # 'map' used to be called 'level'
@@ -1388,7 +1245,7 @@ def _filterPlaylist(playlist,sessionType,addResolvedType=False,removeUnOwned=Tru
 
         if removeUnOwned and gamespec['settings']['map'] in unOwnedMaps:
             continue
-
+        
         # ok, for each game in our list, try to import the module and grab the actual game class.
         # add successful ones to our initial list to present to the user
         if type(gamespec['type']) in [str,unicode]:
@@ -1415,12 +1272,12 @@ def _filterPlaylist(playlist,sessionType,addResolvedType=False,removeUnOwned=Tru
 
                 # skip this one completely if they want to strip un-owned stuff..
                 if removeUnOwned and gameClass in unOwnedGameTypes: continue
-
+                
                 if addResolvedType: gamespec['resolvedType'] = gameClass
 
                 if markUnOwned and gamespec['settings']['map'] in unOwnedMaps: gamespec['isUnOwnedMap'] = True
                 if markUnOwned and gameClass in unOwnedGameTypes: gamespec['isUnOwnedGame'] = True
-
+                    
                 # make sure all settings the game defines are present
                 neededSettings = gameClass.getSettings(sessionType)
                 for settingName,setting in neededSettings:
@@ -1516,17 +1373,17 @@ def writeConfig(force=False,storeRemote=True):
     #         print 'CONFIG DIFFERS AFTER JSON CONVERSION!!!'
     #     else:
     #         print 'CONFIG IS SAME; ALL GOOD'
-
+            
     bsInternal._markConfigDirty()
 
-
+    
 def _setLanguage(language,printChange=True,storeToConfig=True):
     """Set the language used by the game.  Pass None to use OS default."""
     global _gLanguageTarget
     global _gLanguageMerged
 
     bsConfig = bs.getConfig()
-
+    
     try: curLanguage = bsConfig['Lang']
     except Exception: curLanguage = None
 
@@ -1575,7 +1432,7 @@ def _setLanguage(language,printChange=True,storeToConfig=True):
     for value in ['replayNameDefaultText','replayWriteErrorText','replayVersionErrorText','replayReadErrorText']:
         internalVals.append((value,lFull[value]))
     internalVals.append(('axisText',lFull['configGamepadWindow']['axisText']))
-
+    
     #internalVals.append(('bombSquadProNameText',lFull['store']['bombSquadProNameText']))
     # internalVals.append(('replayNameDefaultText',lFull['replayNameDefaultText']))
     # internalVals.append(('replayWriteErrorText',lFull['replayWriteErrorText']))
@@ -1603,7 +1460,7 @@ def _doRemoveInGameAdsMessage():
                                               subs=[('${PRO}',bs.Lstr(resource='store.bombSquadProNameText')),
                                                     ('${APP_NAME}',bs.Lstr(resource='titleText'))]),
                                       color=(1,1,0)))
-
+    
 class AttrDict(dict):
     """ a dict that can be accessed with dot notation: foo.bar is equivalant to foo['bar']
         NOTE: accessing via attribute currently also currently translates from utf8 to unicode
@@ -1633,8 +1490,8 @@ def _canDisplayLanguage(lang):
         return False
     else:
         return True
-
-
+    
+    
 def _getDefaultLanguage():
     langs = { 'de':'German', 'es':'Spanish', 'it':'Italian', 'nl':'Dutch',
               'da':'Danish', 'pt':'Portuguese', 'fr':'French', 'ru':'Russian',
@@ -1660,8 +1517,8 @@ def getLanguage(returnNoneForDefault=False):
         language = _getDefaultLanguage()
 
     return language
-
-
+    
+        
 def getResource(resource, fallback=None):
     """
     category: General Utility Functions
@@ -1672,7 +1529,7 @@ def getResource(resource, fallback=None):
     """
     bs.printErrorOnce('deprecated - use bs.Lstr objects instead')
     return _getResource(resource,fallback)
-
+    
 def _getResource(resource, fallback=None):
     try:
         global _gLanguageTarget
@@ -1712,13 +1569,13 @@ def _getResource(resource, fallback=None):
                     val = values[key]
                     if uni and type(val) is str: val = val.decode('utf-8',errors='ignore')
                     return val
-
+                
                 except Exception:
                     # if we got nothing for fallback, default to the normal code which checks
                     # or primary value in the merge dict; there's a chance we can get an english
                     # value for it (which we weren't looking for the first time through)
                     pass
-
+                    
         values = _gLanguageMerged
         splits = resource.split('.')
         dicts = splits[:-1]
@@ -1747,7 +1604,7 @@ def translate(category,s,raiseExceptions=False,printErrors=False):
     """
     bs.printErrorOnce('deprecated - use bs.Lstr objects instead')
     return _translate(category,s,raiseExceptions,printErrors)
-
+    
 def _translate(category,s,raiseExceptions=False,printErrors=False):
     try: translated = _getResource('translations')[category][s]
     except Exception,e:
@@ -1765,7 +1622,7 @@ def resolveTypeName(typeName):
     moduleName,className = typeName.split('.')
     module = __import__(moduleName)
     return getattr(module,className)
-
+    
 def getPlayerColors():
     """ return user-selectable player colors """
     return _gPlayerColors
@@ -1811,7 +1668,7 @@ def animate(node,attr,keys,loop=False,offset=0,driver='gameTime'):
 def animateArray(node,attr,size,keys,loop=False,offset=0,driver='gameTime'):
     """
     category: Game Flow Functions
-
+    
     Like bsUtils.animate(), but operates on array attributes.
     """
     combine = bs.newNode('combine',owner=node,attrs={'size':size})
@@ -1853,7 +1710,7 @@ class MusicPlayer(object):
 
     def selectEntry(self,callback,currentEntry,selectionTargetName):
         return self.onSelectEntry(callback,currentEntry,selectionTargetName)
-
+        
     def setVolume(self,volume):
         oldVolume = self._volume
         self._volume = volume
@@ -1870,7 +1727,7 @@ class MusicPlayer(object):
             if self._actuallyPlaying and (self._entryToPlay is None or self._volume <= 0.0):
                 self.onStop()
                 self._actuallyPlaying = False
-
+                
     def play(self,entry):
         if not self._haveSetInitialVolume:
             self._volume = bsInternal._getSetting('Music Volume')
@@ -1889,12 +1746,12 @@ class MusicPlayer(object):
 
     def shutdown(self):
         self.onShutdown()
-
+        
     # subclasses should override the following:
     def onSelectEntry(self,callback,currentEntry,selectionTargetName):
         'should present a GUI to select an entry; callback should be called with an entry or None for default'
         pass
-
+    
     def onSetVolume(self,volume):
         'Called when the volume should be changed'
         pass
@@ -1927,11 +1784,11 @@ if bs.getEnvironment()['platform'] == 'android':
             MusicPlayer.__init__(self)
             self._wantToPlay = False
             self._actuallyPlaying = False
-
+            
         def onSelectEntry(self,callback,currentEntry,selectionTargetName):
             import bsUI
             return bsUI.GetSoundtrackEntryTypeWindow(callback,currentEntry,selectionTargetName)
-
+            
         def onSetVolume(self,volume):
             bsInternal._musicPlayerSetVolume(volume);
 
@@ -1957,7 +1814,7 @@ if bs.getEnvironment()['platform'] == 'android':
                     try: errStr = unicode(e)
                     except Exception: errStr = '<ENCERR4523>'
                     bs.callInGameThread(bs.Call(self._callback,result=self._path,error=errStr))
-
+            
         def onPlay(self,entry):
             entryType = _getSoundtrackEntryType(entry)
             name = _getSoundtrackEntryName(entry)
@@ -1984,7 +1841,7 @@ if bs.getEnvironment()['platform'] == 'android':
             else:
                 self._actuallyPlaying = True
                 bsInternal._musicPlayerPlay(result)
-
+        
         def onStop(self):
             self._wantToPlay = False
             self._actuallyPlaying = False
@@ -2010,7 +1867,7 @@ elif bs.getEnvironment()['platform'] == 'mac' and hasattr(bsInternal,'_iTunesIni
             #import LaunchServices as ls
 
             bsInternal._setThreadName("BS_ITunesThread")
-
+            
             # iTunes seems to be locking up sometimes when bombsquad quits.
             # I'm guessing it might be related to the scripting bridge app going down
             # when this thread dies.
@@ -2215,7 +2072,7 @@ def getMusicPlayer():
 def _musicVolumeChanged(val):
     if _gMusicPlayer is not None:
         _gMusicPlayer.setVolume(val)
-
+        
 gMusicMode = 'regular'
 gMusicTypes = {'regular':None,'test':None}
 
@@ -2239,7 +2096,7 @@ def _isSoundtrackEntryTypeSupported(entryType):
         return True if ('android' in ua and bsInternal._androidGetExternalStoragePath() is not None) else False
     elif entryType == 'default':
         return True
-
+        
 def _getSoundtrackEntryType(entry):
     'Given a soundtrack entry, returns its type, taking into account what is supported locally.'
     try:
@@ -2248,7 +2105,7 @@ def _getSoundtrackEntryType(entry):
         elif type(entry) in (str,unicode): entryType = u'iTunesPlaylist'
         # for other entries we expect type and name strings in a dict
         elif (type(entry) is dict
-              and 'type' in entry and type(entry['type']) in (str,unicode)
+              and 'type' in entry and type(entry['type']) in (str,unicode) 
               and 'name' in entry and type(entry['name']) in (str,unicode)): entryType = entry['type']
         # elif (type(entry) is dict
         #       and 'type' in entry and type(entry['type']) in [str,unicode]
@@ -2269,7 +2126,7 @@ def _getSoundtrackEntryName(entry):
         elif type(entry) is str: return entry
         # for other entries we expect type and name strings in a dict
         elif (type(entry) is dict
-              and 'type' in entry and type(entry['type']) in (str,unicode)
+              and 'type' in entry and type(entry['type']) in (str,unicode) 
               and 'name' in entry and type(entry['name']) in (str,unicode)): return entry['name']
         # new ones are unicode, so support that too.. (due to storing in json now; oops)
         # elif (type(entry) is dict
@@ -2285,7 +2142,7 @@ def playMusic(musicType,continuous=False):
     category: Game Flow Functions
 
     A high level function to set or stop the current music based on a string musicType.
-
+    
     Current valid values for 'musicType': 'Menu', 'Victory', 'CharSelect', 'RunAway', 'Onslaught',
     'Keep Away', 'Race', 'Epic Race', 'Scores', 'GrandRomp', 'ToTheDeath', 'Chosen One', 'ForwardMarch',
     'FlagCatcher', 'Survival', 'Epic', 'Sports', 'Hockey', 'Football', 'Flying', 'Scary', 'Marching'.
@@ -2303,21 +2160,21 @@ def playMusic(musicType,continuous=False):
     # node; the foreground globals' current playing music then gets fed to
     # the _playMusic call below.. this way we can seamlessly support custom soundtracks
     # in replays/etc since we're replaying an attr value set; not an actual sound node create
-
+    
     g = bs.getSharedObject('globals')
     g.musicContinuous = continuous
     g.music = '' if musicType is None else musicType
     g.musicCount += 1
-
-
+    
+    
 def _playMusic(musicType,continuous=False,mode='regular',testSoundtrack=None):
     "Actually plays the requested music type/mode"
-
+    
     with bs.Context('UI'):
 
         # if they dont want to restart music and we're already playing what's requested, we're done
         if continuous and gMusicTypes[mode] == musicType: return
-
+        
         gMusicTypes[mode] = musicType
 
         bsConfig = bs.getConfig()
@@ -2362,9 +2219,6 @@ def _playMusic(musicType,continuous=False,mode='regular',testSoundtrack=None):
                     filename = 'victoryMusic'
                     volume = 6.0
                     loop = False
-                elif musicType == 'CharSelect':
-                    filename = 'charSelectMusic'
-                    volume = 2.0
                 elif musicType == 'RunAway':
                     filename = 'runAwayMusic'
                     volume = 6.0
@@ -2389,22 +2243,43 @@ def _playMusic(musicType,continuous=False,mode='regular',testSoundtrack=None):
                     volume = 6.0
                 elif musicType == 'ToTheDeath':
                     filename = 'toTheDeathMusic'
+                    volume = 4.0
+                # NIGHTMARE
+                elif musicType == 'Nightmare':
+                    filename = 'nightmareMusic'
+                    volume = 10.0
+                elif musicType == 'Nightmare Defeat':
+                    filename = 'nightmareDefeat'
+                    volume = 10.0
+                    loop = False
+                elif musicType == 'Nightmare Victory':
+                    filename = 'nightmareVictory'
                     volume = 6.0
+                    loop = False
+                # MARATHON
+                elif musicType == 'Marathon':
+                    filename = 'marathonMusic'
+                    volume = 10.0
+                elif musicType == 'Marathon Victory':
+                    filename = 'marathonVictory'
+                    volume = 5.0
+                    loop = False
+                elif musicType == 'Marathon Defeat':
+                    filename = 'marathonDefeat'
+                    volume = 8.0
+                    loop = False    
                 elif musicType == 'Chosen One':
                     filename = 'survivalMusic'
                     volume = 4.0
                 elif musicType == 'ForwardMarch':
                     filename = 'forwardMarchMusic'
                     volume = 4.0
-                elif musicType == 'FlagCatcher':
-                    filename = 'flagCatcherMusic'
-                    volume = 6.0
                 elif musicType == 'Survival':
                     filename = 'survivalMusic'
-                    volume = 4.0
+                    volume = 6.0
                 elif musicType == 'Epic':
                     filename = 'slowEpicMusic'
-                    volume = 6.0
+                    volume = 8.0
                 elif musicType == 'Sports':
                     filename = 'sportsMusic'
                     volume = 4.0
@@ -2423,9 +2298,47 @@ def _playMusic(musicType,continuous=False,mode='regular',testSoundtrack=None):
                 elif musicType == 'Marching':
                     filename = 'whenJohnnyComesMarchingHomeMusic'
                     volume = 4.0
+                elif musicType == 'Toilet':
+                    filename = 'toiletMusic'
+                    volume = 5.0
+                elif musicType == 'Practice':
+                    filename = 'practiceMusic'
+                    volume = 6.0
+                elif musicType == 'Where Eagles Dare':
+                    filename = 'eaglesMusic'
+                    volume = 7.0
+                elif musicType == 'Last Stand':
+                    filename = 'lastStandMusic'
+                    volume = 7.0
+                #CTF Music
+                elif musicType == 'FlagCatcher':
+                    filename = 'flagCatcherMusic'
+                    volume = 6.0
+                elif musicType == 'FlagDropper':
+                    filename = 'flagDropperMusic'
+                    volume = 5.0
+                elif musicType == 'FlagSlip':
+                    filename = 'flagSlipMusic'
+                    volume = 6.0
+                elif musicType == 'FlagBomber':
+                    filename = 'flagBomberMusic'
+                    volume = 5.0
+                elif musicType == 'FlagRunner':
+                    filename = 'flagRunnerMusic'
+                    volume = 6.0
+                #Char Select Music
+                elif musicType == 'CharSelectCOOP':
+                    filename = 'charSelectCOOPMusic'
+                    volume = 10.0
+                elif musicType == 'CharSelectFFA':
+                    filename = 'charSelectFFAMusic'
+                    volume = 3.0
+                elif musicType == 'CharSelectTEAMS':
+                    filename = 'charSelectTEAMSMusic'
+                    volume = 3.0
                 else:
                     print "Unknown music: '"+musicType+"'"
-                    filename = 'flagCatcherMusic'
+                    filename = 'toiletMusic'
                     volume = 6.0
 
             # stop any existing music-player playback
@@ -2457,7 +2370,7 @@ class Spawner(object):
     Creates a light flash and sends a bs.Spawner.SpawnMessage
     to the current activity after a delay.
     """
-
+    
     class SpawnMessage(object):
         """
         category: Message Classes
@@ -2485,7 +2398,7 @@ class Spawner(object):
 
     # def __del__(self):
     #     print '~Spawner()'
-
+        
     def __init__(self,data=None,pt=(0,0,0),spawnTime=1000,sendSpawnMessage=True,spawnCallback=None):
         """
         Instantiate a spawner given some custom data,
@@ -2522,7 +2435,7 @@ class Spawner(object):
 
         if self._spawnCallback is not None:
             self._spawnCallback()
-
+            
         if self._sendSpawnMessage:
             # only run if our activity still exists
             activity = bs.getActivity()
@@ -2549,16 +2462,16 @@ def getPlayerProfileIcon(profileName):
     else:
         icon = ''
     return bs.uni(icon)
-
+    
 def getPlayerProfileColors(profileName,profiles=None):
     """ given a profile, returns colors for them """
     bsConfig = bs.getConfig()
     if profiles is None: profiles = bsConfig['Player Profiles']
-
+    
     try: color = profiles[profileName]['color']
     except Exception:
         # key off name if possible
-        if profileName is None:
+        if profileName is None: 
             color = _gPlayerColors[random.randrange(6)] # first 6 are bright-ish
         else:
             color = _gPlayerColors[sum([ord(c) for c in profileName]) % 6] # first 6 are bright-ish
@@ -2566,7 +2479,7 @@ def getPlayerProfileColors(profileName,profiles=None):
     try: highlight = profiles[profileName]['highlight']
     except Exception:
         # key off name if possible
-        if profileName is None:
+        if profileName is None: 
             highlight = _gPlayerColors[random.randrange(len(_gPlayerColors)-2)] # last 2 are grey and white; ignore those or we get lots of old-looking people
         else:
             highlight = _gPlayerColors[sum([ord(c)+1 for c in profileName]) % (len(_gPlayerColors)-2)]
@@ -2576,7 +2489,7 @@ def getPlayerProfileColors(profileName,profiles=None):
 def getTimeString(t,centi=True):
     """
     category: General Utility Functions
-
+    
     Given a value in milliseconds, returns a Lstr with (hours if > 0):minutes:seconds:centiseconds.
     WARNING: this Lstr value is somewhat large so don't use this to repeatedly update node values in a timer/etc.
     for that purpose you should use timeDisplay nodes and attribute connections.
@@ -2592,7 +2505,7 @@ def getTimeString(t,centi=True):
     if m != 0:
         bits.append('${M}')
         subs.append(('${M}',bs.Lstr(resource='timeSuffixMinutesText',subs=[('${COUNT}',str(m))])))
-
+        
     # we add seconds if its non-zero *or* we havn't added anything else
     if centi:
         s = (t/1000.0 % 60.0)
@@ -2605,9 +2518,9 @@ def getTimeString(t,centi=True):
             bits.append('${S}')
             subs.append(('${S}',bs.Lstr(resource='timeSuffixSecondsText',subs=[('${COUNT}',str(s))])))
     return bs.Lstr(value=' '.join(bits),subs=subs)
-
-
-
+    
+    
+    
 def showDamageCount(damage,position,direction):
     lifespan = 1000
     env = bs.getEnvironment()
@@ -2641,7 +2554,7 @@ def showDamageCount(damage,position,direction):
     #ccombine = bs.newNode("combine",owner=t,attrs={'input0':1.0,'input1':0.4,'input2':0.4})
 
     animate(t,'opacity',{0.7*lifespan:1.0,lifespan:0.0})
-
+    
     #ccombine.connectAttr('output',t,'color')
     #animate(ccombine,"input3",{0.7*lifespan:1.0,lifespan:0.0})
     bs.gameTimer(lifespan,t.delete)
@@ -2650,13 +2563,13 @@ def getLastPlayerNameFromInputDevice(device):
     'Returns a reasonable player name associated with a device (generally the last one used there)'
 
     bsConfig = bs.getConfig()
-
+    
     # look for a default player profile name for them.. otherwise default to their current random name
     profileName = '_random'
     keyName = device.getName()+' '+device.getUniqueIdentifier()
     if 'Default Player Profiles' in bsConfig and keyName in bsConfig['Default Player Profiles']:
         profileName = bsConfig['Default Player Profiles'][keyName]
-
+        
     if profileName == '_random': profileName = device._getDefaultPlayerName()
 
     if profileName == '__account__': profileName = bsInternal._getAccountDisplayString()
@@ -2697,14 +2610,14 @@ def printRefs(obj):
         #if type(ref) is types.FrameType: continue
         print '     ref',i,':',ref
         i += 1
-
-
+    
+    
 def printLiveObjectWarnings(when,ignoreSession=None,ignoreActivity=None):
     sessions = []
     activities = []
     actors = []
     global _gPrintedLiveObjectWarning
-
+    
     if _gPrintedLiveObjectWarning:
         # print 'skipping live object check due to previous found live object(s)'
         return
@@ -2817,9 +2730,9 @@ def _setNodeOwner(node,owner):
             gNodeOwnerWeakRefsCleanCounter = 0
 
 class ServerCallThread(threading.Thread):
-
+        
     def __init__(self,request,requestType,data,callback):
-
+        
         threading.Thread.__init__(self)
         self._request = request
         self._requestType = requestType
@@ -2831,16 +2744,16 @@ class ServerCallThread(threading.Thread):
         # save and restore the context we were created from
         activity = bs.getActivity(exceptionOnNone=False)
         self._activity = weakref.ref(activity) if activity is not None else None
-
+        
     def _runCallback(self,arg):
-
+        
         # if we were created in an activity context and that activity has since died, do nothing
         # (hmm should we be using a context-call instead of doing this manually?)
         if self._activity is not None and (self._activity() is None or self._activity().isFinalized()): return
-
+        
         # (technically we could do the same check for session contexts, but not gonna worry about it for now)
         with self._context: self._callback(arg)
-
+        
     def run(self):
         try:
             self._data = toUTF8(self._data)
@@ -2888,11 +2801,11 @@ def runMediaReloadBenchmark():
     # ewww fixme; adding a ~1 frame delay here so our clean frame callback doesnt get called before
     # the reload starts (should add a completion callback to the reload func to fix this)
     bs.realTimer(50,bs.Call(delayAdd,bs.getRealTime()))
-
+    
 def _printCorruptFileError():
     bs.realTimer(2000,bs.Call(bs.screenMessage,_getResource('internal.corruptFileText').replace('${EMAIL}','support@froemling.net'),color=(1,0,0)))
     bs.realTimer(2000,bs.Call(bs.playSound,bs.getSound('error')))
-
+    
 def runCPUBenchmark():
     import bsTutorial
     class BenchmarkSession(bs.Session):
@@ -2903,23 +2816,23 @@ def runCPUBenchmark():
             self._oldQuality = bsInternal._getSetting('Graphics Quality')
             bs.getConfig()['Graphics Quality'] = "Low"
             bs.applySettings()
-
+            
             self.benchmarkType = 'cpu'
             self.setActivity(bs.newActivity(bsTutorial.TutorialActivity))
 
-
+            
         def __del__(self):
-
+            
             # when we're torn down, restore old graphics settings
             bs.getConfig()['Graphics Quality'] = self._oldQuality
             bs.applySettings()
 
-
+            
         def onPlayerRequest(self,player):
             return False
     bsInternal._newHostSession(BenchmarkSession,benchmarkType='cpu')
 
-
+    
 def runStressTest(playlistType='Random',playlistName='__default__',playerCount=8,roundDuration=30):
     bs.screenMessage('Beginning stress test.. use \'End Game\' to stop testing.',color=(1,1,0))
     with bs.Context('UI'):
@@ -2986,13 +2899,13 @@ class ControlsHelpOverlay(bsGame.Actor):
                 too bright for join-screens, etc.
         """
         bsGame.Actor.__init__(self)
-
+        
         showTitle = True
-
+        
         scale *= 0.75
-
+        
         imageSize = 90.0*scale
-
+        
         offs = 74.0*scale
         offs5 = 43.0*scale
         ouya = bsInternal._isRunningOnOuya()
@@ -3003,7 +2916,7 @@ class ControlsHelpOverlay(bsGame.Actor):
         self._lifespan = lifespan
         self._dead = False
         self._bright = bright
-
+        
         if showTitle:
             self._titleTextPosTop = (position[0],position[1]+139.0*scale)
             self._titleTextPosBottom = (position[0],position[1]+139.0*scale)
@@ -3055,8 +2968,8 @@ class ControlsHelpOverlay(bsGame.Actor):
         self._pickUpText = bs.newNode('text',
                                       attrs={'vAlign':'top','hAlign':'center','scale':1.5*scale,'flatness':1.0,'hostOnly':True,
                                              'shadow':1.0, 'maxWidth':mw,'position':(p[0],p[1]-offs5),'color':c})
-
-
+        
+        
         c = (0.9,0.9,2.0) if bright else (0.8,0.8,2.0,1.0)
         self._runTextPosTop = (position[0],position[1] - 135.0*scale)
         self._runTextPosBottom = (position[0],position[1] - 172.0*scale)
@@ -3078,7 +2991,7 @@ class ControlsHelpOverlay(bsGame.Actor):
                                             'maxWidth':380,
                                             'vAlign':'top','hAlign':'center',
                                             'color':c})
-
+        
         self._nodes = [self._bombImage,self._bombText,
                        self._punchImage,self._punchText,
                        self._jumpImage,self._jumpText,
@@ -3097,21 +3010,21 @@ class ControlsHelpOverlay(bsGame.Actor):
 
         # ok, our delay has passed.. now lets periodically see if we can fade in
         # (if a touch-screen is present we only want to show up if gamepads are connected, etc)
-
+        
         # also set up a timer so if we havnt faded in by the end of our duration, abort.
         if self._lifespan is not None:
             self._cancelTimer = bs.Timer(self._lifespan,bs.WeakCall(self.handleMessage,bs.DieMessage(immediate=True)))
-
+        
         self._fadeInTimer = bs.Timer(1000,bs.WeakCall(self._checkFadeIn),repeat=True)
         self._checkFadeIn() # do one check immediately
 
     def _checkFadeIn(self):
         import bsUI
-
-        # if we have a touchscreen, we only fade in if we have a player with
+        
+        # if we have a touchscreen, we only fade in if we have a player with 
         # an input device that is *not* the touchscreen
         touchscreen = bsInternal._getInputDevice('TouchScreen','#1',exceptionOnNone=False)
-
+        
         if touchscreen is not None:
             # we look at the session's players; not the activity's - we want to get ones
             # who are still in the process of selecting a character, etc.
@@ -3137,23 +3050,23 @@ class ControlsHelpOverlay(bsGame.Actor):
             self._fadeInTimer = None # done with this
             self._fadeIn()
 
-
+        
     def _fadeIn(self):
         for n in self._nodes:
             bs.animate(n,'opacity',{0:0.0,2000:1.0})
-
+                
         # if we were given a lifespan, transition out after it..
         if self._lifespan is not None:
             bs.gameTimer(self._lifespan,bs.WeakCall(self.handleMessage,bs.DieMessage()))
 
         self._update()
         self._updateTimer = bs.Timer(1000,bs.WeakCall(self._update),repeat=True)
-
+        
     def _update(self):
         import bsUI
 
         if self._dead: return
-
+        
         punchButtonNames = set()
         jumpButtonNames = set()
         pickUpButtonNames = set()
@@ -3168,20 +3081,20 @@ class ControlsHelpOverlay(bsGame.Actor):
         if len(inputDevices) == 0:
             kb = bsInternal._getInputDevice('Keyboard','#1',exceptionOnNone=False)
             if kb is not None: inputDevices.append(kb)
-
+        
         # we word things specially if we have nothing but keyboards..
         allKeyboards = (len(inputDevices) > 0
                         and all(i.getName() == 'Keyboard' for i in inputDevices))
 
         onlyRemote = (len(inputDevices) == 1
                         and all(i.getName() == 'Amazon Fire TV Remote' for i in inputDevices))
-
+        
         if allKeyboards:
             rightButtonNames = set()
             leftButtonNames = set()
             upButtonNames = set()
             downButtonNames = set()
-
+            
         # for each player in the game with an input device,
         # get the name of the button for each of these 4 actions.
         # if any of them are uniform across all devices, display the name
@@ -3223,10 +3136,10 @@ class ControlsHelpOverlay(bsGame.Actor):
                     jumpButtonNames.add('A')
                     bombButtonNames.add('B')
                     pickUpButtonNames.add('Y')
-
+            
         runText = bs.Lstr(value='${R}: ${B}',subs=[('${R}',bs.Lstr(resource='runText')),
                                                    ('${B}',bs.Lstr(resource='holdAnyKeyText' if allKeyboards else 'holdAnyButtonText'))])
-
+        
         # if we're all keyboards, lets show move keys too
         if (allKeyboards and len(upButtonNames) == 1 and len(downButtonNames) == 1
             and len(leftButtonNames) == 1 and len(rightButtonNames) == 1):
@@ -3237,14 +3150,14 @@ class ControlsHelpOverlay(bsGame.Actor):
             runText = bs.Lstr(value='${M}: ${U}, ${L}, ${D}, ${R}\n${RUN}',subs=[
                 ('${M}',bs.Lstr(resource='moveText')),('${U}',upText),('${L}',leftText),('${D}',downText),
                 ('${R}',rightText),('${RUN}',runText)])
-
+            
         self._runText.text = runText
 
         if onlyRemote and self._lifespan is None:
             wText = bs.Lstr(resource='fireTVRemoteWarningText',subs=[('${REMOTE_APP_NAME}',_getRemoteAppName())])
         else:
             wText = ''
-
+        
         self._extraText.text = wText
 
         if len(punchButtonNames) == 1: self._punchText.text = list(punchButtonNames)[0]
@@ -3253,14 +3166,14 @@ class ControlsHelpOverlay(bsGame.Actor):
         if len(jumpButtonNames) == 1: t = list(jumpButtonNames)[0]
         else: t = ''
         self._jumpText.text = t
-
+        
         if t == '':
             self._runText.position = self._runTextPosTop
             self._extraText.position = (self._runTextPosTop[0],self._runTextPosTop[1]-50)
         else:
             self._runText.position = self._runTextPosBottom
             self._extraText.position = (self._runTextPosBottom[0],self._runTextPosBottom[1]-50)
-
+            
         if len(bombButtonNames) == 1: self._bombText.text = list(bombButtonNames)[0]
         else: self._bombText.text = ''
 
@@ -3272,7 +3185,7 @@ class ControlsHelpOverlay(bsGame.Actor):
         else:
             self._pickUpText.text = ''
             if self._titleText is not None: self._titleText.position = self._titleTextPosBottom
-
+        
 
     def _die(self):
         for node in self._nodes: node.delete()
@@ -3282,7 +3195,7 @@ class ControlsHelpOverlay(bsGame.Actor):
 
     def exists(self):
         return not self._dead
-
+    
     def handleMessage(self,m):
         self._handleMessageSanityCheck()
         if isinstance(m,bs.DieMessage):
@@ -3293,7 +3206,7 @@ class ControlsHelpOverlay(bsGame.Actor):
                 for node in self._nodes:
                     bs.animate(node,'opacity',{0:node.opacity,3000:0.0})
                 bs.gameTimer(3100,bs.WeakCall(self._die))
-
+                
         else: bsGame.Actor.handleMessage(self,m)
 
 class Background(bsGame.Actor):
@@ -3401,8 +3314,8 @@ class Background(bsGame.Actor):
                 #     keys[time] = (random.random()-0.5)*0.0015 + 0.05
                 #     time += random.random() * 100
                 # animate(c,"input1",keys,loop=True)
-
-
+                
+                
 
     def __del__(self):
         # normal actors don't get sent DieMessages when their
@@ -3411,7 +3324,7 @@ class Background(bsGame.Actor):
         # otherwise
         self._die()
         bs.Actor.__del__(self)
-
+        
     def _die(self,immediate=False):
         session = self._session()
         if session is None and self.node.exists():
@@ -3428,7 +3341,7 @@ class Background(bsGame.Actor):
                     else:
                         animate(self.node,"opacity",{0:1, self.fadeTime:0},loop=False)
                         bs.gameTimer(self.fadeTime+100,self.node.delete)
-
+        
     def handleMessage(self,m):
         self._handleMessageSanityCheck()
         if isinstance(m,bs.DieMessage):
@@ -3558,7 +3471,7 @@ class Image(bsGame.Actor):
             tint2Color = None
             tintTexture = None
             maskTexture = None
-
+        
 
         self.node = bs.newNode('image',
                                attrs={'texture':texture,
@@ -3660,7 +3573,7 @@ class PopupText(bsGame.Actor):
         bs.Actor.__init__(self)
 
         if len(color) == 3: color = (color[0],color[1],color[2],1.0)
-
+        
         pos = (position[0]+offset[0]+randomOffset*(0.5-random.random()),
                position[1]+offset[0]+randomOffset*(0.5-random.random()),
                position[2]+offset[0]+randomOffset*(0.5-random.random()))
@@ -3694,18 +3607,18 @@ class PopupText(bsGame.Actor):
                                         0.7*lifespan:color[3],lifespan:0})
         self._combine.connectAttr('output',self.node,'color')
 
-        # kill ourself
+        # kill ourself 
         self._dieTimer = bs.Timer(int(lifespan),bs.WeakCall(self.handleMessage,bs.DieMessage()))
 
     def handleMessage(self,m):
         self._handleMessageSanityCheck()
         if isinstance(m,bs.DieMessage): self.node.delete()
         else: bs.Actor.handleMessage(self,m)
-
+            
 
 class TipsText(bsGame.Actor):
     """ a bit of text that shows various messages; good for helpful-tips kinda things """
-
+    
     def __init__(self,offsY=100):
         bs.Actor.__init__(self)
         self._tipScale = 0.8
@@ -3787,7 +3700,7 @@ class OnScreenCountdown(bsGame.Actor):
                                  3:bs.getSound('announceThree'),
                                  2:bs.getSound('announceTwo'),
                                  1:bs.getSound('announceOne')}
-
+        
     def start(self):
         'Starts the timer.'
 
@@ -3800,7 +3713,7 @@ class OnScreenCountdown(bsGame.Actor):
         bs.Actor.onFinalize(self)
         # release callbacks/refs
         self._endCall = None
-
+        
     def _update(self,forceValue=None):
         if forceValue is not None: t = forceValue
         else:
@@ -3818,10 +3731,10 @@ class OnScreenCountdown(bsGame.Actor):
             c.input3 = 1.0
         if t <= 10 and not self._ended:
             bs.playSound(bs.getSound('tick'))
-
+        
         if t in self._countDownSounds:
             bs.playSound(self._countDownSounds[t])
-
+            
         if t <= 0 and not self._ended:
             self._ended = True
             if self._endCall is not None: self._endCall()
@@ -3842,15 +3755,15 @@ class OnScreenTimer(bsGame.Actor):
                                       'position':(0,-70),'scale':1.4,'text':''})
         self.inputNode = bs.newNode('timeDisplay',attrs={'timeMin':0,'showSubSeconds':True})
         self.inputNode.connectAttr('output',self.node,'text')
-
+        
     def start(self):
         'Starts the timer.'
         self._startTime = bs.getGameTime()
         bs.getSharedObject('globals').connectAttr('gameTime',self.inputNode,'time2')
-
+        
     def hasStarted(self):
         return False if self._startTime is None else True
-
+    
     def stop(self,endTime=None):
         "Ends the timer. If 'endTime' is not None, it is used when calculating the final display time; otherwise the current time is used"
         if endTime is None: endTime = bs.getGameTime()
@@ -3859,21 +3772,21 @@ class OnScreenTimer(bsGame.Actor):
         else:
             self.inputNode.timeMax = endTime-self._startTime
             # self._update(forceValue=endTime-self._startTime)
-
+        
     def getStartTime(self):
         'Returns the game-time when start() was called'
         if self._startTime is None:
             print 'WARNING: getStartTime() called on un-started timer'
             return bs.getGameTime()
         return self._startTime
-
+    
     def handleMessage(self,m):
         # if we're asked to die, just kill our node/timer
         if isinstance(m,bs.DieMessage):
             self._timer = None
             self.node.delete()
 
-
+            
 class ZoomText(bsGame.Actor):
     """
     category: Game Flow Classes
@@ -3911,7 +3824,7 @@ class ZoomText(bsGame.Actor):
         # we never jitter in vr mode..
         if bs.getEnvironment()['vrMode']:
             jitter = 0.0
-
+            
         # if they want jitter, animate its position slightly...
         if jitter > 0.0:
             self._jitter(positionAdjusted,jitter*scale)
@@ -3923,7 +3836,7 @@ class ZoomText(bsGame.Actor):
             if jitter > 0.0:
                 bs.gameTimer(shiftDelay+250,bs.WeakCall(self._jitter,positionAdjusted2,jitter*scale))
                 #bs.gameTimer(shiftDelay+250,(self._jitter,(positionAdjusted2,jitter)))
-
+         
 
         colorCombine = bs.newNode('combine',
                                   owner=self.node,
@@ -3958,7 +3871,7 @@ class ZoomText(bsGame.Actor):
             colorCombine.input0 = color[0]
             colorCombine.input1 = color[1]
         colorCombine.connectAttr('output',self.node,'color')
-
+            
         # animate(self.node,'projectScale',{0:0, 270:1.05, 300:1})
         animate(self.node,'projectScale',{0:0, 270:1.05*projectScale, 300:1*projectScale})
 
@@ -4014,17 +3927,17 @@ def _showAd(purpose, onCompletionCall=None, passActuallyShowed=False):
     global _gLastAdPurpose
     _gLastAdPurpose = purpose
     bsInternal._showAd(purpose,onCompletionCall,passActuallyShowed)
-
+    
 def _callAfterAd(c):
-
+    
     show = True
     if not bsInternal._canShowAd(): show = False # no ads with net-connections, etc..
     if _havePro(): show = False # pro disables interstitials
-
+    
     try: isTournament = (bsInternal._getForegroundHostSession()._tournamentID is not None)
     except Exception: isTournament = False
     if isTournament: show = False # never show ads during tournaments
-
+    
     if show:
         try: launchCount = bs.getConfig()['launchCount']
         except Exception: launchCount = 0
@@ -4033,14 +3946,14 @@ def _callAfterAd(c):
         # global _lastAdShort
         global _attemptedFirstAd
 
-        # on our first attempt, set last-times to
+        # on our first attempt, set last-times to 
         # if _lastAdCompletionTime is None:
         #     _lastAdCompletionTime = bs.getRealTime()
         #     _lastAdShort = False
 
         # if we're seeing short ads we may want to space them differently..
         intervalMult = bsInternal._getAccountMiscReadVal('ads.shortIntervalMult',1.0) if _lastAdShort else 1.0
-
+        
         if _gAdAmt is None:
             if launchCount <= 1:
                 _gAdAmt = bsInternal._getAccountMiscReadVal('ads.startVal1',0.99)
@@ -4074,18 +3987,18 @@ def _callAfterAd(c):
         else:
             # print 'HAS BEEN',bs.getRealTime() - _lastAdCompletionTime,'which is LESS THAN',(interval * 1000)
             show = False
-
+            
         _firstAdAttempt = False
 
     # if we're *still* cleared to show, actually tell the system to show..
     # print 'TEMP ALWAYS SHOWING AD'
     # show = True
-
+    
     if show:
         # as a safety-check, set up an object that will run
         # the completion callback if we've returned and sat for 10 seconds
         # (in case some random ad network doesn't properly deliver its completion callback)
-
+        
         class _Payload(object):
             def __init__(self,call):
                 self._call = call
@@ -4097,13 +4010,13 @@ def _callAfterAd(c):
                                +' (set '+str(int(time.time()-_gLastAdNetworkSetTime))+'s ago); purpose='+_gLastAdPurpose)
                     bs.pushCall(self._call)
                     self._ran = True
-
+        
         p = _Payload(c)
         with bs.Context('UI'):
             bs.realTimer(5000,lambda: p.run(fallback=True))
-
+            
         _showAd('between_game',onCompletionCall=p.run)
-
+        
     else: bs.pushCall(c) # just run the callback without the ad
 
 _gLastAdNetwork = 'unknown'
@@ -4111,14 +4024,9 @@ _gLastAdNetworkSetTime = time.time()
 
 def _havePro():
     # check our tickets-based pro upgrade and our two real-IAP based upgrades
-    # Bacon Changed Start
-    # Original:
-    # return (bsInternal._getPurchased('upgrades.pro')
-    #         or bsInternal._getPurchased('static.pro')
-    #         or bsInternal._getPurchased('static.pro_sale'))
-    # Original
-    return True
-    # Bacon Changed End
+    return (bsInternal._getPurchased('upgrades.pro')
+            or bsInternal._getPurchased('static.pro')
+            or bsInternal._getPurchased('static.pro_sale'))
 
 _gLastPostPurchaseMessageTime = None
 def _showPostPurchaseMessage():
@@ -4161,7 +4069,7 @@ def _checkPendingCodes():
     if _pendingPromoCodes:
         bs.screenMessage(bs.Lstr(resource='signInForPromoCodeText'),color=(1,0,0))
         bs.playSound(bs.getSound('error'))
-
+    
 def _handleDeepLink(url):
     if url.startswith('bombsquad://code/'):
         code = url.replace('bombsquad://code/','')
@@ -4219,7 +4127,7 @@ def jsonPrep(data):
         return data.decode('utf-8',errors='ignore')
     else:
         return data
-
+    
 def toUTF8(data):
     """ converts any unicode data to utf8 """
     if isinstance(data, dict):
@@ -4237,16 +4145,16 @@ def toUTF8(data):
 def _getIPAddressType(addr):
     """ Returns socket.AF_INET6 or socket.AF_INET4. May return false positives for ipv6 on windows """
     import socket
-
+    
     socketType = None
-
+    
     # first see if this is a valid ipv4 addr
     try:
         socket.inet_aton(addr)
         socketType = socket.AF_INET
     except Exception as e:
         pass
-
+    
     # hmm apparently not ipv4; lets try ipv6
     if socketType is None:
         try:
@@ -4262,10 +4170,10 @@ def _getIPAddressType(addr):
             socketType = socket.AF_INET6
         except Exception as e:
             pass
-
+        
     if socketType is None:
         raise Exception("addr seems to be neither v4 or v6: "+str(addr))
-
+    
     return socketType
 
 _gServerConfigDirty = False
@@ -4278,9 +4186,9 @@ def _configServer():
     # so this will become unnecessary.
     # FIXME - subsequent changes to this dont get propogated to the server currently
     _setLanguage(config.get('language', 'English'))
-
+    
     bsInternal._setTelnetAccessEnabled(config.get('enableTelnet', False))
-
+        
     bs.getConfig()['Auto Balance Teams'] = config.get('autoBalanceTeams', True)
 
     bsInternal._setPublicPartyMaxSize(config.get('maxPartySize', 9))
@@ -4295,13 +4203,13 @@ def _configServer():
     # to rejoin)
     global _gServerConfigDirty
     _gServerConfigDirty = True
-
+    
 _gRunServerFirstRun = True
 
 def _runServer():
     """kick off a host-session based on the current server config"""
     import bsTeamGame
-
+    
     global _gRunServerFirstRun
     global _gServerConfigDirty
 
@@ -4319,7 +4227,7 @@ def _runServer():
 
     if _gRunServerFirstRun:
         env = bs.getEnvironment()
-        print ('BombSquad headless ' if bs.getEnvironment()['subplatform'] == 'headless' else 'BombSquad ')+str(env['version'])+' ('+str(env['buildNumber'])+') entering server-mode '+time.strftime('%c')
+        print ('JRMP headless ' if bs.getEnvironment()['subplatform'] == 'headless' else 'BombSquad ')+str(env['version'])+' ('+str(env['buildNumber'])+') entering server-mode '+time.strftime('%c')
 
     # TODO - expose playlist selections other than default and make
     # them accessible via argument.
@@ -4327,12 +4235,12 @@ def _runServer():
     # or _getDefaultTeamsPlaylist() in this file
     playlistShuffle = config.get('playlistShuffle', True)
     bs.getConfig()['Show Tutorial'] = False
-    bs.getConfig()['Free-for-All Playlist Selection'] = config.get('playlistName','__default__') if sessionTypeName == 'ffa' else '__default__'
+    bs.getConfig()['Free-for-All Playlist Selection'] = '__default__'
     bs.getConfig()['Free-for-All Playlist Randomize'] = playlistShuffle
-    bs.getConfig()['Team Tournament Playlist Selection'] = config.get('playlistName','__default__') if sessionTypeName == 'teams' else '__default__'
+    bs.getConfig()['Team Tournament Playlist Selection'] = '__default__'
     bs.getConfig()['Team Tournament Playlist Randomize'] = playlistShuffle
     bs.getConfig()['Port'] = config.get('port',43210)
-
+    
     # set series lengths
     bsTeamGame.gTeamSeriesLength = config.get('teamsSeriesLength', 7)
     bsTeamGame.gFFASeriesLength = config.get('ffaSeriesScoreToWin', 24)
@@ -4353,11 +4261,14 @@ def _runServer():
                     print 'UDP port',port,'access check failed. Your server does not appear to be joinable from the internet.'
 
         serverGet('bsAccessCheck', {'port':bsInternal._getGamePort()}, callback=accessCheckResponse)
-
+    
     _gRunServerFirstRun = False
     _gServerConfigDirty = False
+    
 
 
+_gRunServerWaitTimer = None
+_gLaunchedServer = False
 
 _gRunServerWaitTimer = None
 _gRunServerPlaylistFetch = None
@@ -4368,7 +4279,7 @@ def configServer(configFile=None):
 
     global _gServerConfig
     global _gLaunchedServer
-
+    
     # read and store the new server config and then delete the file it came from
     if configFile is not None:
         f = open(configFile)
@@ -4383,10 +4294,10 @@ def configServer(configFile=None):
     playlistCode = _gServerConfig.get('playlistCode')
     if playlistCode is not None:
         _gRunServerPlaylistFetch = {'sentRequest':False,'gotResponse':False,'playlistCode':str(playlistCode)}
-
+    
     # apply config stuff that can take effect immediately (party name, etc)
     _configServer()
-
+    
     # launch the server only the first time through; after that it will be self-sustaining
     if not _gLaunchedServer:
         # now sit around until we're signed in and then kick off the server
@@ -4399,10 +4310,10 @@ def configServer(configFile=None):
                     canLaunch = False
                     # if we're trying to fetch a playlist, we do that first
                     if _gRunServerPlaylistFetch is not None:
-
+                        
                         # send request if we havn't
                         if not _gRunServerPlaylistFetch['sentRequest']:
-
+                            
                             def onPlaylistFetchResponse(result):
                                 if result is None:
                                     print 'Error fetching playlist; aborting.'
@@ -4413,7 +4324,7 @@ def configServer(configFile=None):
                                 _gRunServerPlaylistFetch['gotResponse'] = True
                                 _gServerConfig['sessionType'] = typeName
                                 _gServerConfig['playlistName'] = result['playlistName']
-
+                                
                             print 'Requesting shared-playlist '+str(_gRunServerPlaylistFetch['playlistCode'])+'...'
                             _gRunServerPlaylistFetch['sentRequest'] = True
                             bsInternal._addTransaction({'type':'IMPORT_PLAYLIST',
@@ -4433,3 +4344,4 @@ def configServer(configFile=None):
                         bs.pushCall(_runServer)
             _gRunServerWaitTimer = bs.Timer(250, doIt, timeType='real', repeat=True)
         _gLaunchedServer = True
+    

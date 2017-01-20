@@ -47,8 +47,11 @@ gAchLevelNames = {
     'Uber Football Shutout':'Uber Football',
     'Uber Football Victory':'Uber Football',
     'Uber Onslaught Victory':'Uber Onslaught',
-    'Uber Runaround Victory':'Uber Runaround'
-}
+    'Uber Runaround Victory':'Uber Runaround',
+    'Make It Through':'Nightmare',
+    'Half-Marathon':'Marathon',
+    'The Full Run':'Marathon',
+    }
 
 # used for non-game-based achievements such as controller-connection ones
 def _awardLocalAchievement(ach):
@@ -809,7 +812,16 @@ gAchievements.append(Achievement('Runaround Master','achievementMedalSmall',(1.0
 gAchievements.append(Achievement('Runaround Wizard','achievementMedalMedium',(1.0,1.0,1.2),'Challenges:Infinite Runaround',15))
 #30
 gAchievements.append(Achievement('Runaround God','achievementMedalLarge',(1.0,1.0,1.2),'Challenges:Infinite Runaround',30))
-        
+#My Achievements JRMP
+
+# Complete Nightmare mode, 35 points of reward
+gAchievements.append(Achievement('Make It Through','achievementNightmare',(0.75,0.7,0.7),'Challenges:Nightmare',35))
+
+# Complete half of the Marathon mode, 10 points of reward
+gAchievements.append(Achievement('Half-Marathon','achievementMarathonHalf',(0.8,0.8,0.8),'Challenges:Marathon',10))
+
+# Complete half of the Marathon mode, 30 points of reward
+gAchievements.append(Achievement('The Full Run','achievementMarathonFull',(0.8,0.8,0.8),'Challenges:Marathon',30))
 
 # just a test...
 def _test():

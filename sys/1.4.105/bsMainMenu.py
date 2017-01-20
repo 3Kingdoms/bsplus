@@ -48,7 +48,16 @@ class MainMenuActivity(bs.Activity):
                                                          'position':(0,10),
                                                          'vrDepth':-10,
                                                          'text':u'\xa9 2016 Eric Froemling'}))
-
+            self.modpack = bs.NodeActor(bs.newNode('text',
+                                                  attrs={'vAttach':'bottom',
+                                                         'hAlign':'left',
+                                                         'color':(1.0,1.0,1.0,1.0) if vrMode else (0.5,0.6,0.5,0.6),
+                                                         'flatness':1.0,
+                                                         'shadow':1.0 if vrMode else 0.5,
+                                                         'scale':0.9 if (env['interfaceType'] == 'phone' or vrMode) else 0.7, # FIXME need a node attr for this (smallDeviceExtraScale or something)
+                                                         'position':(-600,10),
+                                                         'vrDepth':-10,
+                                                         'text':'Modpack created by TheMikirog'}))
         
         # throw up some text that only clients can see so they know that the host is navigating menus
         # while they're just staring at an empty-ish screen..
@@ -60,9 +69,9 @@ class MainMenuActivity(bs.Activity):
                                                              'hAlign':'center'}))
 
         # print 'TEXT IS',self._hostIsNavigatingText.node.text
-        if not gDidInitialTransition and hasattr(self,'myName'):
+        if not gDidInitialTransition and hasattr(self,'myName') and hasattr(self,'modpack'):
             bs.animate(self.myName.node,'opacity',{2300:0,3000:1.0})
-
+            bs.animate(self.modpack.node,'opacity',{2300:0,3000:1.0})
 
 
         # TEMP - test hindi
@@ -150,7 +159,7 @@ class MainMenuActivity(bs.Activity):
                                                           'color':(1,1,1,1) if vrMode else (0.5,0.6,0.5,0.7),
                                                           'scale':0.9 if (interfaceType == 'small' or vrMode) else 0.7,
                                                           'position':(-260,10) if vrMode else (-10,10),
-                                                          'text':text
+                                                          'text':'Joyride Modpack 2.4 (FINAL)'
                                                    }))
             if not gDidInitialTransition:
                 bs.animate(self.version.node,'opacity',{2300:0,3000:1.0})
@@ -199,7 +208,7 @@ class MainMenuActivity(bs.Activity):
         testColorTexture = bs.getTexture('thePadLevelColor')
         treesTexture = bs.getTexture('treesColor')
 
-        bgTex = bs.getTexture('menuBG')
+        bgTex = bs.getTexture('menu2BG')
         bgModel = bs.getModel('thePadBG')
 
         # (load these last since most platforms don't use them..)
@@ -223,12 +232,12 @@ class MainMenuActivity(bs.Activity):
             node.connectAttr('output',self._fooText.node,'text')
         
         
-        tint = (1.14,1.1,1.0)
+        tint = (1.1,1.11,1.14)
         bsGlobals.tint = tint
             
-        bsGlobals.ambientColor = (1.06,1.04,1.03)
-        bsGlobals.vignetteOuter = (0.45,0.55,0.54)
-        bsGlobals.vignetteInner = (0.99,0.98,0.98)
+        bsGlobals.ambientColor = (1.05,1.06,1.08)
+        bsGlobals.vignetteOuter = (0.55,0.55,0.62)
+        bsGlobals.vignetteInner = (0.97,0.97,0.99)
 
         self.bottom = bs.NodeActor(bs.newNode('terrain',
                                               attrs={'model':bottomModel,

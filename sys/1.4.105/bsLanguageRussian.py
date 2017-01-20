@@ -1,7 +1,42 @@
 # -*- coding: utf-8 -*-
 
 values = {
-    'accountSettingsWindow':{
+    # Powerup Names
+    # These are used to show what powerup you collected if you weren't wasting time in the How To Play menu
+	'tripleBombs':'Тройные бомбы',
+    'landMine':'Мины',
+    'healBomb':'Лечебная бомба',
+    'impactBomb':'Сенсорная бомба',
+    'stickyBomb':'Липкая бомба',
+    'rangerBomb':'Кристальная бомба',
+    'combatBomb':'Боевая бомба',
+    'dynamitePack':'Связка динамита',
+    'knockerBomb':'дверной молоток',
+    'grenade':'Граната',
+    'punch':'Боксёрские перчатки',
+    'shield':'Щит',
+    'curse':'Проклятие!',
+    'iceBomb':'Ледяные бомбы',
+    'fireBomb':'Огненные бомбы',
+    'health':'Аптечка',
+    'overdrive':'Адреналин',
+    'hijump':'Высокий-прыжок',
+    'speed':'Скоростные ботинки',
+    'blastBuff':'Большие Взрывы',
+    
+    # Unlock Message
+    'stuffUnlocked':'Вы открыли что-то новое!!',
+    'characterUnlocked':'Вы открыли нового персонажа!',
+    'missionUnlocked':'Вы разблокировали новую миссию!',
+    
+    # Critical Hit!
+    'crit':'КРИТ!', #JRMP
+    
+    # Quick Play Button
+    'selectGame':'Выбрать игру', #JRMP
+    'quickGame':'Быстрая игра', #JRMP
+
+	'accountSettingsWindow':{
         'accountProfileText':'(профиль)',
         'accountsText':'Аккаунты',
         'achievementProgressText':'Достижения: ${COUNT} из ${TOTAL}',
@@ -344,6 +379,27 @@ values = {
             'descriptionFull':'Пройдите все волны на уровне ${LEVEL}',
             'descriptionFullComplete':'Пройдены все волны на уровне ${LEVEL}',
             'name':'Победа на уровне ${LEVEL}'
+		},
+        'Make It Through':{
+            'description':'Выживи в ночном кошмаре',
+            'descriptionComplete':'Переживи ночной кошмар',
+            'descriptionFull':'Продержись 16 волн в ночном кошмаре',
+            'descriptionFullComplete':'Переживи 16 волн в ночном кошмаре',
+            'name':'Ночной кошмар: Сделай это'
+        },
+        'Half-Marathon':{
+            'description':'Пройди половину марафона',
+            'descriptionComplete':'Пройдена половина марафона',
+            'descriptionFull':'Выживи 12 волн в марафоне',
+            'descriptionFullComplete':'Пройдена половина марафона',
+            'name':'Марафон: Половина марафона'
+        },
+        'The Full Run':{
+            'description':'Пройди весь марафон',
+            'descriptionComplete':'Марафон пройден',
+            'descriptionFull':'Пройди все волны в марафоне',
+            'descriptionFullComplete':'Пройдены все волны на марафоне',
+            'name':'Марафон: Полный вперёд'
         }
     },
     'achievementsRemainingText':'Оставшиеся медали:',
@@ -543,17 +599,17 @@ values = {
         'titleText':'Кооператив',
         'toRankedText':'Получено',
         'totalText':'всего',
-        'tournamentInfoText':('Добейся высокого результата с\n'
-                              'другими игроками твоей лиги.\n'
+        'tournamentInfoText':('В модифицированном BombSquad нельзя\n' 
+                              'участвовать в турнирах.\n'
                               '\n'
-                              'Награды вручаются самым крутым\n'
-                              'по окончании турнира.'),
+                              'Вы будете тратить билеты, чтобы сыграть\n'
+                              'в турниры, но результаты не будут зафиксированы.'), #JRMP
         'welcome1Text':('Добро пожаловать в ${LEAGUE}. Вы можете\n'
                         'повысить свою лигу получая звёзды, получая \n'
                         'достижения и выигрывая трофеи в турнирах.'),
-        'welcome2Text':('Вы также можете заработать билеты от многих из тех же видов деятельности.\n'
-                        'Билеты могут быть использованы , чтобы разблокировать новые персонажи , карты и\n'
-                        'мини -игры, чтобы войти турниры, и многое другое.'),
+        'welcome2Text':('Вы можете заработать билеты от ачивок и кодов.\n'
+                        'Билеты могут быть использованы чтобы разблокировать новых персонажей, карты и\n'
+                        'мини-игры, чтобы войти в турниры, и многое другое.'),
         'yourPowerRankingText':'Ваш ранг:'
     },
     'copyOfText':'Копия ${NAME}',
@@ -617,7 +673,6 @@ values = {
     'difficultyHardUnlockOnlyText':('Этот уровень может быть открыт только в сложном режиме.\n'
                                     'Вы этого не сделали!!!!!'),
     'directBrowserToURLText':'Пожалуйста, направьте веб-браузер по следующему адресу:',
-    'disableRemoteAppConnectionsText':'Отключение соединения RemoteApp',
     'disableXInputDescriptionText':'Подключение больше 4 контроллеров, но может не работать.',
     'disableXInputText':'Отключить XInput',
     'doneText':'Готово',
@@ -948,7 +1003,7 @@ values = {
                         'наилучших результатов бросать в\n'
                         'противника пока не догорел фитиль.'),
         'bombInfoTextScale':0.6,
-        'canHelpText':'${APP_NAME} может помочь.',
+        'canHelpText':'Joyride Modpack может исполнить ваши мечты!', #JRMP
         'controllersInfoText':('Вы можете играть в ${APP_NAME} с друзьями по сети, или вы все можете\n'
                                'играть на одном устройстве, если у вас достаточно контроллеров.\n'
                                '${APP_NAME} поддерживает любые контроллеры; можно даже использовать телефоны \n'
@@ -1014,6 +1069,40 @@ values = {
         'powerupShieldDescriptionText':('Немного поглощает повреждения,\n'
                                         'чтобы вам не пришлось.'),
         'powerupShieldNameText':'Энергетический щит',
+        'powerupCombatBombsDescriptionText':('Две секунды до взрыва.\n'
+                                             'Делают бомбу идеальным боевым оружием.'), #JRMP
+        'powerupCombatBombsNameText':'Боевые бомбы', #JRMP
+        'powerupStickyBombsDescriptionText':('Липнут ко всему, чего касаются.\n'
+                                             'И начинается веселье.'),
+        'powerupStickyBombsNameText':'Липкие бомбы',
+        'powerupKnockerBombsDescriptionText':('Запуск бомб и игроков в радиусе действия.\n'
+                                             'Это делает жалкое повреждения, хотя.'), #JRMP
+        'powerupKnockerBombsNameText':'дверной молоток', #JRMP
+        'powerupDynamitePackDescriptionText':('Создаёт взрывной плюс.\n'
+                                             'Идеально для очистки от мин.'),
+        'powerupSpeedDescriptionText':('Беги с супер скоростью 15 секунд.\n'
+                                             'Осторожнее! Ты можешь упасть.'), #JRMP
+        'powerupSpeedNameText':'Скоростные ботинки', #JRMP
+        'powerupBlastDescriptionText':('Увеличение взрывной мощи твоей\n'
+                                             'бомбы. BOOM!'), #JRMP
+        'powerupHijumpDescriptionText':('Подкидывает тебя вверх как ракета..\n'
+                                             'Три прыжка в коробке.'), #JRMP
+        'powerupHijumpNameText':'Высокий прыжок', #JRMP
+        'powerupBlastNameText':'Большой взрыв', #JRMP
+        'powerupDynamitePackNameText':'Связки динамита', #JRMP
+        'powerupRangerBombsDescriptionText':('Большой диапазон, взрывная мощь.\n'
+                                             'Ты же подождешь 4 секунды?'), #JRMP
+        'powerupRangerBombsNameText':'Кристальные бомбы', #JRMP
+        'powerupGrenadeDescriptionText':('Больше урона со стилем.\n'
+                                         'Две гранаты в одном слоте!'),
+        'powerupGrenadeNameText':'Гранаты', #JRMP
+        'powerupOverdriveDescriptionText':('Даёт очень много здоровья.Лучше чем аптечка.\n'
+                                             'При передозировке ты взорвёшся.'), #JRMP
+        'powerupOverdriveNameText':'Адреналин', #JRMP                                  
+        'powerupHealBombsDescriptionText':('Вылечит всех кто попадёт под бомбу.\n'
+                                             'Это также могут быть враги.'), #JRMP
+        'powerupHealBombsNameText':'Лечебные бомбы', #JRMP
+        'powerupRangerBombsNameText':'Кристальные бомбы', #JRMP
         'powerupStickyBombsDescriptionText':('Липнут ко всему, чего касаются.\n'
                                              'И начинается веселье.'),
         'powerupStickyBombsNameText':'Бомбы-липучки',
@@ -1234,6 +1323,22 @@ values = {
     'offText':'Выкл',
     'okText':'Ok',
     'onText':'Вкл',
+    'nWave1':'Разминка', #JRMP
+    'nWave2':'Три маленькие свинки',
+    'nWave3':'Люди в чёрном',
+    'nWave4':'БОМБЫ!!',
+    'nWave5':'Диллеры боли',
+    'nWave6':'Одна большая свинья',
+    'nWave7':'ВЕЧЕРИНКА!',
+    'nWave8':'ЗАЙЧИКИ',
+    'nWave9':'Злой',
+    'nWave10':'Холодные с утра',
+    'nWave11':'Weediots',
+    'nWave12':'ЖИРНЫЕ СВИНЬИ!',
+    'nWave13':'Гроза из бомб!',
+    'nWave14':'ЗАЙЧИКИ (опять)',
+    'nWave15':'Более жестокие диллеры боли',
+    'nWave16':'ПРОСТО СДОХНИ!', #JRMP
     'onslaughtRespawnText':'${PLAYER} возродится в ${WAVE} волне',
     'orText':'${A} или ${B}',
     'outOfText':'(${RANK} из ${ALL})',
@@ -1444,6 +1549,7 @@ values = {
         'audioText':'Аудио',
         'controllersText':'Контроллеры',
         'graphicsText':'Графика',
+		'jrmpText':'Настройки JRMP', # JRMP
         'playerProfilesMovedText':'Примечание: Пользователи игроков были перемещены в окно Аккаунты в главном меню.',
         'playerProfilesText':'Профили игроков',
         'titleText':'Настройки'
@@ -1476,6 +1582,21 @@ values = {
         'translationNoUpdateNeededText':'данный язык полностью обновлен, ура!',
         'translationUpdateNeededText':'** данный язык нуждается в обновлениях!! **',
         'vrTestingText':'Тестирование ВР'
+	},
+    'jrmpSettingsWindow':{ #JRMP
+        'titleText':'Настройки JRMP',
+        'powerupPopupsText':'Текст после подбора бонуса',
+        'offensiveCurseSoundText':'Другой звук проклятья',
+        'cameraShakeText':'Дрожание камеры',
+        'easyModeText':'Легкий режим (отключить сложные бонусы)',
+        'powerupDistributionText':'Наборы бонусов',
+        'powerupDistributionDesc':('Этот набор будет приминён ко всему кроме кооператива.\n'
+                                    'Запусти новый раунд/режим игры чтобы применить.'),
+        'jrmpText':'JRMP',
+        'classicText':'Классический',
+        'competetiveText':'Кооператив',
+        'noPowerupsText':'Без усилителей',
+        'someOptionsNotCoop':'Некоторые параметры не работают в сотрудничестве.',
     },
     'shareText':'Поделиться',
     'sharingText':'Делимся...',
@@ -1487,26 +1608,38 @@ values = {
     'singlePlayerCountText':'1 игрок',
     'soloNameFilterText':'${NAME} соло',
     'soundtrackTypeNames':{
-        'CharSelect':'Выбор персонажа',
-        'Chosen One':'Избранный',
-        'Epic':'Игры в эпическом режиме',
-        'Epic Race':'Эпическая гонка',
-        'FlagCatcher':'Захват флага',
-        'Flying':'Счастливые мысли',
-        'Football':'Регби',
-        'ForwardMarch':'Нападение',
-        'GrandRomp':'Завоевание',
-        'Hockey':'Хоккей',
-        'Keep Away':'Не подходить!',
-        'Marching':'Манёвр',
-        'Menu':'Главное меню',
-        'Onslaught':'Атака',
-        'Race':'Гонка',
-        'Scary':'Царь горы',
-        'Scores':'Счетное табло',
-        'Survival':'Ликвидация',
-        'ToTheDeath':'Смертельный бой',
-        'Victory':'Табло финального счета'
+        # JRMP
+        'CharSelectCOOP':'Character Selection (COOP)',
+        'CharSelectTEAMS':'Character Selection (Teams)',
+        'CharSelectFFA':'Character Selection (FFA)',
+        'Chosen One':'Chosen One',
+        'Epic':'Epic Mode Games',
+        'Epic Race':'Epic Race',
+        'FlagCatcher':'CTF Orchestral',
+        'Race':'Race Original',
+        'Flying':'Happy Thoughts',
+        'Football':'Football',
+        'ForwardMarch':'Assault',
+        'GrandRomp':'Conquest',
+        'Hockey':'Hockey',
+        'Keep Away':'Keep Away',
+        'Marching':'Runaround',
+        'Menu':'Main Menu',
+        'Onslaught':'Onslaught',
+        'Scary':'King of the Hill',
+        'Scores':'Score Screen',
+        'Survival':'Silent Film',
+        'ToTheDeath':'Death Match',
+        'Victory':'Final Score Screen',
+        'Toilet':'Toilet Donut',
+        'FlagDropper':'CTF Synth',
+        'FlagSlip':'CTF Open / Race',
+        'FlagBomber':'CTF Bad',
+        'FlagRunner':'CTF Running',
+        'Where Eagles Dare':'Where Eagles Dare',
+        'Last Stand':'Last Standing!',
+        'Nightmare':'Nightmare',
+        'Marathon':'Marathon',
     },
     'spaceKeyText':'пробел',
     'storagePermissionAccessText':'Это требует доступа к хранилищу',
@@ -1533,6 +1666,7 @@ values = {
         'gameUpgradesText':'Обновления игры',
         'getCoinsText':'Купить монеты',
         'holidaySpecialText':'Праздничная акция',
+        'jrmpText':'Joyride Modpack эксклюзив! (Поддерживать игру и разработчик modpack)', #JRMP
         'howToSwitchCharactersText':'(Зайдите в "${SETTINGS} -> ${PLAYER_PROFILES}", чтобы выбрать и изменить персонажей)',
         'howToUseIconsText':'(создайте глобальные профили игроков (в окне аккаунт) чтобы использовать это)',
         'howToUseMapsText':'(используйте эти карты в ваших собственных командных/все-против-всех плейлистах)',
@@ -1601,9 +1735,9 @@ values = {
     'tournamentEntryText':'Вход в турнир',
     'tournamentResultsRecentText':'Последние Результаты турнира',
     'tournamentStandingsText':'Позиции в турнире',
-    'tournamentText':'Турнир',
+    'tournamentText':'Турниры не доступны в Joyride Modpack', #JRMP
     'tournamentTimeExpiredText':'Время турнира истекло',
-    'tournamentsText':'Турниры',
+    'tournamentsText':'Турниры не доступны в Joyride Modpack', #JRMP
     'translations':{
         'characterNames':{
             'Agent Johnson':'Агент Джонсон',
@@ -1701,6 +1835,8 @@ values = {
                                                    'Чтобы стать избранным, убей избранного.'),
             'Bomb as many targets as you can.':'Взорвите столько мишеней, сколько сможете.',
             'Carry the flag for ${ARG1} seconds.':'Пронесите флаг в течение ${ARG1} секунд.',
+			'Survive the apocalypse!':'Выживи в апокалипсисе!',
+			'Don\'t starve!':'Не голодай!',
             'Carry the flag for a set length of time.':'Пронесите флаг в течение заданного времени.',
             'Crush ${ARG1} of your enemies.':'Разбейте ${ARG1} врагов.',
             'Defeat all enemies.':'Победите всех врагов.',
@@ -1751,7 +1887,8 @@ values = {
             'secure all ${ARG1} flags':'захватите все флаги: ${ARG1}',
             'secure the flag for ${ARG1} seconds':'захватите флаг на ${ARG1} секунд',
             'touch ${ARG1} flags':'коснитесь ${ARG1} флагов',
-            'touch 1 flag':'коснитесь 1 флага'
+            'touch 1 flag':'коснитесь 1 флага',
+            'Stick bombs to enemies and blow them up!':'Склей своих врагов!'
         },
         'gameNames':{
             'Assault':'Нападение',
@@ -1761,6 +1898,7 @@ values = {
             'Death Match':'Смертельный бой',
             'Easter Egg Hunt':'Охота на пасхальные яйца',
             'Elimination':'Ликвидация',
+            'Marathon':'Марафон',
             'Football':'Регби',
             'Hockey':'Хоккей',
             'Keep Away':'Не подходить!',
@@ -1771,7 +1909,9 @@ values = {
             'Race':'Гонка',
             'Runaround':'Обход',
             'Target Practice':'Стрельба по мишеням',
-            'The Last Stand':'Последний рубеж'
+            'The Last Stand':'Последний рубеж',
+			'Nightmare':'Ночной кошмар',
+            'Stickies!':'Липучки'
         },
         'inputDeviceNames':{
             'Keyboard':'Клавиатура',
@@ -1828,7 +1968,15 @@ values = {
             'The Pad':'Подушка',
             'Tip Top':'Тип-топ',
             'Tower D':'Башня D',
-            'Zigzag':'Зигзаг'
+            'Zigzag':'Зигзаг',
+            'Toilet Donut':'Туалетный рулон',
+            'Mush Feud':'Галлюцинации',
+            'Hovering Plank-o-Wood':'Завис в воздухе',
+            'Bacon Greece':'Маяк Греции',
+            'Block Fortress':'Блочная крепость',
+            'Where Eagles Dare':'Где летают орлы',
+            'Morning':'Утро',
+            'Pillar Bases':'База из столбов'
         },
         'playlistNames':{
             'Just Epic':'Только эпический',
@@ -1985,7 +2133,7 @@ values = {
             ('Despite their looks, all characters\' abilities are identical,\n'
              'so just pick whichever one you most closely resemble.'):('Независимо от внешности, способности всех персонажей идентичны,\n'
                                                                        'так что просто выбирыйте того, на кого вы больше похожи.'),
-            'Don\'t get too cocky with that energy shield; you can still get yourself thrown off a cliff.':'Не зазнавайтесь с этим энергетическим щитом, вас все еще могут сбросить с обрыва.',
+            'Don\'t get too cocky with that energy shield; you can still get yourself thrown off a cliff.':'Не сознавайтесь с этим энергетическим щитом, вас все еще могут сбросить с обрыва.',
             'Don\'t run all the time.  Really.  You will fall off cliffs.':'Не бегай все время. Серьезно. Свалишься с обрыва.',
             'Hold any button to run.  (Trigger buttons work well if you have them)':'Для бега нажмите и держите любую кнопку. (Для этого удобны триггеры, если они есть)',
             ('Hold down any button to run. You\'ll get places faster\n'
@@ -2079,6 +2227,12 @@ values = {
             ('You take damage when you whack your head on things,\n'
              'so try to not whack your head on things.'):('Вы получаете повреждения, когда ударяетесь головой,\n'
                                                           'так что берегите голову.'),
+			('Are you sure you are brave enough to beat this stage?'):('Ты достаточно смел чтобы выжить тут ?'),
+			('Go back to kindergarten! I\'m really serious!'):('Возращяйся в детский сад! Я серьёзно!'),
+			('You should bring somebody with you, so I can kick your butt even more!'):('Позови друга чтобы вам обоим надрали задницу!'),
+			('You\'re doomed! Give up now!'):('Ты обречён! Беги назад!'),
+			('This minigame is impossible. Why you\'re playing it?'):('Этот уровень адовой сложности. Ты серьёзно хочешь сыграть в него?'),
+			('99% of BombSquad players can\'t even compete with me!'):('99% игроков не могут это пройти!'),
             'Your punches do much more damage if you are running or spinning.':'От ударов гораздо больше вреда, когда бежишь или крутишься.'
         }
     },
@@ -2128,8 +2282,49 @@ values = {
         'skippingText':'пропуск тьюториала...',
         'toSkipPressAnythingText':'(коснитесь или нажмите что-нибудь чтобы пропустить тьюториал)'
     },
+    'modpackTutorial1':{
+        # JRMP
+        'phrase01Text':'Всем превет',
+        'phrase02Text':'Добро пожаловать в Joyride Modpack!',
+        'phrase03Text':'Давайте я познакомлю вас с изменениями:',
+        'phrase04Text':'Каждый уровень этой игры',
+        'phrase05Text':'Теперь содержит новые бонусы',
+        'phrase06Text':'..и механику. Кто читает эти туториалы?',
+        'phrase07Text':'Давайте начнём с динамитной связки!.',
+        'phrase08Text':'Динамитная связка очень необычная.',
+        'phrase09Text':'Взрывается она Х просто посмотрите на это.',
+        'phrase10Text':'В первую очередь ваши противники будут удивлены ',
+        'phrase11Text':'Также связке трудно приземлится в нужное место.',
+        'phrase12Text':'Несколько связок очень опасны',
+        'phrase13Text':'Блин.',
+        'phrase14Text':'Эта бомба лучше всего подходит для узких проходов.',
+        'phrase15Text':'Лучше выстроить врагов в ряд для лучшего эффекта.',
+        'phrase16Text':'Удачи!',
+        'skipConfirmText':'Пропустить тьюториал по динамитной связке ? Нажми чтобы подтвердить .',
+        'skipVoteCountText':'${COUNT}/${TOTAL} голосов за пропуск',
+        'skippingText':'пропуск тьюториала...',
+        'toSkipPressAnythingText':'(коснитесь или нажмите что-нибудь чтобы пропустить тьюториал)'
+    },
+    'modpackTutorial2':{
+        # JRMP
+        'phrase01Text':'Дратути!',
+        'phrase02Text':'Давайте я покажу вам кое что более полезное!',
+        'phrase03Text':'Адреналин!',
+        'phrase04Text':'Лежит в коробке.Да я знаю!',
+        'phrase05Text':'Адреналин увеличт твоё здоровье!',
+        'phrase06Text':'Смотри сам.',
+        'phrase07Text':'Ты бы не выжил без адреналина.',
+        'phrase08Text':'Собдюдай дозировку,а то будед бум.',
+        'phrase09Text':'Ты перегреешся и взорвёшся.',
+        'phrase10Text':'Этот модпак полон жестокости',
+        'phrase11Text':'Будь храбрым!',
+        'skipConfirmText':'Пропустить тьюториал по адреналину ? Нажми чтобы подтвердить .',
+        'skipVoteCountText':'${COUNT}/${TOTAL} голосов за пропуск',
+        'skippingText':'пропуск тьюториала...',
+        'toSkipPressAnythingText':'(коснитесь или нажмите что-нибудь чтобы пропустить тьюториал)'
+    },
     'twoKillText':'ДВОИХ ЗА РАЗ!',
-    'unavailableText':'недоступно',
+    'unavailableText':'',
     'unconfiguredControllerDetectedText':'Обнаружен ненастроенный контроллер:',
     'unlockThisInTheStoreText':'Это должно быть разблокировано в магазине.',
     'unlockThisText':'Для открытия этого, вам надо:',
@@ -2145,6 +2340,7 @@ values = {
     'usingItunesTurnRepeatAndShuffleOnText':'Убедитесь, что в iTunes включен случайный порядок, и повтор установлен на \'все\'.',
     'validatingBetaText':'Валидация бета-версии...',
     'validatingTestBuildText':'Проверка тестовой сборки...',
+    'survivedText':'Вы выжили.',
     'victoryText':'Победа!',
     'voteDelayText':'Вы не можете изгонять еще ${NUMBER} секунд',
     'voteInProgressText':'Идет голосование за изгнание.',
@@ -2154,7 +2350,7 @@ values = {
     'waitingForHostText':'(ожидание ${HOST} чтобы продолжить)',
     'waitingForLocalPlayersText':'ожидание локальных игроков...',
     'waitingForPlayersText':'ожидание присоединения игроков...',
-    'waitingInLineText':'Подожди немного (комната заполнена)...',
+    'waitingInLineText':'Подожди немного (комната заполена)...',
     'watchAVideoText':'Смотреть видео',
     'watchAnAdText':'Смотреть рекламу',
     'watchWindow':{

@@ -2,58 +2,68 @@ import bs
 import bsUtils
 import random
 import weakref
-import bsInternal
 
 
 # list of defined spazzes
 appearances = {}
 
 def getAppearances(includeLocked=False):
+    import bsInternal
+    import bsAchievement
     disallowed = []
     if not includeLocked:
-        #Bacon Changed start
-        #Original:
-        # # hmm yeah this'll be tough to hack...
-        # if not bsInternal._getPurchased('characters.santa'): disallowed.append('Santa Claus')
-        # if not bsInternal._getPurchased('characters.frosty'): disallowed.append('Frosty')
-        # if not bsInternal._getPurchased('characters.bones'): disallowed.append('Bones')
-        # if not bsInternal._getPurchased('characters.bernard'): disallowed.append('Bernard')
-        # if not bsInternal._getPurchased('characters.pixie'): disallowed.append('Pixel')
-        # if not bsInternal._getPurchased('characters.pascal'): disallowed.append('Pascal')
-        # if not bsInternal._getPurchased('characters.actionhero'): disallowed.append('Todd McBurton')
-        # if not bsInternal._getPurchased('characters.taobaomascot'): disallowed.append('Taobao Mascot')
-        # if not bsInternal._getPurchased('characters.agent'): disallowed.append('Agent Johnson')
-        # if not bsInternal._getPurchased('characters.jumpsuit'): disallowed.append('Lee')
-        # if not bsInternal._getPurchased('characters.assassin'): disallowed.append('Zola')
-        # if not bsInternal._getPurchased('characters.wizard'): disallowed.append('Grumbledorf')
-        # if not bsInternal._getPurchased('characters.cowboy'): disallowed.append('Butch')
-        # if not bsInternal._getPurchased('characters.witch'): disallowed.append('Witch')
-        # if not bsInternal._getPurchased('characters.warrior'): disallowed.append('Warrior')
-        # if not bsInternal._getPurchased('characters.superhero'): disallowed.append('Middle-Man')
-        # if not bsInternal._getPurchased('characters.alien'): disallowed.append('Alien')
-        # if not bsInternal._getPurchased('characters.oldlady'): disallowed.append('OldLady')
-        # if not bsInternal._getPurchased('characters.gladiator'): disallowed.append('Gladiator')
-        # if not bsInternal._getPurchased('characters.wrestler'): disallowed.append('Wrestler')
-        # if not bsInternal._getPurchased('characters.operasinger'): disallowed.append('Gretel')
-        # if not bsInternal._getPurchased('characters.pixie'): disallowed.append('Pixie')
-        # if not bsInternal._getPurchased('characters.robot'): disallowed.append('Robot')
-        # if not bsInternal._getPurchased('characters.cyborg'): disallowed.append('B-9000')
-        # if not bsInternal._getPurchased('characters.bunny'): disallowed.append('Easter Bunny')
-        # if not bsInternal._getPurchased('characters.kronk'): disallowed.append('Kronk')
-        # if not bsInternal._getPurchased('characters.zoe'): disallowed.append('Zoe')
-        # if not bsInternal._getPurchased('characters.jackmorgan'): disallowed.append('Jack Morgan')
-        # if not bsInternal._getPurchased('characters.mel'): disallowed.append('Mel')
-        # if not bsInternal._getPurchased('characters.snakeshadow'): disallowed.append('Snake Shadow')
-        #Original
-        pass
-        #Bacon Changed End
+        # hmm yeah this'll be tough to hack...
+        if not bsInternal._getPurchased('characters.santa'): disallowed.append('Santa Claus')
+        if not bsInternal._getPurchased('characters.frosty'): disallowed.append('Frosty')
+        if not bsInternal._getPurchased('characters.bones'): disallowed.append('Bones')
+        if not bsInternal._getPurchased('characters.bernard'): disallowed.append('Bernard')
+        if not bsInternal._getPurchased('characters.pixie'): disallowed.append('Pixel')
+        if not bsInternal._getPurchased('characters.pascal'): disallowed.append('Pascal')
+        if not bsInternal._getPurchased('characters.actionhero'): disallowed.append('Todd McBurton')
+        if not bsInternal._getPurchased('characters.taobaomascot'): disallowed.append('Taobao Mascot')
+        if not bsInternal._getPurchased('characters.agent'): disallowed.append('Agent Johnson')
+        if not bsInternal._getPurchased('characters.jumpsuit'): disallowed.append('Lee')
+        if not bsInternal._getPurchased('characters.assassin'): disallowed.append('Zola')
+        if not bsInternal._getPurchased('characters.cowboy'): disallowed.append('Butch')
+        if not bsInternal._getPurchased('characters.witch'): disallowed.append('Witch')
+        if not bsInternal._getPurchased('characters.warrior'): disallowed.append('Warrior')
+        if not bsInternal._getPurchased('characters.superhero'): disallowed.append('Middle-Man')
+        if not bsInternal._getPurchased('characters.alien'): disallowed.append('Alien')
+        if not bsInternal._getPurchased('characters.oldlady'): disallowed.append('OldLady')
+        if not bsInternal._getPurchased('characters.gladiator'): disallowed.append('Gladiator')
+        if not bsInternal._getPurchased('characters.wrestler'): disallowed.append('Wrestler')
+        if not bsInternal._getPurchased('characters.operasinger'): disallowed.append('Gretel')
+        if not bsInternal._getPurchased('characters.pixie'): disallowed.append('Pixie')
+        if not bsInternal._getPurchased('characters.robot'): disallowed.append('Robot')
+        if not bsInternal._getPurchased('characters.cyborg'): disallowed.append('B-9000')
+        if not bsInternal._getPurchased('characters.bunny'): disallowed.append('Easter Bunny')
+        if not bsInternal._getPurchased('characters.kronk'): disallowed.append('Kronk')
+        if not bsInternal._getPurchased('characters.zoe'): disallowed.append('Zoe')
+        if not bsInternal._getPurchased('characters.jackmorgan'): disallowed.append('Jack Morgan')
+        if not bsInternal._getPurchased('characters.mel'): disallowed.append('Mel')
+        if not bsInternal._getPurchased('characters.snakeshadow'): disallowed.append('Snake Shadow')
+        
+        # Custom characters that can only be obtained with achievements
+        if not bsAchievement.getAchievement('Make It Through').isComplete(): disallowed.append('Mictlan')
+        if not bsAchievement.getAchievement('Onslaught God').isComplete(): disallowed.append('Zill')
+        if not bsAchievement.getAchievement('The Full Run').isComplete(): disallowed.append('Looie')
+        if not bsAchievement.getAchievement('Half-Marathon').isComplete(): disallowed.append('Spy')
+        if not bsAchievement.getAchievement('Last Stand God').isComplete(): disallowed.append('Juice-Boy')
+        
+        # Custom characters that can be obtained from the store
+        if not bsInternal._getPurchased('characters.wizard_mr'): disallowed.append('Grumbledorf')
+        if not bsInternal._getPurchased('characters.cow_mr'): disallowed.append('Milk')
+        
+        # AVGN swears. ALOT! What If you have dem kids to play this crap? No problemo!
+        if bsInternal._getSetting('Kid Friendly Mode'): disallowed.append('AVGN')
     return [s for s in appearances.keys() if s not in disallowed]
 
 gPowerupWearOffTime = 20000
+gPowerfulPowerupWearOffTime = 15000
 
-# obsolete - just used for demo guy now
 gBasePunchPowerScale = 1.2
-gBasePunchCooldown = 400
+gBasePunchCooldown = 500
+
 
 gLameBotColor = (1.2,0.9,0.2)
 gLameBotHighlight = (1.0,0.5,0.6)
@@ -111,7 +121,6 @@ class Appearance(object):
         self.defaultColor = None
         self.defaultHighlight = None
 
-
 class SpazFactory(object):
     """
     Category: Game Flow Classes
@@ -137,7 +146,7 @@ class SpazFactory(object):
 
        punchSound
           A standard punch bs.Sound.
-
+       
        punchSoundsStrong
           A tuple of stronger sounding punch bs.Sounds.
 
@@ -161,7 +170,7 @@ class SpazFactory(object):
 
        rollerMaterial
           A bs.Material applied to the invisible roller ball body that a bs.Spaz uses for locomotion.
-
+    
        punchMaterial
           A bs.Material applied to the 'fist' of a bs.Spaz.
 
@@ -183,26 +192,67 @@ class SpazFactory(object):
         Instantiate a factory object.
         """
 
+        # Flesh characters
         self.impactSoundsMedium = (bs.getSound('impactMedium'),
-                                bs.getSound('impactMedium2'))
+                                bs.getSound('impactMedium2'),
+								bs.getSound('impactMedium3'),
+								bs.getSound('impactMedium4'),
+								bs.getSound('impactMedium5'),
+								bs.getSound('impactMedium6'),
+								bs.getSound('impactMedium7'))
         self.impactSoundsHard = (bs.getSound('impactHard'),
-                                 bs.getSound('impactHard2'),
-                                 bs.getSound('impactHard3'))
-        self.impactSoundsHarder = (bs.getSound('bigImpact'),
-                                   bs.getSound('bigImpact2'))
+                                bs.getSound('impactHard2'),
+                                bs.getSound('impactHard3'),
+								bs.getSound('impactHard4'),
+								bs.getSound('impactHard5'),
+								bs.getSound('impactHard6'))
+        self.impactSoundsHarder = (bs.getSound('impactGiant'),
+                                   bs.getSound('impactGiant2'),
+								   bs.getSound('impactGiant3'),
+								   bs.getSound('impactGiant4'),
+								   bs.getSound('impactGiant5'),
+								   bs.getSound('impactGiant6'))
+        # Metal characters (mainly robots)
+        self.impactMetalSoundsMedium = (bs.getSound('impactMediumMetal1'),
+                                bs.getSound('impactMediumMetal2'))
+        self.impactMetalSoundsHard = (bs.getSound('impactHardMetal1'),
+                                bs.getSound('impactHardMetal2'))
+        self.impactMetalSoundsHarder = (bs.getSound('impactGiantMetal1'),
+                                bs.getSound('impactGiantMetal2'))
+        # Cardboard characters (for example Juicebox)
+        self.impactCardboardSoundsMedium = (bs.getSound('impactMediumCardboard1'),
+                                bs.getSound('impactMediumCardboard2'))
+        self.impactCardboardSoundsHard = (bs.getSound('impactHardCardboard1'),
+                                bs.getSound('impactHardCardboard2'))
+        self.impactCardboardSoundsHarder = (bs.getSound('impactGiantCardboard1'),
+                                bs.getSound('impactGiantCardboard2'))
+        
         self.singlePlayerDeathSound = bs.getSound('playerDeath')
+        
         self.punchSound = bs.getSound('punch01')
-
+        self.punchWeakSound = bs.getSound('punchWeak01')
         self.punchSoundsStrong = (bs.getSound('punchStrong01'),
                                   bs.getSound('punchStrong02'))
-
         self.punchSoundStronger = bs.getSound('superPunch')
-
-        self.swishSound = bs.getSound('punchSwish')
+        # The CRIT! sound effect
+        self.powerPunchSounds = (bs.getSound('owThatHurts1'),
+                                bs.getSound('owThatHurts2'))
+        self.homeRunSound = bs.getSound('homeRun')
+        self.swishSounds = (bs.getSound('punchSwish1'),
+                          bs.getSound('punchSwish2'))
+        
         self.blockSound = bs.getSound('block')
         self.shatterSound = bs.getSound('shatter')
         self.splatterSound = bs.getSound('splatter')
-
+        
+        # Speed Up and Down sounds for the Speed Boots powerup
+        self.speedUpSound = bs.getSound('speedUp')
+        self.speedDownSound = bs.getSound('speedDown')
+        
+        #Curse Sounds
+        self.curseSound = bs.getSound('curse')
+        self.curseOffensiveSound = bs.getSound('curseOffensive')
+        
         self.spazMaterial = bs.Material()
         self.rollerMaterial = bs.Material()
         self.punchMaterial = bs.Material()
@@ -213,7 +263,7 @@ class SpazFactory(object):
         objectMaterial = bs.getSharedObject('objectMaterial')
         playerMaterial = bs.getSharedObject('playerMaterial')
         regionMaterial = bs.getSharedObject('regionMaterial')
-
+        
         # send footing messages to spazzes so they know when they're on solid ground
         # eww this should really just be built into the spaz node
         self.rollerMaterial.addActions(
@@ -243,9 +293,11 @@ class SpazFactory(object):
             actions=('message','ourNode','atConnect',_CurseExplodeMessage()))
 
 
-        self.footImpactSounds = (bs.getSound('footImpact01'),
+        self.footImpactSounds = (bs.getSound('footImpact01'), # Flesh characters
                                  bs.getSound('footImpact02'),
                                  bs.getSound('footImpact03'))
+        self.metalFootImpactSounds = (bs.getSound('footImpactMetal01'), # Metal characters (mainly robots)
+                                 bs.getSound('footImpactMetal02'))
 
         self.footSkidSound = bs.getSound('skid01')
         self.footRollSound = bs.getSound('scamper01')
@@ -254,7 +306,7 @@ class SpazFactory(object):
             conditions=('theyHaveMaterial',footingMaterial),
             actions=(('impactSound',self.footImpactSounds,1,0.2),
                      ('skidSound',self.footSkidSound,20,0.3),
-                     ('rollSound',self.footRollSound,20,3.0)))
+                     ('rollSound',self.footRollSound,20,10.0)))
 
         self.skidSound = bs.getSound('gravelSkid')
 
@@ -267,6 +319,9 @@ class SpazFactory(object):
         self.shieldUpSound = bs.getSound('shieldUp')
         self.shieldDownSound = bs.getSound('shieldDown')
         self.shieldHitSound = bs.getSound('shieldHit')
+        self.shieldDecaySound = bs.getSound('shieldDecay')
+        self.shieldIdleSound = bs.getSound('shieldIdle')
+        self.healthPowerupSound = bs.getSound("healthPowerup")
 
         # we dont want to collide with stuff we're initially overlapping
         # (unless its marked with a special region material)
@@ -274,20 +329,12 @@ class SpazFactory(object):
             conditions=( (('weAreYoungerThan', 51),'and',('theyAreDifferentNodeThanUs',)),
                          'and',('theyDontHaveMaterial',regionMaterial)),
             actions=( ('modifyNodeCollision','collide',False)))
-
+        
         self.spazMedia = {}
-
-        # lets load some basic rules (allows them to be tweaked from the master server)
-        self.shieldDecayRate = bsInternal._getAccountMiscReadVal('rsdr',10.0)
-        self.punchCooldown = bsInternal._getAccountMiscReadVal('rpc',400)
-        self.punchCooldownGloves = bsInternal._getAccountMiscReadVal('rpcg',300)
-        self.punchPowerScale = bsInternal._getAccountMiscReadVal('rpp',1.2)
-        self.punchPowerScaleGloves = bsInternal._getAccountMiscReadVal('rppg',1.4)
-        self.maxShieldSpilloverDamage = bsInternal._getAccountMiscReadVal('rsms',500)
 
     def _getStyle(self,character):
         return appearances[character].style
-
+        
     def _getMedia(self,character):
 
         t = appearances[character]
@@ -318,7 +365,7 @@ class SpazFactory(object):
 class Spaz(bs.Actor):
     """
     category: Game Flow Classes
-
+    
     Base class for various Spazzes.
     A Spaz is the standard little humanoid character in the game.
     It can be controlled by a player or by AI, and can have
@@ -331,28 +378,25 @@ class Spaz(bs.Actor):
        node
           The 'spaz' bs.Node.
     """
-
+    
     pointsMult = 1
-    curseTime = 5000
+    curseTime = 8000
 
     defaultBombCount = 1
     defaultBombType = 'normal'
+    defaultBlastRadius = 2.0
     defaultBoxingGloves = False
     defaultShields = False
 
-    def __init__(self, color=(1,1,1), highlight=(0.5,0.5,0.5), character="Spaz", sourcePlayer=None, startInvincible=True,
-                 canAcceptPowerups=True, powerupsExpire=False, demoMode=False):
+    def __init__(self,color=(1,1,1),highlight=(0.5,0.5,0.5),character="Spaz",sourcePlayer=None,startInvincible=True,canAcceptPowerups=True,powerupsExpire=False):
         """
         Create a new spaz with the requested color, character, etc.
         """
-
+        
         bs.Actor.__init__(self)
         activity = self.getActivity()
-
+        
         factory = self.getFactory()
-
-        # we need to behave slightly different in the tutorial
-        self._demoMode = demoMode
 
         self.playBigDeathSound = False
 
@@ -361,28 +405,20 @@ class Spaz(bs.Actor):
 
         # scales how much impacts affect us (most damage calcs)
         self._impactScale = 1.0
-
+        
         self.sourcePlayer = sourcePlayer
         self._dead = False
-        if self._demoMode: # preserve old behavior
-            self._punchPowerScale = gBasePunchPowerScale
-        else:
-            self._punchPowerScale = factory.punchPowerScale
+        self._punchPowerScale = gBasePunchPowerScale
         self.fly = bs.getSharedObject('globals').happyThoughtsMode
         self._hockey = activity._map.isHockey
         self._punchedNodes = set()
         self._cursed = False
         self._connectedToPlayer = None
 
-        materials = [factory.spazMaterial,
-                     bs.getSharedObject('objectMaterial'),
-                     bs.getSharedObject('playerMaterial')]
-
-        rollerMaterials = [factory.rollerMaterial,
-                           bs.getSharedObject('playerMaterial')]
-
+        materials = [factory.spazMaterial,bs.getSharedObject('objectMaterial'),bs.getSharedObject('playerMaterial')]
+        rollerMaterials = [factory.rollerMaterial,bs.getSharedObject('playerMaterial')]
         extrasMaterials = []
-
+        
         if canAcceptPowerups:
             pam = bs.Powerup.getFactory().powerupAcceptMaterial
             materials.append(pam)
@@ -393,8 +429,6 @@ class Spaz(bs.Actor):
         self.node = bs.newNode(type="spaz",
                                delegate=self,
                                attrs={'color':color,
-                                      'behaviorVersion':0 if demoMode else 1,
-                                      'demoMode':True if demoMode else False,
                                       'highlight':highlight,
                                       'jumpSounds':media['jumpSounds'],
                                       'attackSounds':media['attackSounds'],
@@ -428,37 +462,64 @@ class Spaz(bs.Actor):
         if startInvincible:
             def _safeSetAttr(node,attr,val):
                 if node.exists(): setattr(node,attr,val)
-            bs.gameTimer(1000,bs.Call(_safeSetAttr,self.node,'invincible',False))
+            bs.gameTimer(1500,bs.Call(_safeSetAttr,self.node,'invincible',False))
 
         self.hitPoints = 1000
         self.hitPointsMax = 1000
+        #How much HP you can receive from Overdrive powerup
+        self.hitPointsOverdrive = 1000
+        #How much HP you need to have until you'll be cursed
+        self.hitPointsOverdriveTooMuch = 2000
+        #How many damage you receive per second if "on fire"
+        self.fireDamage = 125
+        
+        # This value checks how much damage you received. Important for the achievement.
+        self.hitPointsAchievement = 0
+        
         self.bombCount = self.defaultBombCount
         self._maxBombCount = self.defaultBombCount
         self.bombTypeDefault = self.defaultBombType
         self.bombType = self.bombTypeDefault
         self.landMineCount = 0
-        self.blastRadius = 2.0
+        self.grenadeCount = 0
+        self.healBombCount = 0
+        self.hijumpCount = 0
+        self.blastRadius = self.defaultBlastRadius
         self.powerupsExpire = powerupsExpire
-        if self._demoMode: # preserve old behavior
-            self._punchCooldown = gBasePunchCooldown
-        else:
-            self._punchCooldown = factory.punchCooldown
+        self._punchCooldown = gBasePunchCooldown
         self._hasBoxingGloves = False
         if self.defaultBoxingGloves: self.equipBoxingGloves()
         self.lastPunchTime = 0
         self.frozen = False
+        self.burning = False
         self.shattered = False
         self._lastHitTime = None
         self._numTimesHit = 0
         self._bombHeld = False
-        if self.defaultShields: self.equipShields()
+        if self.defaultShields: 
+            try: player = bs.PlayerSpaz.getPlayer(self)
+            except Exception: player = None
+            self.equipShields(player)
 
         self._droppedBombCallbacks = []
 
         # deprecated stuff.. need to make these into lists
         self.punchCallback = None
         self.pickUpPowerupCallback = None
-
+        
+    def lightningPower(self):
+        """
+        After collecting Overdrive powerup, show some WACKY EFFECTZ, OOOH
+        just to highlight the power.
+        """  
+        self.nova = bs.newNode('light',
+                           attrs={'position':self.node.position,
+                                  'color': (0.8,0.56,0.8),
+                                  'volumeIntensityScale': 0.5})     
+                                  
+        bs.gameTimer(200,self.nova.delete)    
+        bs.emitBGDynamics(position=self.node.position,velocity=self.node.velocity,count=int(8.0+random.random()*45),scale=1.0,spread=3,chunkType='spark');
+        
     def onFinalize(self):
         bs.Actor.onFinalize(self)
 
@@ -466,14 +527,14 @@ class Spaz(bs.Actor):
         self._droppedBombCallbacks = []
         self.punchCallback = None
         self.pickUpPowerupCallback = None
-
+        
     def addDroppedBombCallback(self,call):
         """
         Add a call to be run whenever this Spaz drops a bomb.
         The spaz and the newly-dropped bomb are passed as arguments.
         """
         self._droppedBombCallbacks.append(call)
-
+                            
     def isAlive(self):
         """
         Method override; returns whether ol' spaz is still kickin'.
@@ -538,11 +599,11 @@ class Spaz(bs.Actor):
                                                    0.75*t:c1,
                                                    1.0*t:c2})
             combine.connectAttr('output',self._scoreText,'color')
-
+            
         bs.animate(self._scoreText,'scale',{0:startScale,200:0.02})
         self._scoreTextHideTimer = bs.Timer(1000,bs.WeakCall(self._hideScoreText))
 
-
+        
     def onJumpPress(self):
         """
         Called to 'press jump' on this spaz;
@@ -597,7 +658,7 @@ class Spaz(bs.Actor):
         used for player or AI connections.
         """
         if not self.node.exists() or self.frozen or self.node.knockout > 0.0: return
-
+        
         if self.punchCallback is not None:
             self.punchCallback(self)
         t = bs.getGameTime()
@@ -606,15 +667,18 @@ class Spaz(bs.Actor):
             self.lastPunchTime = t
             self.node.punchPressed = True
             if not self.node.holdNode.exists():
-                bs.gameTimer(100,bs.WeakCall(self._safePlaySound,self.getFactory().swishSound,0.8))
+                punches = self.getFactory().swishSounds
+                punch = punches[random.randrange(len(punches))]
+                bs.gameTimer(100,bs.WeakCall(self._safePlaySound,punch,0.6))
+                
 
     def _safePlaySound(self,sound,volume):
         """
         Plays a sound at our position if we exist.
         """
         if self.node.exists():
-            bs.playSound(sound, volume, self.node.position)
-
+            bs.playSound(sound,volume,self.node.position)
+        
     def onPunchRelease(self):
         """
         Called to 'release punch' on this spaz;
@@ -629,7 +693,7 @@ class Spaz(bs.Actor):
         used for player or AI connections.
         """
         if not self.node.exists(): return
-
+        
         if self._dead or self.frozen: return
         if self.node.knockout > 0.0: return
         self.node.bombPressed = True
@@ -637,7 +701,7 @@ class Spaz(bs.Actor):
 
     def onBombRelease(self):
         """
-        Called to 'release bomb' on this spaz;
+        Called to 'release bomb' on this spaz; 
         used for player or AI connections.
         """
         if not self.node.exists(): return
@@ -674,7 +738,7 @@ class Spaz(bs.Actor):
         """
         if not self.node.exists(): return
         self.node.handleMessage("move",x,y)
-
+        
     def onMoveUpDown(self,value):
         """
         Called to set the up/down joystick amount on this spaz;
@@ -711,74 +775,166 @@ class Spaz(bs.Actor):
     def curse(self):
         """
         Give this poor spaz a curse;
-        he will explode in 5 seconds.
+        he will explode in 8 seconds.
         """
         if not self._cursed:
-            factory = self.getFactory()
-            self._cursed = True
-            # add the curse material..
-            for attr in ['materials','rollerMaterials']:
-                materials = getattr(self.node,attr)
-                if not factory.curseMaterial in materials:
-                    setattr(self.node,attr,materials + (factory.curseMaterial,))
-
-            # -1 specifies no time limit
-            if self.curseTime == -1:
-                self.node.curseDeathTime = -1
+            if self.healBombCount != 0: # Don't curse the players that have Healing Bombs in their inventory. Instead of cursing, remove one from the stock.
+                self.setHealBombCount(self.healBombCount-1)
             else:
-                self.node.curseDeathTime = bs.getGameTime()+5000
-                bs.gameTimer(5000,bs.WeakCall(self.curseExplode))
-
+                factory = self.getFactory()
+                self._cursed = True
+                if bs.getConfig().get('Offensive Curse Sound', True):
+                    self.sound = bs.newNode('sound',owner=self.node,attrs={'sound':factory.curseOffensiveSound,'volume':1.0})
+                else:
+                    self.sound = bs.newNode('sound',owner=self.node,attrs={'sound':factory.curseSound,'volume':1.0})
+                self.node.connectAttr('position',self.sound,'position')
+                # add the curse material..
+                for attr in ['materials','rollerMaterials']:
+                    materials = getattr(self.node,attr)
+                    if not factory.curseMaterial in materials:
+                        setattr(self.node,attr,materials + (factory.curseMaterial,))
+                # -1 specifies no time limit
+                if self.curseTime == -1:
+                    self.node.curseDeathTime = -1
+                else:
+                    self.node.curseDeathTime = bs.getGameTime()+8000
+                    self.curseExplodeTimer = bs.Timer(8000,bs.WeakCall(self.curseExplode))
+        else:
+            if not self.curseTime == -1:
+                self.node.curseDeathTime = bs.getGameTime()+8000
+                self.curseExplodeTimer = bs.Timer(8000,bs.WeakCall(self.curseExplode))
+            
     def equipBoxingGloves(self):
         """
         Give this spaz some boxing gloves.
         """
+        activity = self.getActivity()
+        factory = self.getFactory()
+        
+        def _safeSetAttr(node,attr,val):
+            if node.exists(): setattr(node,attr,val)
+        if not activity._map.isHockey:
+            bs.gameTimer(1,bs.Call(_safeSetAttr,self.node,'hockey',False))
         self.node.boxingGloves = 1
-        if self._demoMode: # preserve old behavior
-            self._punchPowerScale = 1.7
-            self._punchCooldown = 300
-        else:
-            factory = self.getFactory()
-            self._punchPowerScale = factory.punchPowerScaleGloves
-            self._punchCooldown = factory.punchCooldownGloves
+        self._hasBoxingGloves = True
+        self._punchPowerScale = 1.9
+        self._punchCooldown = 750
+        
+    def equipSpeed(self):
+        """
+        Give this spaz speed boots.
+        """
+        factory = self.getFactory()
+        def _safeSetAttr(node,attr,val):
+            if node.exists(): setattr(node,attr,val)
+        bs.gameTimer(1,bs.Call(_safeSetAttr,self.node,'hockey',True))
+        bs.playSound(factory.speedUpSound,position=self.node.position)
+        self._hasBoxingGloves = False
+        self.node.boxingGloves = 0
+        self._punchPowerScale = 1.1
+        self._punchCooldown = 350
 
-    def equipShields(self, decay=False):
+    def equipShields(self,player):
         """
         Give this spaz a nice energy shield.
         """
 
-        if not self.node.exists():
-            bs.printError('Can\'t equip shields; no node.')
-            return
-
+        if not self.node.exists(): raise Exception('Can\'t equip shields; no node.')
+        
         factory = self.getFactory()
-        if self.shield is None:
-            self.shield = bs.newNode('shield',owner=self.node,
-                                     attrs={'color':(0.3,0.2,2.0),'radius':1.3})
-            self.node.connectAttr('positionCenter',self.shield,'position')
-        self.shieldHitPoints = self.shieldHitPointsMax = 650
-        self.shieldDecayRate = factory.shieldDecayRate if decay else 0
-        self.shield.hurt = 0
-        bs.playSound(factory.shieldUpSound,1.0,position=self.node.position)
-
-        if self.shieldDecayRate > 0:
-            self.shieldDecayTimer = bs.Timer(500,bs.WeakCall(self.shieldDecay),repeat=True)
-            self.shield.alwaysShowHealthBar = True # so the user can see the decay
-
+        if player is not None:
+            if self.shield is None: 
+                if isinstance(bs.getSession(),bs.TeamsSession): # Color the shields based on the team you're in (if it's a team game, that is)
+                    playerTeam = player.getTeam().getID()
+                    if playerTeam == 0:
+                        self.shield = bs.newNode('shield',owner=self.node,
+                                        attrs={'color':(0.2,0.2,5.0),'radius':1.3})
+                    elif playerTeam == 1:
+                        self.shield = bs.newNode('shield',owner=self.node,
+                                        attrs={'color':(3.0,0.2,0.2),'radius':1.3})
+                    else:
+                        self.shield = bs.newNode('shield',owner=self.node,
+                                        attrs={'color':(0.3,0.2,2.0),'radius':1.3})
+                else:
+                    self.shield = bs.newNode('shield',owner=self.node,
+                                        attrs={'color':(0.3,0.2,2.0),'radius':1.3})
+                self.node.connectAttr('positionCenter',self.shield,'position')
+                self.shieldSound = bs.newNode('sound',owner=self.node,attrs={'sound':factory.shieldIdleSound,'volume':0.55})
+                self.node.connectAttr('position',self.shieldSound,'position')
+            else:
+                if self.shieldHitPoints == 1:
+                    self.shield.delete()
+                    if isinstance(bs.getSession(),bs.TeamsSession): # Color the shields based on the team you're in (if it's a team game, that is)
+                        playerTeam = player.getTeam().getID()
+                        if playerTeam == 0:
+                            self.shield = bs.newNode('shield',owner=self.node,
+                                            attrs={'color':(0.2,0.2,5.0),'radius':1.3})
+                        elif playerTeam == 1:
+                            self.shield = bs.newNode('shield',owner=self.node,
+                                            attrs={'color':(3.0,0.2,0.2),'radius':1.3})
+                        else:
+                            self.shield = bs.newNode('shield',owner=self.node,
+                                            attrs={'color':(0.3,0.2,2.0),'radius':1.3})
+                    else:
+                            self.shield = bs.newNode('shield',owner=self.node,
+                                                attrs={'color':(0.3,0.2,2.0),'radius':1.3})
+                    self.node.connectAttr('positionCenter',self.shield,'position')
+                    self.shieldSound = bs.newNode('sound',owner=self.node,attrs={'sound':factory.shieldIdleSound,'volume':0.55})
+                    self.node.connectAttr('position',self.shieldSound,'position')
+            # Outside Coop sessions, increase the shield's health, to compensate for the decaying mechanic. Since in Coop sessions the shield doesn't decay, I leave its value to default 600.
+            if not isinstance(bs.getSession(),bs.CoopSession): 
+                self.shieldHitPoints = self.shieldHitPointsMax = 800
+            else:
+                self.shieldHitPoints = self.shieldHitPointsMax = 600
+            self.shield.hurt = 0
+            bs.playSound(factory.shieldUpSound,1.0,position=self.node.position)
+            if not isinstance(bs.getSession(),bs.CoopSession):
+                self.shieldDecayTimer = bs.Timer(20000,bs.WeakCall(self.shieldDecay)) # Only decay shields outside of Coop sessions
+        else: # If the player is not given
+            if self.shield is None: 
+                self.shield = bs.newNode('shield',owner=self.node,
+                                        attrs={'color':(0.3,0.2,2.0),'radius':1.3})
+                self.node.connectAttr('positionCenter',self.shield,'position')
+                self.shieldSound = bs.newNode('sound',owner=self.node,attrs={'sound':factory.shieldIdleSound,'volume':0.55})
+                self.node.connectAttr('position',self.shieldSound,'position')
+            else:
+                if self.shieldHitPoints == 1:
+                    self.shield.delete()
+                self.shield = bs.newNode('shield',owner=self.node,
+                                        attrs={'color':(0.3,0.2,2.0),'radius':1.3})
+                self.node.connectAttr('positionCenter',self.shield,'position')
+                self.shieldSound = bs.newNode('sound',owner=self.node,attrs={'sound':factory.shieldIdleSound,'volume':0.55})
+                self.node.connectAttr('position',self.shieldSound,'position')
+            # Outside Coop sessions, increase the shield's health, to compensate for the decaying mechanic. Since in Coop sessions the shield doesn't decay, I leave its value to default 600.
+            if not isinstance(bs.getSession(),bs.CoopSession): 
+                self.shieldHitPoints = self.shieldHitPointsMax = 800
+            else:
+                self.shieldHitPoints = self.shieldHitPointsMax = 600
+            self.shield.hurt = 0
+            bs.playSound(factory.shieldUpSound,1.0,position=self.node.position)
+            if not isinstance(bs.getSession(),bs.CoopSession):
+                self.shieldDecayTimer = bs.Timer(20000,bs.WeakCall(self.shieldDecay)) # Only decay shields outside of Coop sessions
+        
     def shieldDecay(self):
-        # drop shield HP over time
-        if self.shield is not None and self.shield.exists():
-            self.shieldHitPoints = max(0,self.shieldHitPoints - self.shieldDecayRate)
-            self.shield.hurt = 1.0 - float(self.shieldHitPoints)/self.shieldHitPointsMax
-            if self.shieldHitPoints <= 0:
-                self.shield.delete()
-                self.shield = None
-                self.shieldDecayTimer = None
-                bs.playSound(self.getFactory().shieldDownSound,1.0,position=self.node.position)
-        else:
-            self.shieldDecayTimer = None
-
+        factory = self.getFactory()
+        if self.shield is not None:
+            t = self.node.position
+            self.shieldHitPoints = 1
+            self.shield.delete()
+            self.shieldSound.delete()
+            self.shield = None
+            self.shield = bs.newNode('shield',owner=self.node,
+                                    attrs={'color':(0.7,0.7,0.7),'radius':1.0})
+            self.node.connectAttr('positionCenter',self.shield,'position')
+            bs.playSound(self.getFactory().shieldDecaySound,1.0,position=self.node.position)
+            # emit some cool lookin sparks when the shield decays
+            bs.emitBGDynamics(position=(t[0],t[1]+0.9,t[2]),
+                            velocity=self.node.velocity,
+                            count=random.randrange(30,50),scale=0.3,spread=1,chunkType='spark')
+            self.shield.hurt = 1.0
+        
     def handleMessage(self,m):
+        import bsInternal
         self._handleMessageSanityCheck()
 
         if isinstance(m,bs.PickedUpMessage):
@@ -798,6 +954,7 @@ class Spaz(bs.Actor):
             bs.gameTimer(1,bs.WeakCall(self._hitSelf,m.intensity))
 
         elif isinstance(m,bs.PowerupMessage):
+            self.scale = 1.3 # Powerup Notification text size
             if self._dead: return True
             if self.pickUpPowerupCallback is not None:
                 self.pickUpPowerupCallback(self)
@@ -806,6 +963,12 @@ class Spaz(bs.Actor):
                 tex = bs.Powerup.getFactory().texBomb
                 self._flashBillboard(tex)
                 self.setBombCount(3)
+                self.blastRadius = self.defaultBlastRadius
+                if bs.getConfig().get('Powerup Popups', True):
+                    bsUtils.PopupText((bs.Lstr(resource='tripleBombs')),
+                                            color=(1,1,0),
+                                            scale=self.scale,
+                                            position=self.node.position).autoRetain()
                 if self.powerupsExpire:
                     self.node.miniBillboard1Texture = tex
                     t = bs.getGameTime()
@@ -813,12 +976,88 @@ class Spaz(bs.Actor):
                     self.node.miniBillboard1EndTime = t+gPowerupWearOffTime
                     self._multiBombWearOffFlashTimer = bs.Timer(gPowerupWearOffTime-2000,bs.WeakCall(self._multiBombWearOffFlash))
                     self._multiBombWearOffTimer = bs.Timer(gPowerupWearOffTime,bs.WeakCall(self._multiBombWearOff))
+            elif (m.powerupType == 'blastBuff'):
+                tex = bs.Powerup.getFactory().texBlast
+                self._flashBillboard(tex)
+                self.setBombCount(self.defaultBombCount)
+                self.blastRadius = 2.2
+                if bs.getConfig().get('Powerup Popups', True):
+                    bsUtils.PopupText((bs.Lstr(resource='blastBuff')),
+                                            color=(1,1,0),
+                                            scale=self.scale,
+                                            position=self.node.position).autoRetain()
+                if self.powerupsExpire:
+                    self.node.miniBillboard1Texture = tex
+                    t = bs.getGameTime()
+                    self.node.miniBillboard1StartTime = t
+                    self.node.miniBillboard1EndTime = t+gPowerupWearOffTime
+                    self._multiBombWearOffFlashTimer = bs.Timer(gPowerupWearOffTime-2000,bs.WeakCall(self._blastBuffWearOffFlash))
+                    self._multiBombWearOffTimer = bs.Timer(gPowerupWearOffTime,bs.WeakCall(self._blastBuffWearOff))
             elif m.powerupType == 'landMines':
+                self.setGrenadeCount(min(0,4))
+                self.setHealBombCount(min(0,2))
+                self.setHijumpCount(min(0,6))
                 self.setLandMineCount(min(self.landMineCount+3,3))
+                if bs.getConfig().get('Powerup Popups', True):
+                    bsUtils.PopupText((bs.Lstr(resource='landMine')),
+                                            color=(0.1,0.7,0),
+                                            scale=self.scale,
+                                            position=self.node.position).autoRetain()
+            elif m.powerupType == 'grenades':
+                self.setHealBombCount(min(0,2))
+                self.setLandMineCount(min(0,3))
+                self.setHijumpCount(min(0,6))
+                self.setGrenadeCount(min(self.grenadeCount+2,4))
+                if bs.getConfig().get('Powerup Popups', True):
+                    bsUtils.PopupText((bs.Lstr(resource='grenade')),
+                                            color=(0.57,0.82,0.6),
+                                            scale=self.scale,
+                                            position=self.node.position).autoRetain()
+            elif m.powerupType == 'hijump':
+                self.setHealBombCount(min(0,2))
+                self.setLandMineCount(min(0,3))
+                self.setGrenadeCount(min(0,4))
+                self.setHijumpCount(min(self.hijumpCount+3,6))
+                if bs.getConfig().get('Powerup Popups', True):
+                    bsUtils.PopupText((bs.Lstr(resource='hijump')),
+                                            color=(1,0.01,0.95),
+                                            scale=self.scale,
+                                            position=self.node.position).autoRetain()
+            elif m.powerupType == 'healBombs':
+                self.setGrenadeCount(min(0,4))
+                self.setLandMineCount(min(0,3))
+                self.setHijumpCount(min(0,6))
+                self.setHealBombCount(min(self.healBombCount+1,2))
+                if bs.getConfig().get('Powerup Popups', True):
+                    bsUtils.PopupText((bs.Lstr(resource='healBomb')),
+                                            color=(1,0.4,0.7),
+                                            scale=self.scale,
+                                            position=self.node.position).autoRetain()
             elif m.powerupType == 'impactBombs':
                 self.bombType = 'impact'
                 tex = self._getBombTypeTex()
                 self._flashBillboard(tex)
+                if bs.getConfig().get('Powerup Popups', True):
+                    bsUtils.PopupText((bs.Lstr(resource='impactBomb')),
+                                            color=(0.6,0.6,0.6),
+                                            scale=self.scale,
+                                            position=self.node.position).autoRetain()
+                if self.powerupsExpire:
+                    self.node.miniBillboard2Texture = tex
+                    t = bs.getGameTime()
+                    self.node.miniBillboard2StartTime = t
+                    self.node.miniBillboard2EndTime = t+gPowerupWearOffTime
+                    self._bombWearOffFlashTimer = bs.Timer(gPowerupWearOffTime-2000,bs.WeakCall(self._bombWearOffFlash))
+                    self._bombWearOffTimer = bs.Timer(gPowerupWearOffTime,bs.WeakCall(self._bombWearOff))
+            elif m.powerupType == 'knockerBombs':
+                self.bombType = 'knocker'
+                tex = self._getBombTypeTex()
+                self._flashBillboard(tex)
+                if bs.getConfig().get('Powerup Popups', True):
+                    bsUtils.PopupText((bs.Lstr(resource='knockerBomb')),
+                                            color=(0.0,0.0,1.0),
+                                            scale=self.scale,
+                                            position=self.node.position).autoRetain()
                 if self.powerupsExpire:
                     self.node.miniBillboard2Texture = tex
                     t = bs.getGameTime()
@@ -830,6 +1069,59 @@ class Spaz(bs.Actor):
                 self.bombType = 'sticky'
                 tex = self._getBombTypeTex()
                 self._flashBillboard(tex)
+                if bs.getConfig().get('Powerup Popups', True):
+                    bsUtils.PopupText((bs.Lstr(resource='stickyBomb')),
+                                            color=(0,1,0),
+                                            scale=self.scale,
+                                            position=self.node.position).autoRetain()
+                if self.powerupsExpire:
+                    self.node.miniBillboard2Texture = tex
+                    t = bs.getGameTime()
+                    self.node.miniBillboard2StartTime = t
+                    self.node.miniBillboard2EndTime = t+gPowerupWearOffTime
+                    self._bombWearOffFlashTimer = bs.Timer(gPowerupWearOffTime-2000,bs.WeakCall(self._bombWearOffFlash))
+                    self._bombWearOffTimer = bs.Timer(gPowerupWearOffTime,bs.WeakCall(self._bombWearOff))
+            elif m.powerupType == 'rangerBombs':
+                self.bombType = 'ranger'
+                tex = self._getBombTypeTex()
+                self._flashBillboard(tex)
+                if bs.getConfig().get('Powerup Popups', True):
+                    bsUtils.PopupText((bs.Lstr(resource='rangerBomb')),
+                                            color=(1,1,0.5),
+                                            scale=self.scale,
+                                            position=self.node.position).autoRetain()
+                if self.powerupsExpire:
+                    self.node.miniBillboard2Texture = tex
+                    t = bs.getGameTime()
+                    self.node.miniBillboard2StartTime = t
+                    self.node.miniBillboard2EndTime = t+gPowerupWearOffTime
+                    self._bombWearOffFlashTimer = bs.Timer(gPowerupWearOffTime-2000,bs.WeakCall(self._bombWearOffFlash))
+                    self._bombWearOffTimer = bs.Timer(gPowerupWearOffTime,bs.WeakCall(self._bombWearOff))
+            elif m.powerupType == 'combatBombs':
+                self.bombType = 'combat'
+                tex = self._getBombTypeTex()
+                self._flashBillboard(tex)
+                if bs.getConfig().get('Powerup Popups', True):
+                    bsUtils.PopupText((bs.Lstr(resource='combatBomb')),
+                                            color=(0,1,1),
+                                            scale=self.scale,
+                                            position=self.node.position).autoRetain()
+                if self.powerupsExpire:
+                    self.node.miniBillboard2Texture = tex
+                    t = bs.getGameTime()
+                    self.node.miniBillboard2StartTime = t
+                    self.node.miniBillboard2EndTime = t+gPowerupWearOffTime
+                    self._bombWearOffFlashTimer = bs.Timer(gPowerupWearOffTime-2000,bs.WeakCall(self._bombWearOffFlash))
+                    self._bombWearOffTimer = bs.Timer(gPowerupWearOffTime,bs.WeakCall(self._bombWearOff))
+            elif m.powerupType == 'dynamitePack':
+                self.bombType = 'dynamite'
+                tex = self._getBombTypeTex()
+                self._flashBillboard(tex)
+                if bs.getConfig().get('Powerup Popups', True):
+                    bsUtils.PopupText((bs.Lstr(resource='dynamitePack')),
+                                            color=(1,0,0),
+                                            scale=self.scale,
+                                            position=self.node.position).autoRetain()
                 if self.powerupsExpire:
                     self.node.miniBillboard2Texture = tex
                     t = bs.getGameTime()
@@ -842,6 +1134,11 @@ class Spaz(bs.Actor):
                 tex = bs.Powerup.getFactory().texPunch
                 self._flashBillboard(tex)
                 self.equipBoxingGloves()
+                if bs.getConfig().get('Powerup Popups', True):
+                    bsUtils.PopupText((bs.Lstr(resource='punch')),
+                                            color=(1,0.3,0.3),
+                                            scale=self.scale,
+                                            position=self.node.position).autoRetain()
                 if self.powerupsExpire:
                     self.node.boxingGlovesFlashing = 0
                     self.node.miniBillboard3Texture = tex
@@ -850,16 +1147,63 @@ class Spaz(bs.Actor):
                     self.node.miniBillboard3EndTime = t+gPowerupWearOffTime
                     self._boxingGlovesWearOffFlashTimer = bs.Timer(gPowerupWearOffTime-2000,bs.WeakCall(self._glovesWearOffFlash))
                     self._boxingGlovesWearOffTimer = bs.Timer(gPowerupWearOffTime,bs.WeakCall(self._glovesWearOff))
+            elif m.powerupType == 'speed':
+                tex = bs.Powerup.getFactory().texSpeed
+                self._flashBillboard(tex)
+                self.equipSpeed()
+                if bs.getConfig().get('Powerup Popups', True):
+                    bsUtils.PopupText((bs.Lstr(resource='speed')),
+                                            color=(0.75,1,0.1),
+                                            scale=self.scale,
+                                            position=self.node.position).autoRetain()
+                if self.powerupsExpire:
+                    self.node.miniBillboard3Texture = tex
+                    t = bs.getGameTime()
+                    self.node.miniBillboard3StartTime = t
+                    self.node.miniBillboard3EndTime = t+gPowerfulPowerupWearOffTime
+                    self._boxingGlovesWearOffFlashTimer = bs.Timer(gPowerfulPowerupWearOffTime-2000,bs.WeakCall(self._speedWearOffFlash))
+                    self._boxingGlovesWearOffTimer = bs.Timer(gPowerfulPowerupWearOffTime,bs.WeakCall(self._speedWearOff))
+                    
             elif m.powerupType == 'shield':
-                factory = self.getFactory()
-                # let's allow powerup-equipped shields to lose hp over time
-                self.equipShields(decay=True if factory.shieldDecayRate > 0 else False)
+                player = bs.PlayerSpaz.getPlayer(self)
+                self.equipShields(player)
+                if bs.getConfig().get('Powerup Popups', True):
+                    bsUtils.PopupText((bs.Lstr(resource='shield')),
+                                            color=(0.7,0.5,1),
+                                            scale=self.scale,
+                                            position=self.node.position).autoRetain()
             elif m.powerupType == 'curse':
                 self.curse()
+                if bs.getConfig().get('Powerup Popups', True):
+                    bsUtils.PopupText((bs.Lstr(resource='curse')),
+                                            color=(0.3,0,0.45),
+                                            scale=self.scale,
+                                            position=self.node.position).autoRetain()
             elif (m.powerupType == 'iceBombs'):
                 self.bombType = 'ice'
                 tex = self._getBombTypeTex()
                 self._flashBillboard(tex)
+                if bs.getConfig().get('Powerup Popups', True):
+                    bsUtils.PopupText((bs.Lstr(resource='iceBomb')),
+                                            color=(0,0.45,1.0),
+                                            scale=1.0,
+                                            position=self.node.position).autoRetain()
+                if self.powerupsExpire:
+                    self.node.miniBillboard2Texture = tex
+                    t = bs.getGameTime()
+                    self.node.miniBillboard2StartTime = t
+                    self.node.miniBillboard2EndTime = t+gPowerupWearOffTime
+                    self._bombWearOffFlashTimer = bs.Timer(gPowerupWearOffTime-2000,bs.WeakCall(self._bombWearOffFlash))
+                    self._bombWearOffTimer = bs.Timer(gPowerupWearOffTime,bs.WeakCall(self._bombWearOff))
+            elif (m.powerupType == 'fireBombs'):
+                self.bombType = 'fire'
+                tex = self._getBombTypeTex()
+                self._flashBillboard(tex)
+                if bs.getConfig().get('Powerup Popups', True):
+                    bsUtils.PopupText((bs.Lstr(resource='fireBomb')),
+                                            color=(1,0.5,1),
+                                            scale=self.scale,
+                                            position=self.node.position).autoRetain()
                 if self.powerupsExpire:
                     self.node.miniBillboard2Texture = tex
                     t = bs.getGameTime()
@@ -870,6 +1214,7 @@ class Spaz(bs.Actor):
             elif (m.powerupType == 'health'):
                 if self._cursed:
                     self._cursed = False
+                    self.sound.delete() # Stop the curse sound
                     # remove cursed material
                     factory = self.getFactory()
                     for attr in ['materials','rollerMaterials']:
@@ -877,12 +1222,42 @@ class Spaz(bs.Actor):
                         if factory.curseMaterial in materials:
                             setattr(self.node,attr,tuple(m for m in materials if m != factory.curseMaterial))
                     self.node.curseDeathTime = 0
-                self.hitPoints = self.hitPointsMax
+                if (self.hitPoints > self.hitPointsOverdriveTooMuch):
+                    self.hitPoints = self.hitPointsOverdriveTooMuch
+                elif (self.hitPoints < self.hitPointsMax):
+                    self.hitPoints = self.hitPointsMax
+                else:
+                    self.hitPoints = self.hitPoints
                 self._flashBillboard(bs.Powerup.getFactory().texHealth)
                 self.node.hurt = 0
                 self._lastHitTime = None
                 self._numTimesHit = 0
-
+                if bs.getConfig().get('Powerup Popups', True):
+                    bsUtils.PopupText((bs.Lstr(resource='health')),
+                                            color=(1,0.9,0.9),
+                                            scale=self.scale,
+                                            position=self.node.position).autoRetain()
+            elif (m.powerupType == 'overdrive'):
+                def _safeSetAttr(node,attr,val):
+                    if node.exists(): setattr(node,attr,val)
+                bs.gameTimer(1,bs.Call(_safeSetAttr,self.node,'invincible',True))
+                bs.gameTimer(3000,bs.Call(_safeSetAttr,self.node,'invincible',False))
+                if self._cursed:
+                    self.curseExplode()
+                if (self.hitPoints >= self.hitPointsOverdriveTooMuch):
+                    self.curse()
+                self.hitPoints = self.hitPoints + self.hitPointsOverdrive
+                self._flashBillboard(bs.Powerup.getFactory().texOverdrive)
+                self.lightningPower()
+                self.node.hurt = 0
+                self._lastHitTime = None
+                self._numTimesHit = 0
+                if bs.getConfig().get('Powerup Popups', True):
+                    bsUtils.PopupText((bs.Lstr(resource='overdrive')),
+                                            color=(0.5,0,1),
+                                            scale=self.scale,
+                                            position=self.node.position).autoRetain()
+                
             self.node.handleMessage("flash")
             if m.sourceNode.exists():
                 m.sourceNode.handleMessage(bs.PowerupAcceptMessage())
@@ -895,18 +1270,48 @@ class Spaz(bs.Actor):
                 return
             if self.shield is not None: return
             if not self.frozen:
-                self.frozen = True
-                self.node.frozen = 1
-                bs.gameTimer(5000,bs.WeakCall(self.handleMessage,bs.ThawMessage()))
-                # instantly shatter if we're already dead (otherwise its hard to tell we're dead)
-                if self.hitPoints <= 0:
-                    self.shatter()
+                if self.healBombCount != 0: # Don't freeze the players that have Healing Bombs in their inventory. Instead of freezing, remove one from the stock.
+                    self.setHealBombCount(self.healBombCount-1)
+                else:
+                    self.frozen = True
+                    self.node.frozen = 1
+                    bs.gameTimer(5000,bs.WeakCall(self.handleMessage,bs.ThawMessage()))
+                    # instantly shatter if we're already dead (otherwise its hard to tell we're dead)
+                    if self.hitPoints <= 0:
+                        self.shatter()
 
         elif isinstance(m,bs.ThawMessage):
             if self.frozen and not self.shattered and self.node.exists():
                 self.frozen = False
                 self.node.frozen = 0
-
+                
+        elif isinstance(m,bs.HealMessage):
+            factory = self.getFactory()
+            if self._cursed:
+                self._cursed = False
+                self.sound.delete() # Stop the curse sound
+                # remove cursed material
+                for attr in ['materials','rollerMaterials']:
+                    materials = getattr(self.node,attr)
+                    if factory.curseMaterial in materials:
+                        setattr(self.node,attr,tuple(m for m in materials if m != factory.curseMaterial))
+                self.node.curseDeathTime = 0
+            if (self.hitPoints <= self.hitPointsMax):
+                self.hitPoints = self.hitPointsMax
+                bs.playSound(factory.healthPowerupSound,3,position=self.node.position)
+            if (self.hitPoints >= self.hitPointsOverdriveTooMuch):
+                self.hitPoints = self.hitPointsOverdriveTooMuch
+                bs.playSound(factory.healthPowerupSound,3,position=self.node.position)
+            if (self.shield is not None): 
+                try: player = bs.PlayerSpaz.getPlayer(self)
+                except Exception: player = None
+                self.equipShields(player)
+            bs.gameTimer(1,bs.WeakCall(self.handleMessage,bs.ThawMessage()))
+            self.node.hurt = 0
+            self._lastHitTime = None
+            self._numTimesHit = 0
+                
+                
         elif isinstance(m,bs.HitMessage):
             if not self.node.exists(): return
             if self.node.invincible == True:
@@ -919,11 +1324,12 @@ class Spaz(bs.Actor):
             if self._lastHitTime is None or gameTime-self._lastHitTime > 1000:
                 self._numTimesHit += 1
                 self._lastHitTime = gameTime
-
+            
+           
             mag = m.magnitude * self._impactScale
             velocityMag = m.velocityMagnitude * self._impactScale
 
-            damageScale = 0.22
+            damageScale = 0.005 if m.hitSubType == 'knocker' else 0.22 # Knocker deals so much less damage
 
             # if they've got a shield, deliver it to that instead..
             if self.shield is not None:
@@ -938,22 +1344,22 @@ class Spaz(bs.Actor):
 
                 self.shieldHitPoints -= damage
 
-                self.shield.hurt = 1.0 - float(self.shieldHitPoints)/self.shieldHitPointsMax
+                self.shield.hurt = 1.0 - self.shieldHitPoints/self.shieldHitPointsMax
                 # its a cleaner event if a hit just kills the shield without damaging the player..
                 # however, massive damage events should still be able to damage the player..
                 # this hopefully gives us a happy medium.
-                # maxSpillover = 500
-                maxSpillover = self.getFactory().maxShieldSpilloverDamage
+                maxSpillover = 450
                 if self.shieldHitPoints <= 0:
                     # fixme - transition out perhaps?..
                     self.shield.delete()
                     self.shield = None
                     bs.playSound(self.getFactory().shieldDownSound,1.0,position=self.node.position)
+                    self.shieldSound.delete()
                     # emit some cool lookin sparks when the shield dies
                     t = self.node.position
                     bs.emitBGDynamics(position=(t[0],t[1]+0.9,t[2]),
                                       velocity=self.node.velocity,
-                                      count=random.randrange(20,30),scale=1.0,spread=0.6,chunkType='spark')
+                                      count=random.randrange(20,30),scale=0.6,spread=0.6,chunkType='spark')
 
                 else:
                     bs.playSound(self.getFactory().shieldHitSound,0.5,position=self.node.position)
@@ -963,7 +1369,7 @@ class Spaz(bs.Actor):
                                   velocity=(m.forceDirection[0]*1.0,
                                             m.forceDirection[1]*1.0,
                                             m.forceDirection[2]*1.0),
-                                  count=min(30,5+int(damage*0.005)),scale=0.5,spread=0.3,chunkType='spark')
+                                  count=min(30,5+int(damage*0.005)),scale=0.3,spread=0.3,chunkType='spark')
 
 
                 # if they passed our spillover threshold, pass damage along to spaz
@@ -987,7 +1393,9 @@ class Spaz(bs.Actor):
                                         mag,velocityMag,m.radius,0,m.forceDirection[0],m.forceDirection[1],m.forceDirection[2])
 
                 damage = damageScale * self.node.damage
-            self.node.handleMessage("hurtSound")
+                
+
+                self.node.handleMessage("hurtSound")
 
             # play punch impact sound based on damage if it was a punch
             if m.hitType == 'punch':
@@ -995,18 +1403,52 @@ class Spaz(bs.Actor):
                 self.onPunched(damage)
 
                 # if damage was significant, lets show it
-                if damage > 350: bsUtils.showDamageCount('-'+str(int(damage/10))+"%",m.pos,m.forceDirection)
-
+                if damage > 400: bsUtils.showDamageCount('-'+str(int(damage/10))+"%",m.pos,m.forceDirection)
+                                               
                 # lets always add in a super-punch sound with boxing gloves just to differentiate them
                 if m.hitSubType == 'superPunch':
-                    bs.playSound(self.getFactory().punchSoundStronger,1.0,
+                    bs.playSound(self.getFactory().punchSoundStronger,1.5,
                                  position=self.node.position)
-
-                if damage > 500:
+                if damage > 1000:
+                    bsUtils.PopupText((bs.Lstr(resource='crit')),
+                        color=(1,0,0),
+                        scale=1.6,
+                        position=self.node.position).autoRetain()
+                    self.crit = bs.newNode('light',
+                           attrs={'position':self.node.position,
+                                  'color': (1,0,0),
+                                  'volumeIntensityScale': 1.0}) 
+                    bs.animate(self.crit,'intensity',{0:0,250:2.0,750:0},loop=False)
+                    bs.gameTimer(750,self.crit.delete)  
+                    self.sweat = bs.emitBGDynamics(position=m.pos,
+                                  chunkType='sweat',
+                                  velocity=(m.forceDirection[0]*1.3,
+                                            m.forceDirection[1]*1.3+5.0,
+                                            m.forceDirection[2]*1.3),
+                                  count=60,
+                                  scale=4.0,
+                                  spread=0.6);
+                    self.sparks = bs.emitBGDynamics(position=m.pos,
+                                  chunkType='spark',
+                                  velocity=(m.forceDirection[0]*1.3,
+                                            m.forceDirection[1]*1.3+5.0,
+                                            m.forceDirection[2]*1.3),
+                                  count=45,
+                                  scale=1.0,
+                                  spread=1.0);
+                    sounds = self.getFactory().powerPunchSounds
+                    sound = sounds[random.randrange(len(sounds))]
+                    bs.playSound(sound,2.0,position=self.node.position)
+                elif damage > 800:
                     sounds = self.getFactory().punchSoundsStrong
                     sound = sounds[random.randrange(len(sounds))]
-                else: sound = self.getFactory().punchSound
-                bs.playSound(sound,1.0,position=self.node.position)
+                    bs.playSound(sound,1.0,position=self.node.position)
+                elif damage > 400:
+                    sound = self.getFactory().punchSound   
+                    bs.playSound(sound,2.0,position=self.node.position)
+                else: 
+                    sound = self.getFactory().punchWeakSound
+                    bs.playSound(sound,2.0,position=self.node.position)
 
                 # throw up some chunks
                 bs.emitBGDynamics(position=m.pos,
@@ -1019,9 +1461,10 @@ class Spaz(bs.Actor):
                                   chunkType='sweat',
                                   velocity=(m.forceDirection[0]*1.3,
                                             m.forceDirection[1]*1.3+5.0,
-                                            m.forceDirection[2]*1.3),
+                              
+              m.forceDirection[2]*1.3),
                                   count=min(30,1+int(damage*0.04)),
-                                  scale=0.9,
+                                  scale=1.0,
                                   spread=0.28);
                 # momentary flash
                 hurtiness = damage*0.003
@@ -1050,7 +1493,7 @@ class Spaz(bs.Actor):
                                             m.forceDirection[1]*2.0,
                                             m.forceDirection[2]*2.0),
                                   count=min(10,1+int(damage*0.01)),scale=0.4,spread=0.1);
-
+                
             if self.hitPoints > 0:
 
                 # its kinda crappy to die from impacts, so lets reduce impact damage
@@ -1066,7 +1509,7 @@ class Spaz(bs.Actor):
                 if damage > 0.0 and self.node.holdNode.exists():
                     self.node.holdNode = bs.Node(None)
                 self.hitPoints -= damage
-                self.node.hurt = 1.0 - float(self.hitPoints)/self.hitPointsMax
+                self.node.hurt = 1.0 - self.hitPoints/self.hitPointsMax
                 # if we're cursed, *any* damage blows us up
                 if self._cursed and damage > 0:
                     bs.gameTimer(50,bs.WeakCall(self.curseExplode,m.sourcePlayer))
@@ -1086,7 +1529,7 @@ class Spaz(bs.Actor):
 
         elif isinstance(m,_BombDiedMessage):
             self.bombCount += 1
-
+        
         elif isinstance(m,bs.DieMessage):
             wasDead = self._dead
             self._dead = True
@@ -1101,7 +1544,7 @@ class Spaz(bs.Actor):
                 bs.gameTimer(2000,self.node.delete)
 
         elif isinstance(m,bs.OutOfBoundsMessage):
-            # by default we just die here
+            if self._cursed: self.sound.delete() # Stop the curse sound
             self.handleMessage(bs.DieMessage(how='fall'))
 
         elif isinstance(m,bs.StandMessage):
@@ -1112,7 +1555,7 @@ class Spaz(bs.Actor):
             self.curseExplode()
 
         elif isinstance(m,_PunchHitMessage):
-
+        
             node = bs.getCollisionInfo("opposingNode")
 
             # only allow one hit per node per punch
@@ -1127,10 +1570,13 @@ class Spaz(bs.Actor):
                 # ...however we want to actually apply force in the direction our fist
                 # is moving so it looks better.. so we still pass that along as a direction
                 # ..perhaps a time-averased fist-velocity would work too?.. should try that.
-
+                
                 # if its something besides another spaz, just do a muffled punch sound
                 if node.getNodeType() != 'spaz':
-                    sounds = self.getFactory().impactSoundsMedium
+                    if self.node.style == 'cyborg':
+                        sounds = self.getFactory().impactMetalSoundsMedium
+                    else:
+                        sounds = self.getFactory().impactSoundsMedium
                     sound = sounds[random.randrange(len(sounds))]
                     bs.playSound(sound,1.0,position=self.node.position)
 
@@ -1191,7 +1637,7 @@ class Spaz(bs.Actor):
         drop a bomb, returns None.
         """
 
-        if (self.landMineCount <= 0 and self.bombCount <= 0) or self.frozen: return
+        if (self.landMineCount <= 0 and self.healBombCount <= 0 and self.grenadeCount <= 0 and self.hijumpCount <= 0 and self.bombCount <= 0) or self.frozen: return
         p = self.node.positionForward
         v = self.node.velocity
 
@@ -1199,9 +1645,27 @@ class Spaz(bs.Actor):
             droppingBomb = False
             self.setLandMineCount(self.landMineCount-1)
             bombType = 'landMine'
+        elif self.healBombCount > 0:
+            droppingBomb = False
+            self.setHealBombCount(self.healBombCount-1)
+            bombType = 'healing'
+        elif self.grenadeCount > 0:
+            droppingBomb = False
+            self.setGrenadeCount(self.grenadeCount-1)
+            bombType = 'grenade'
+        elif self.hijumpCount > 0:
+            droppingBomb = False
+            self.setHijumpCount(self.hijumpCount-1)
+            bombType = 'hijump'
         else:
             droppingBomb = True
             bombType = self.bombType
+            
+        if bombType == 'hijump': # Heal the player to compensate for the explosion propelling
+            self.hitPoints += 180
+            def _jumpSound(node):
+                self.node.handleMessage("jumpSound")
+            bs.gameTimer(75,bs.Call(_jumpSound,self.node))
 
         bomb = bs.Bomb(position=(p[0],p[1] - 0.0,p[2]),
                        velocity=(v[0],v[1],v[2]),
@@ -1217,14 +1681,38 @@ class Spaz(bs.Actor):
         self._pickUp(bomb.node)
 
         for c in self._droppedBombCallbacks: c(self,bomb)
-
+        
         return bomb
 
     def _pickUp(self,node):
         if self.node.exists() and node.exists():
             self.node.holdBody = 0 # needs to be set before holdNode
             self.node.holdNode = node
-
+            
+    def setGrenadeCount(self,count):
+        """
+        Set the number of grenades this spaz is carrying.
+        """
+        self.grenadeCount = count
+        if self.node.exists():
+            if self.grenadeCount != 0:
+                self.node.counterText = 'x'+str(self.grenadeCount)
+                self.node.counterTexture = bs.Powerup.getFactory().texGrenades
+            else:
+                self.node.counterText = ''
+                
+    def setHijumpCount(self,count):
+        """
+        Set the number of hi-jumps this spaz has.
+        """
+        self.hijumpCount = count
+        if self.node.exists():
+            if self.hijumpCount != 0:
+                self.node.counterText = 'x'+str(self.hijumpCount)
+                self.node.counterTexture = bs.Powerup.getFactory().texHijump
+            else:
+                self.node.counterText = ''
+        
     def setLandMineCount(self,count):
         """
         Set the number of land-mines this spaz is carrying.
@@ -1236,6 +1724,18 @@ class Spaz(bs.Actor):
                 self.node.counterTexture = bs.Powerup.getFactory().texLandMines
             else:
                 self.node.counterText = ''
+                
+    def setHealBombCount(self,count):
+        """
+        Set the number of tesla plates this spaz is carrying.
+        """
+        self.healBombCount = count
+        if self.node.exists():
+            if self.healBombCount != 0:
+                self.node.counterText = 'x'+str(self.healBombCount)
+                self.node.counterTexture = bs.Powerup.getFactory().texHealBombs
+            else:
+                self.node.counterText = ''
 
     def curseExplode(self,sourcePlayer=None):
         """
@@ -1245,16 +1745,17 @@ class Spaz(bs.Actor):
 
         # convert None to an empty player-ref
         if sourcePlayer is None: sourcePlayer = bs.Player(None)
-
+        
         if self._cursed and self.node.exists():
+            self.sound.delete() # Stop the curse sound
             self.shatter(extreme=True)
-            self.handleMessage(bs.DieMessage())
             activity = self._activity()
             if activity:
                 bs.Blast(position=self.node.position,
-                         velocity=self.node.velocity,
-                         blastRadius=3.0,blastType='normal',
-                         sourcePlayer=sourcePlayer if sourcePlayer.exists() else self.sourcePlayer).autoRetain()
+                    velocity=self.node.velocity,
+                    blastRadius=4.0 if not isinstance(bs.getSession(),bs.CoopSession) else 2.0,blastType='normal',
+                    sourcePlayer=sourcePlayer if sourcePlayer.exists() else self.sourcePlayer).autoRetain()
+            self.handleMessage(bs.DieMessage())
             self._cursed = False
 
     def shatter(self,extreme=False):
@@ -1270,7 +1771,7 @@ class Spaz(bs.Actor):
                                       'radius':0.5,
                                       'heightAttenuated':False,
                                       'color': (0.8,0.8,1.0)})
-
+            
             bs.animate(light,'intensity',{0:3.0, 40:0.5, 80:0.07, 300:0})
             bs.gameTimer(300,light.delete)
             # emit ice chunks..
@@ -1298,23 +1799,43 @@ class Spaz(bs.Actor):
                                          forceDirection=self.node.velocity,
                                          hitType='impact'))
         self.node.handleMessage("knockout",max(0.0,50.0*intensity))
-        if intensity > 5: sounds = self.getFactory().impactSoundsHarder
-        elif intensity > 3: sounds = self.getFactory().impactSoundsHard
-        else: sounds = self.getFactory().impactSoundsMedium
+        if intensity > 5: 
+            if self.node.style == 'cyborg':
+                sounds = self.getFactory().impactMetalSoundsHarder
+            else:
+                sounds = self.getFactory().impactSoundsHarder
+        elif intensity > 2: 
+            if self.node.style == 'cyborg':
+                sounds = self.getFactory().impactMetalSoundsHard
+            else:
+                sounds = self.getFactory().impactSoundsHard
+        else: 
+            if self.node.style == 'cyborg':
+                sounds = self.getFactory().impactMetalSoundsMedium
+            else:
+                sounds = self.getFactory().impactSoundsMedium
         s = sounds[random.randrange(len(sounds))]
-        bs.playSound(s,position=pos,volume=5.0)
-
+        bs.playSound(s,position=pos,volume=4)
+        
     def _getBombTypeTex(self):
         bombFactory = bs.Powerup.getFactory()
         if self.bombType == 'sticky': return bombFactory.texStickyBombs
         elif self.bombType == 'ice': return bombFactory.texIceBombs
+        elif self.bombType == 'fire': return bombFactory.texFireBombs
+        elif self.bombType == 'ranger': return bombFactory.texRangerBombs
+        elif self.bombType == 'combat': return bombFactory.texCombatBombs
+        elif self.bombType == 'knocker': return bombFactory.texKnockerBombs
+        elif self.bombType == 'dynamite': return bombFactory.texDynamitePack
         elif self.bombType == 'impact': return bombFactory.texImpactBombs
+        elif self.bombType == 'healing': return bombFactory.texHealBombs
+        elif self.bombType == 'hijump': return bombFactory.texHijump
+        elif self.bombType == 'speed': return bombFactory.texSpeed
         else: raise Exception()
-
+        
     def _flashBillboard(self,tex):
         self.node.billboardTexture = tex
         self.node.billboardCrossOut = False
-        bs.animate(self.node,"billboardOpacity",{0:0.0,100:1.0,400:1.0,500:0.0})
+        bs.animate(self.node,"billboardOpacity",{0:0.0,250:1.0,500:0.0})
 
     def setBombCount(self,count):
         # we cant just set bombCount cuz some bombs may be laid currently
@@ -1322,6 +1843,25 @@ class Spaz(bs.Actor):
         diff = count - self._maxBombCount
         self._maxBombCount += diff
         self.bombCount += diff
+        
+    def _speedWearOffFlash(self):
+        if self.node.exists():
+            self.node.billboardTexture = bs.Powerup.getFactory().texSpeed
+            self.node.billboardOpacity = 1.0
+            self.node.billboardCrossOut = True
+
+    def _speedWearOff(self):
+        factory = self.getFactory()
+        if self._hasBoxingGloves:
+            self._punchPowerScale = gBasePunchPowerScale
+            self._punchCooldown = gBasePunchCooldown
+        def _safeSetAttr(node,attr,val):
+                if node.exists(): setattr(node,attr,val)
+        bs.gameTimer(1,bs.Call(_safeSetAttr,self.node,'hockey',False))
+        if self.node.exists():
+            bs.playSound(bs.Powerup.getFactory().powerdownSound,position=self.node.position)
+            bs.playSound(factory.speedDownSound,position=self.node.position)
+            self.node.billboardOpacity = 0.0
 
     def _glovesWearOffFlash(self):
         if self.node.exists():
@@ -1331,17 +1871,25 @@ class Spaz(bs.Actor):
             self.node.billboardCrossOut = True
 
     def _glovesWearOff(self):
-        if self._demoMode: # preserve old behavior
-            self._punchPowerScale = gBasePunchPowerScale
-            self._punchCooldown = gBasePunchCooldown
-        else:
-            factory = self.getFactory()
-            self._punchPowerScale = factory.punchPowerScale
-            self._punchCooldown = factory.punchCooldown
+        self._punchPowerScale = gBasePunchPowerScale
+        self._punchCooldown = gBasePunchCooldown
         self._hasBoxingGloves = False
         if self.node.exists():
             bs.playSound(bs.Powerup.getFactory().powerdownSound,position=self.node.position)
             self.node.boxingGloves = 0
+            self.node.billboardOpacity = 0.0
+            
+    def _blastBuffWearOffFlash(self):
+        if self.node.exists():
+            self.node.billboardTexture = bs.Powerup.getFactory().texBlast
+            self.node.billboardOpacity = 1.0
+            self.node.billboardCrossOut = True
+
+    def _blastBuffWearOff(self):
+        self.setBombCount(self.defaultBombCount)
+        self.blastRadius = self.defaultBlastRadius
+        if self.node.exists():
+            bs.playSound(bs.Powerup.getFactory().powerdownSound,position=self.node.position)
             self.node.billboardOpacity = 0.0
 
     def _multiBombWearOffFlash(self):
@@ -1367,9 +1915,6 @@ class Spaz(bs.Actor):
         if self.node.exists():
             bs.playSound(bs.Powerup.getFactory().powerdownSound,position=self.node.position)
             self.node.billboardOpacity = 0.0
-
-
-
 
 class PlayerSpazDeathMessage(object):
     """
@@ -1422,7 +1967,7 @@ class PlayerSpazHurtMessage(object):
 class PlayerSpaz(Spaz):
     """
     category: Game Flow Classes
-
+    
     A bs.Spaz subclass meant to be controlled by a bs.Player.
 
     When a PlayerSpaz dies, it delivers a bs.PlayerSpazDeathMessage
@@ -1442,7 +1987,7 @@ class PlayerSpaz(Spaz):
         """
         # convert None to an empty player-ref
         if player is None: player = bs.Player(None)
-
+        
         Spaz.__init__(self,color=color,highlight=highlight,character=character,sourcePlayer=player,startInvincible=True,powerupsExpire=powerupsExpire)
         self.lastPlayerAttackedBy = None # FIXME - should use empty player ref
         self.lastAttackedTime = 0
@@ -1458,7 +2003,7 @@ class PlayerSpaz(Spaz):
 
     def __superHandleMessage(self,m):
         super(PlayerSpaz,self).handleMessage(m)
-
+        
     def getPlayer(self):
         """
         Return the bs.Player associated with this spaz.
@@ -1478,7 +2023,7 @@ class PlayerSpaz(Spaz):
         """
 
         player = self.getPlayer()
-
+        
         # reset any currently connected player and/or the player we're now wiring up
         if self._connectedToPlayer is not None:
             if player != self._connectedToPlayer: player.resetInput()
@@ -1510,7 +2055,7 @@ class PlayerSpaz(Spaz):
 
         self._connectedToPlayer = player
 
-
+        
     def disconnectControlsFromPlayer(self):
         """
         Completely sever any previously connected
@@ -1555,7 +2100,7 @@ class PlayerSpaz(Spaz):
                 self.lastPlayerAttackedBy = pickedUpBy
                 self.lastAttackedTime = bs.getGameTime()
                 self.lastAttackedType = ('pickedUp','default')
-
+            
         elif isinstance(m,bs.DieMessage):
 
             # report player deaths to the game
@@ -1586,14 +2131,14 @@ class PlayerSpaz(Spaz):
                                 killerPlayer = self.getPlayer()
                             else:
                                 killerPlayer = None
-
+                            
                 if killerPlayer is not None and not killerPlayer.exists():
                     killerPlayer = None
 
                 # only report if both the player and the activity still exist
                 if killed and activity is not None and self.getPlayer().exists():
                     activity.handleMessage(PlayerSpazDeathMessage(self, killed, killerPlayer, m.how))
-
+                    
             self.__superHandleMessage(m) # augment standard behavior
 
         # keep track of the player who last hit us for point rewarding
@@ -1617,7 +2162,7 @@ class RespawnIcon(object):
     An icon with a countdown that appears alongside the screen;
     used to indicate that a bs.Player is waiting to respawn.
     """
-
+    
     def __init__(self,player,respawnTime):
         """
         Instantiate with a given bs.Player and respawnTime (in milliseconds)
@@ -1662,13 +2207,13 @@ class RespawnIcon(object):
                                                      'opacity':1.0,
                                                      'absoluteScale':True,
                                                      'attach':'topRight' if onRight else 'topLeft'}))
-
+        
         bs.animate(self._image.node,'opacity',{0:0,200:0.7})
 
         self._name = bs.NodeActor(bs.newNode('text',
                                              attrs={'vAttach':'top',
                                                     'hAttach':'right' if onRight else 'left',
-                                                    'text':bs.Lstr(value=player.getName()),
+                                                    'text':player.getName(),
                                                     'maxWidth':100,
                                                     'hAlign':'center',
                                                     'vAlign':'center',
@@ -1677,7 +2222,7 @@ class RespawnIcon(object):
                                                     'color':bs.getSafeColor(icon['tintColor']),
                                                     'scale':0.5,
                                                     'position':(-40-hOffs if onRight else 40+hOffs,-205+49+offs)}))
-
+        
         bs.animate(self._name.node,'scale',{0:0,100:0.5})
 
         self._text = bs.NodeActor(bs.newNode('text',
@@ -1690,7 +2235,7 @@ class RespawnIcon(object):
                                                     'vAttach':'top',
                                                     'color':bs.getSafeColor(icon['tintColor']),
                                                     'text':''}))
-
+        
         bs.animate(self._text.node,'scale',{0:0,100:0.9})
 
         self._respawnTime = bs.getGameTime()+respawnTime
@@ -1703,11 +2248,11 @@ class RespawnIcon(object):
             if self._text.node.exists():
                 self._text.node.text = str(remaining)
         else: self._clear()
-
+            
     def _clear(self):
         self._visible = False
         self._image = self._text = self._timer = self._name = None
-
+        
 
 
 class SpazBotPunchedMessage(object):
@@ -1760,7 +2305,7 @@ class SpazBotDeathMessage(object):
         self.how = how
 
 
-
+        
 class SpazBot(Spaz):
     """
     category: Bot Classes
@@ -1828,7 +2373,7 @@ class SpazBot(Spaz):
         self._lastJumpTime = 0
 
         if self.startCursed: self.curse()
-
+            
     def _getTargetPlayerPt(self):
         """ returns the default player pt we're targeting """
         bp = bs.Vector(*self.node.position)
@@ -1859,7 +2404,7 @@ class SpazBot(Spaz):
         """
         Should be called periodically to update the spaz' AI
         """
-
+        
         if self.updateCallback is not None:
             if self.updateCallback(self) == True:
                 return # true means bot has been handled
@@ -1922,7 +2467,7 @@ class SpazBot(Spaz):
                     self.node.pickUpPressed = True
                     self.node.pickUpPressed = False
                     return
-
+            
         targetPtRaw,targetVel = self._getTargetPlayerPt()
 
         if targetPtRaw is None:
@@ -2053,7 +2598,7 @@ class SpazBot(Spaz):
             # if we're static, always charge (which for us means barely move)
             elif self.static:
                 self._mode = 'wait'
-
+                
             # if we're too close to charge (and arent in the middle of an existing charge) run away
             elif dist < self.chargeDistMin and not self._chargeClosingIn:
                 # ..unless we're near an edge, in which case we got no choice but to charge..
@@ -2086,7 +2631,7 @@ class SpazBot(Spaz):
                 self.node.jumpPressed = True
                 self.node.jumpPressed = False
 
-
+                
             # throw punches when real close
             if dist < (1.6 if self._running else 1.2) and canAttack:
                 if random.random() < self.punchiness:
@@ -2109,7 +2654,7 @@ class SpazBot(Spaz):
         # keeping activities or other things alive..
         self.updateCallback = None
 
-
+        
     def handleMessage(self,m):
         self._handleMessageSanityCheck()
 
@@ -2138,7 +2683,7 @@ class SpazBot(Spaz):
                 self.lastPlayerAttackedBy = pickedUpBy
                 self.lastAttackedTime = bs.getGameTime()
                 self.lastAttackedType = ('pickedUp','default')
-
+            
         elif isinstance(m,bs.DieMessage):
 
             # report normal deaths for scoring purposes
@@ -2169,171 +2714,11 @@ class SpazBot(Spaz):
             self.__superHandleMessage(m)
         else:
             Spaz.handleMessage(self,m)
-
-class BomberBot(SpazBot):
-    """
-    category: Bot Classes
-
-    A bot that throws regular bombs
-    and occasionally punches.
-    """
-    character='Spaz'
-    punchiness=0.3
-
-class BomberBotLame(BomberBot):
-    """
-    category: Bot Classes
-
-    A less aggressive yellow version of bs.BomberBot.
-    """
-    color=gLameBotColor
-    highlight=gLameBotHighlight
-    punchiness = 0.2
-    throwRate = 0.7
-    throwiness = 0.1
-    chargeSpeedMin = 0.6
-    chargeSpeedMax = 0.6
-
-class BomberBotStaticLame(BomberBotLame):
-    """
-    category: Bot Classes
-
-    A less aggressive yellow version of bs.BomberBot
-    who generally stays in one place.
-    """
-    static = True
-    throwDistMin = 0.0
-
-class BomberBotStatic(BomberBot):
-    """
-    category: Bot Classes
-
-    A version of bs.BomberBot
-    who generally stays in one place.
-    """
-    static = True
-    throwDistMin = 0.0
-
-
-class BomberBotPro(BomberBot):
-    """
-    category: Bot Classes
-
-    A more aggressive red version of bs.BomberBot.
-    """
-    pointsMult = 2
-    color=gProBotColor
-    highlight = gProBotHighlight
-    defaultBombCount = 3
-    defaultBoxingGloves = True
-    punchiness = 0.7
-    throwRate = 1.3
-    run = True
-    runDistMin = 6.0
-
-class BomberBotProShielded(BomberBotPro):
-    """
-    category: Bot Classes
-
-    A more aggressive red version of bs.BomberBot
-    who starts with shields.
-    """
-    pointsMult = 3
-    defaultShields = True
-
-class BomberBotProStatic(BomberBotPro):
-    """
-    category: Bot Classes
-
-    A more aggressive red version of bs.BomberBot
-    who generally stays in one place.
-    """
-    static = True
-    throwDistMin = 0.0
-
-class BomberBotProStaticShielded(BomberBotProShielded):
-    """
-    category: Bot Classes
-
-    A more aggressive red version of bs.BomberBot
-    who starts with shields and
-    who generally stays in one place.
-    """
-    static = True
-    throwDistMin = 0.0
-
-class ToughGuyBot(SpazBot):
-    """
-    category: Bot Classes
-
-    A manly bot who walks and punches things.
-    """
-    character = 'Kronk'
-    punchiness = 0.9
-    chargeDistMax = 9999.0
-    chargeSpeedMin = 1.0
-    chargeSpeedMax = 1.0
-    throwDistMin = 9999
-    throwDistMax = 9999
-
-class ToughGuyBotLame(ToughGuyBot):
-    """
-    category: Bot Classes
-
-    A less aggressive yellow version of bs.ToughGuyBot.
-    """
-    color=gLameBotColor
-    highlight=gLameBotHighlight
-    punchiness = 0.3
-    chargeSpeedMin = 0.6
-    chargeSpeedMax = 0.6
-
-class ToughGuyBotPro(ToughGuyBot):
-    """
-    category: Bot Classes
-
-    A more aggressive red version of bs.ToughGuyBot.
-    """
-    color=gProBotColor
-    highlight=gProBotHighlight
-    run = True
-    runDistMin = 4.0
-    defaultBoxingGloves = True
-    punchiness = 0.95
-    pointsMult = 2
-
-class ToughGuyBotProShielded(ToughGuyBotPro):
-    """
-    category: Bot Classes
-
-    A more aggressive version of bs.ToughGuyBot
-    who starts with shields.
-    """
-    defaultShields = True
-    pointsMult = 3
-
-class NinjaBot(SpazBot):
-    """
-    category: Bot Classes
-
-    A speedy attacking melee bot.
-    """
-
-    character = 'Snake Shadow'
-    punchiness = 1.0
-    run = True
-    chargeDistMin = 10.0
-    chargeDistMax = 9999.0
-    chargeSpeedMin = 1.0
-    chargeSpeedMax = 1.0
-    throwDistMin = 9999
-    throwDistMax = 9999
-    pointsMult = 2
-
+            
 class BunnyBot(SpazBot):
     """
     category: Bot Classes
-
+    
     A speedy attacking melee bot.
     """
 
@@ -2352,10 +2737,170 @@ class BunnyBot(SpazBot):
     throwDistMax = 9999
     pointsMult = 2
 
+class BomberBot(SpazBot):
+    """
+    category: Bot Classes
+    
+    A bot that throws regular bombs
+    and occasionally punches.
+    """
+    character='Spaz'
+    punchiness=0.3
+
+class BomberBotLame(BomberBot):
+    """
+    category: Bot Classes
+    
+    A less aggressive yellow version of bs.BomberBot.
+    """
+    color=gLameBotColor
+    highlight=gLameBotHighlight
+    punchiness = 0.2
+    throwRate = 0.7
+    throwiness = 0.1
+    chargeSpeedMin = 0.6
+    chargeSpeedMax = 0.6
+
+class BomberBotStaticLame(BomberBotLame):
+    """
+    category: Bot Classes
+    
+    A less aggressive yellow version of bs.BomberBot
+    who generally stays in one place.
+    """
+    static = True
+    throwDistMin = 0.0
+
+class BomberBotStatic(BomberBot):
+    """
+    category: Bot Classes
+    
+    A version of bs.BomberBot
+    who generally stays in one place.
+    """
+    static = True
+    throwDistMin = 0.0
+
+
+class BomberBotPro(BomberBot):
+    """
+    category: Bot Classes
+    
+    A more aggressive red version of bs.BomberBot.
+    """
+    pointsMult = 2
+    color=gProBotColor
+    highlight = gProBotHighlight
+    defaultBombCount = 3
+    defaultBoxingGloves = True
+    punchiness = 0.7
+    throwRate = 1.3
+    run = True
+    runDistMin = 6.0
+
+class BomberBotProShielded(BomberBotPro):
+    """
+    category: Bot Classes
+    
+    A more aggressive red version of bs.BomberBot
+    who starts with shields.
+    """
+    pointsMult = 3
+    defaultShields = True
+
+class BomberBotProStatic(BomberBotPro):
+    """
+    category: Bot Classes
+    
+    A more aggressive red version of bs.BomberBot
+    who generally stays in one place.
+    """
+    static = True
+    throwDistMin = 0.0
+
+class BomberBotProStaticShielded(BomberBotProShielded):
+    """
+    category: Bot Classes
+    
+    A more aggressive red version of bs.BomberBot
+    who starts with shields and
+    who generally stays in one place.
+    """
+    static = True
+    throwDistMin = 0.0
+
+class ToughGuyBot(SpazBot):
+    """
+    category: Bot Classes
+    
+    A manly bot who walks and punches things.
+    """
+    character = 'Kronk'
+    punchiness = 0.9
+    chargeDistMax = 9999.0
+    chargeSpeedMin = 1.0
+    chargeSpeedMax = 1.0
+    throwDistMin = 9999
+    throwDistMax = 9999
+
+class ToughGuyBotLame(ToughGuyBot):
+    """
+    category: Bot Classes
+    
+    A less aggressive yellow version of bs.ToughGuyBot.
+    """
+    color=gLameBotColor
+    highlight=gLameBotHighlight
+    punchiness = 0.3
+    chargeSpeedMin = 0.6
+    chargeSpeedMax = 0.6
+
+class ToughGuyBotPro(ToughGuyBot):
+    """
+    category: Bot Classes
+    
+    A more aggressive red version of bs.ToughGuyBot.
+    """
+    color=gProBotColor
+    highlight=gProBotHighlight
+    run = True
+    runDistMin = 4.0
+    defaultBoxingGloves = True
+    punchiness = 0.95
+    pointsMult = 2
+
+class ToughGuyBotProShielded(ToughGuyBotPro):
+    """
+    category: Bot Classes
+    
+    A more aggressive version of bs.ToughGuyBot
+    who starts with shields.
+    """
+    defaultShields = True
+    pointsMult = 3
+
+class NinjaBot(SpazBot):
+    """
+    category: Bot Classes
+    
+    A speedy attacking melee bot.
+    """
+
+    character = 'Snake Shadow'
+    punchiness = 1.0
+    run = True
+    chargeDistMin = 10.0
+    chargeDistMax = 9999.0
+    chargeSpeedMin = 1.0
+    chargeSpeedMax = 1.0
+    throwDistMin = 9999
+    throwDistMax = 9999
+    pointsMult = 2
+    
 class NinjaBotPro(NinjaBot):
     """
     category: Bot Classes
-
+    
     A more aggressive red bs.NinjaBot.
     """
     color=gProBotColor
@@ -2367,7 +2912,7 @@ class NinjaBotPro(NinjaBot):
 class NinjaBotProShielded(NinjaBotPro):
     """
     category: Bot Classes
-
+    
     A more aggressive red bs.NinjaBot
     who starts with shields.
     """
@@ -2377,7 +2922,7 @@ class NinjaBotProShielded(NinjaBotPro):
 class ChickBot(SpazBot):
     """
     category: Bot Classes
-
+    
     A slow moving bot with impact bombs.
     """
     character = 'Zoe'
@@ -2394,7 +2939,7 @@ class ChickBot(SpazBot):
 class ChickBotStatic(ChickBot):
     """
     category: Bot Classes
-
+    
     A bs.ChickBot who generally stays in one place.
     """
     static = True
@@ -2403,7 +2948,7 @@ class ChickBotStatic(ChickBot):
 class ChickBotPro(ChickBot):
     """
     category: Bot Classes
-
+    
     A more aggressive red version of bs.ChickBot.
     """
     color=gProBotColor
@@ -2421,7 +2966,7 @@ class ChickBotPro(ChickBot):
 class ChickBotProShielded(ChickBotPro):
     """
     category: Bot Classes
-
+    
     A more aggressive red version of bs.ChickBot
     who starts with shields.
     """
@@ -2431,7 +2976,7 @@ class ChickBotProShielded(ChickBotPro):
 class MelBot(SpazBot):
     """
     category: Bot Classes
-
+    
     A crazy bot who runs and throws sticky bombs.
     """
     character = 'Mel'
@@ -2452,15 +2997,32 @@ class MelBot(SpazBot):
 class MelBotStatic(MelBot):
     """
     category: Bot Classes
-
+    
     A crazy bot who throws sticky-bombs but generally stays in one place.
     """
     static = True
+    throwDistMin = 0.0
+    throwDistMax = 10.0
+    
+class MelDuperBot(MelBot):
+    """
+    A crazy bot who runs and throws sticky bombs.
+    He has a shield and doesn't like you as a person
+    and will do everything to make you puke and give
+    you headaches. Only available in Nightmare gamemode.
+    """
+    color=gProBotColor
+    highlight=gProBotHighlight
+    defaultShields = True
+    defaultBoxingGloves = True
+    throwRate = 3.0
+    defaultBombCount = 5
+    pointsMult = 4
 
 class PirateBot(SpazBot):
     """
     category: Bot Classes
-
+    
     A bot who runs and explodes in 5 seconds.
     """
     character = 'Jack Morgan'
@@ -2472,12 +3034,12 @@ class PirateBot(SpazBot):
     throwDistMin = 9999
     throwDistMax = 9999
     startCursed = True
-    pointsMult = 4
+    pointsMult = 3
 
 class PirateBotNoTimeLimit(PirateBot):
     """
     category: Bot Classes
-
+    
     A bot who runs but does not explode on his own.
     """
     curseTime = -1
@@ -2485,16 +3047,150 @@ class PirateBotNoTimeLimit(PirateBot):
 class PirateBotShielded(PirateBot):
     """
     category: Bot Classes
-
+    
     A bs.PirateBot who starts with shields.
     """
     defaultShields = True
     pointsMult = 5
+	
+class FrostyBot(SpazBot):
+    """
+    category: Bot Classes
+    
+    A bot that throws ice bombs
+    and occasionally punches.
+    """
+    character='Frosty'
+    punchiness=0.3
+    color=(0.5,0.5,1)
+    highlight=(1,0.5,0)
+    defaultBombType = 'ice'
+    pointsMult = 4
+    
+class FrostyBotStatic(FrostyBot):
+    """
+    category: Bot Classes
+    
+    A bot that throws ice bombs
+    and stays in one place most of the time.
+    """
+    static = True
+    throwDistMin = 0.0
+    
+class FrostyBotShielded(FrostyBot):
+    """
+    category: Bot Classes
+    
+    A crazed maniac. This time with shields!
+    """
+    color=(0.2,0.2,1)
+    highlight=(1,0,0)
+    defaultShields = True
+    pointsMult = 6
+	
+class AgentBot(MelBot):
+    """
+    category: Bot Classes
+    
+    A crazy bot who runs and throws impact bombs.
+    """
+    character = 'Agent Johnson'
+    color=(0.1,0.1,0.1)
+    highlight=(0.1,0.1,0.1)
+    throwRate = 3
+    defaultBombType = 'impact'
+    pointsMult = 2
+    
+class AgentBotShielded(AgentBot):
+    """
+    category: Bot Classes
+    
+    Agent Bot with armor
+    """
+    color=(1,0.1,0.1)
+    highlight=(0.3,0.1,0.1)
+    defaultShields = True
+    pointsMult = 3
+    
+class CyborgBot(SpazBot):
+    """
+    category: Bot Classes
+    
+    A slow moving bot with combat bombs.
+    """
+    character = 'B-9000'
+    highlight = (0,1,1)
+    punchiness = 1.0
+    throwiness = 1.0
+    chargeDistMax = 1.0
+    chargeSpeedMin = 0.3
+    chargeSpeedMax = 0.5
+    throwRate = 1.5
+    throwDistMin = 4.5
+    throwDistMax = 6.5
+    defaultBombType = 'combat'
+    pointsMult = 2
+	
+class SpyBot(SpazBot):
+    """
+    category: Bot Classes
+    
+    A slow moving bot that ocasionally throws land mines.
+    """
+    character = 'Spy'
+    color=(0.1,0.1,0.1)
+    highlight=(1,1,1)
+    punchiness = 1
+    throwiness = 0.5
+    chargeDistMax = 4
+    throwRate = 1.5
+    chargeSpeedMin = 1
+    chargeSpeedMax = 1
+    throwDistMin = 3
+    throwDistMax = 9999
+    defaultBombCount = 5
+    defaultBombType = 'landMine'
+    pointsMult = 2
+	
+class LooieBot(SpazBot):
+    """
+    category: Bot Classes
+    
+    A crazed maniac (probably on drugs) that jumps everywhere, throws bombs everywhere and will punch you hard if you're not careful.
+    """
 
+    color=(1,0.7,0.0)
+    highlight=(1,1,1)
+    character = 'Looie'
+    punchiness = 0.8
+    throwiness = 1.0
+    run = True
+    bouncy = True
+    chargeDistMin = 10.0
+    chargeDistMax = 9999.0
+    chargeSpeedMin = 1.0
+    chargeSpeedMax = 1.0
+    throwDistMin = 2
+    throwDistMax = 9999
+    pointsMult = 4
+    throwRate = 10.0
+    defaultBombCount = 6
+    
+class LooieBotShielded(LooieBot):
+    """
+    category: Bot Classes
+    
+    A crazed maniac. This time with shields!
+    """
+    color=(1,0.0,0.0)
+    highlight=(1,1,1)
+    defaultShields = True
+    pointsMult = 5
+    
 class BotSet(object):
     """
     category: Bot Classes
-
+    
     A container/controller for one or more bs.SpazBots.
     """
     def __init__(self):
@@ -2529,7 +3225,7 @@ class BotSet(object):
         self.addBot(spaz)
         self._spawningCount -= 1
         if onSpawnCall is not None: onSpawnCall(spaz)
-
+        
     def haveLivingBots(self):
         """
         Returns whether any bots in the set are alive or in the process of spawning.
@@ -2581,12 +3277,12 @@ class BotSet(object):
         # dont do this if the activity is shutting down or dead
         activity = bs.getActivity(exceptionOnNone=False)
         if activity is None or activity.isFinalized(): return
-
+        
         for i in range(len(self._botLists)):
             for b in self._botLists[i]:
                 b.handleMessage(bs.DieMessage(immediate=True))
             self._botLists[i] = []
-
+        
     def celebrate(self,duration):
         """
         Tell all living bots in the set to celebrate momentarily
@@ -2599,7 +3295,7 @@ class BotSet(object):
 
     def startMoving(self):
         self._botUpdateTimer = bs.Timer(50,bs.WeakCall(self._update),repeat=True)
-
+                    
     def stopMoving(self):
         """
         Tell all bots to stop moving and stops
@@ -2613,7 +3309,7 @@ class BotSet(object):
                 if b.node.exists():
                     b.node.moveLeftRight = 0
                     b.node.moveUpDown = 0
-
+        
     def finalCelebrate(self):
         """
         Tell all bots in the set to stop what they were doing
@@ -2828,15 +3524,15 @@ t.lowerLegModel = "melLowerLeg"
 t.toesModel =     "melToes"
 
 melSounds = ["mel01",
-              "mel02",
-              "mel03",
-              "mel04",
-              "mel05",
-              "mel06",
-              "mel07",
-              "mel08",
-              "mel09",
-              "mel10"]
+             "mel02",
+             "mel03",
+             "mel04",
+             "mel05",
+             "mel06",
+             "mel07",
+             "mel08",
+             "mel09",
+             "mel10"]
 
 t.attackSounds = melSounds
 t.jumpSounds = melSounds
@@ -3153,357 +3849,6 @@ t.pickupSounds = agentSounds
 t.fallSounds=["agentFall"]
 t.style = 'agent'
 
-# Jumpsuit ###################################
-t = Appearance("Lee")
-t.colorTexture = "jumpsuitColor"
-t.colorMaskTexture = "jumpsuitColorMask"
-t.defaultColor = (0.3,0.5,0.8)
-t.defaultHighlight = (1,0,0)
-t.iconTexture = "jumpsuitIcon"
-t.iconMaskTexture = "jumpsuitIconColorMask"
-t.headModel =     "jumpsuitHead"
-t.torsoModel =    "jumpsuitTorso"
-t.pelvisModel =   "jumpsuitPelvis"
-t.upperArmModel = "jumpsuitUpperArm"
-t.foreArmModel =  "jumpsuitForeArm"
-t.handModel =     "jumpsuitHand"
-t.upperLegModel = "jumpsuitUpperLeg"
-t.lowerLegModel = "jumpsuitLowerLeg"
-t.toesModel =     "jumpsuitToes"
-jumpsuitSounds =    ['jumpsuit1','jumpsuit2','jumpsuit3','jumpsuit4']
-jumpsuitHitSounds = ['jumpsuitHit1','jumpsuitHit2']
-t.attackSounds = jumpsuitSounds
-t.jumpSounds = jumpsuitSounds
-t.impactSounds = jumpsuitHitSounds
-t.deathSounds=["jumpsuitDeath"]
-t.pickupSounds = jumpsuitSounds
-t.fallSounds=["jumpsuitFall"]
-t.style = 'spaz'
-
-# ActionHero ###################################
-t = Appearance("Todd McBurton")
-t.colorTexture = "actionHeroColor"
-t.colorMaskTexture = "actionHeroColorMask"
-t.defaultColor = (0.3,0.5,0.8)
-t.defaultHighlight = (1,0,0)
-t.iconTexture = "actionHeroIcon"
-t.iconMaskTexture = "actionHeroIconColorMask"
-t.headModel =     "actionHeroHead"
-t.torsoModel =    "actionHeroTorso"
-t.pelvisModel =   "actionHeroPelvis"
-t.upperArmModel = "actionHeroUpperArm"
-t.foreArmModel =  "actionHeroForeArm"
-t.handModel =     "actionHeroHand"
-t.upperLegModel = "actionHeroUpperLeg"
-t.lowerLegModel = "actionHeroLowerLeg"
-t.toesModel =     "actionHeroToes"
-actionHeroSounds =    ['actionHero1','actionHero2','actionHero3','actionHero4']
-actionHeroHitSounds = ['actionHeroHit1','actionHeroHit2']
-t.attackSounds = actionHeroSounds
-t.jumpSounds = actionHeroSounds
-t.impactSounds = actionHeroHitSounds
-t.deathSounds=["actionHeroDeath"]
-t.pickupSounds = actionHeroSounds
-t.fallSounds=["actionHeroFall"]
-t.style = 'spaz'
-
-# Assassin ###################################
-t = Appearance("Zola")
-t.colorTexture = "assassinColor"
-t.colorMaskTexture = "assassinColorMask"
-t.defaultColor = (0.3,0.5,0.8)
-t.defaultHighlight = (1,0,0)
-t.iconTexture = "assassinIcon"
-t.iconMaskTexture = "assassinIconColorMask"
-t.headModel =     "assassinHead"
-t.torsoModel =    "assassinTorso"
-t.pelvisModel =   "assassinPelvis"
-t.upperArmModel = "assassinUpperArm"
-t.foreArmModel =  "assassinForeArm"
-t.handModel =     "assassinHand"
-t.upperLegModel = "assassinUpperLeg"
-t.lowerLegModel = "assassinLowerLeg"
-t.toesModel =     "assassinToes"
-assassinSounds =    ['assassin1','assassin2','assassin3','assassin4']
-assassinHitSounds = ['assassinHit1','assassinHit2']
-t.attackSounds = assassinSounds
-t.jumpSounds = assassinSounds
-t.impactSounds = assassinHitSounds
-t.deathSounds=["assassinDeath"]
-t.pickupSounds = assassinSounds
-t.fallSounds=["assassinFall"]
-t.style = 'spaz'
-
-# Wizard ###################################
-t = Appearance("Grumbledorf")
-t.colorTexture = "wizardColor"
-t.colorMaskTexture = "wizardColorMask"
-t.defaultColor = (0.3,0.5,0.8)
-t.defaultHighlight = (1,0,0)
-t.iconTexture = "wizardIcon"
-t.iconMaskTexture = "wizardIconColorMask"
-t.headModel =     "wizardHead"
-t.torsoModel =    "wizardTorso"
-t.pelvisModel =   "wizardPelvis"
-t.upperArmModel = "wizardUpperArm"
-t.foreArmModel =  "wizardForeArm"
-t.handModel =     "wizardHand"
-t.upperLegModel = "wizardUpperLeg"
-t.lowerLegModel = "wizardLowerLeg"
-t.toesModel =     "wizardToes"
-wizardSounds =    ['wizard1','wizard2','wizard3','wizard4']
-wizardHitSounds = ['wizardHit1','wizardHit2']
-t.attackSounds = wizardSounds
-t.jumpSounds = wizardSounds
-t.impactSounds = wizardHitSounds
-t.deathSounds=["wizardDeath"]
-t.pickupSounds = wizardSounds
-t.fallSounds=["wizardFall"]
-t.style = 'spaz'
-
-# Cowboy ###################################
-t = Appearance("Butch")
-t.colorTexture = "cowboyColor"
-t.colorMaskTexture = "cowboyColorMask"
-t.defaultColor = (0.3,0.5,0.8)
-t.defaultHighlight = (1,0,0)
-t.iconTexture = "cowboyIcon"
-t.iconMaskTexture = "cowboyIconColorMask"
-t.headModel =     "cowboyHead"
-t.torsoModel =    "cowboyTorso"
-t.pelvisModel =   "cowboyPelvis"
-t.upperArmModel = "cowboyUpperArm"
-t.foreArmModel =  "cowboyForeArm"
-t.handModel =     "cowboyHand"
-t.upperLegModel = "cowboyUpperLeg"
-t.lowerLegModel = "cowboyLowerLeg"
-t.toesModel =     "cowboyToes"
-cowboySounds =    ['cowboy1','cowboy2','cowboy3','cowboy4']
-cowboyHitSounds = ['cowboyHit1','cowboyHit2']
-t.attackSounds = cowboySounds
-t.jumpSounds = cowboySounds
-t.impactSounds = cowboyHitSounds
-t.deathSounds=["cowboyDeath"]
-t.pickupSounds = cowboySounds
-t.fallSounds=["cowboyFall"]
-t.style = 'spaz'
-
-# Witch ###################################
-t = Appearance("Witch")
-t.colorTexture = "witchColor"
-t.colorMaskTexture = "witchColorMask"
-t.defaultColor = (0.3,0.5,0.8)
-t.defaultHighlight = (1,0,0)
-t.iconTexture = "witchIcon"
-t.iconMaskTexture = "witchIconColorMask"
-t.headModel =     "witchHead"
-t.torsoModel =    "witchTorso"
-t.pelvisModel =   "witchPelvis"
-t.upperArmModel = "witchUpperArm"
-t.foreArmModel =  "witchForeArm"
-t.handModel =     "witchHand"
-t.upperLegModel = "witchUpperLeg"
-t.lowerLegModel = "witchLowerLeg"
-t.toesModel =     "witchToes"
-witchSounds =    ['witch1','witch2','witch3','witch4']
-witchHitSounds = ['witchHit1','witchHit2']
-t.attackSounds = witchSounds
-t.jumpSounds = witchSounds
-t.impactSounds = witchHitSounds
-t.deathSounds=["witchDeath"]
-t.pickupSounds = witchSounds
-t.fallSounds=["witchFall"]
-t.style = 'spaz'
-
-# Warrior ###################################
-t = Appearance("Warrior")
-t.colorTexture = "warriorColor"
-t.colorMaskTexture = "warriorColorMask"
-t.defaultColor = (0.3,0.5,0.8)
-t.defaultHighlight = (1,0,0)
-t.iconTexture = "warriorIcon"
-t.iconMaskTexture = "warriorIconColorMask"
-t.headModel =     "warriorHead"
-t.torsoModel =    "warriorTorso"
-t.pelvisModel =   "warriorPelvis"
-t.upperArmModel = "warriorUpperArm"
-t.foreArmModel =  "warriorForeArm"
-t.handModel =     "warriorHand"
-t.upperLegModel = "warriorUpperLeg"
-t.lowerLegModel = "warriorLowerLeg"
-t.toesModel =     "warriorToes"
-warriorSounds =    ['warrior1','warrior2','warrior3','warrior4']
-warriorHitSounds = ['warriorHit1','warriorHit2']
-t.attackSounds = warriorSounds
-t.jumpSounds = warriorSounds
-t.impactSounds = warriorHitSounds
-t.deathSounds=["warriorDeath"]
-t.pickupSounds = warriorSounds
-t.fallSounds=["warriorFall"]
-t.style = 'spaz'
-
-# Superhero ###################################
-t = Appearance("Middle-Man")
-t.colorTexture = "superheroColor"
-t.colorMaskTexture = "superheroColorMask"
-t.defaultColor = (0.3,0.5,0.8)
-t.defaultHighlight = (1,0,0)
-t.iconTexture = "superheroIcon"
-t.iconMaskTexture = "superheroIconColorMask"
-t.headModel =     "superheroHead"
-t.torsoModel =    "superheroTorso"
-t.pelvisModel =   "superheroPelvis"
-t.upperArmModel = "superheroUpperArm"
-t.foreArmModel =  "superheroForeArm"
-t.handModel =     "superheroHand"
-t.upperLegModel = "superheroUpperLeg"
-t.lowerLegModel = "superheroLowerLeg"
-t.toesModel =     "superheroToes"
-superheroSounds =    ['superhero1','superhero2','superhero3','superhero4']
-superheroHitSounds = ['superheroHit1','superheroHit2']
-t.attackSounds = superheroSounds
-t.jumpSounds = superheroSounds
-t.impactSounds = superheroHitSounds
-t.deathSounds=["superheroDeath"]
-t.pickupSounds = superheroSounds
-t.fallSounds=["superheroFall"]
-t.style = 'spaz'
-
-# Alien ###################################
-t = Appearance("Alien")
-t.colorTexture = "alienColor"
-t.colorMaskTexture = "alienColorMask"
-t.defaultColor = (0.3,0.5,0.8)
-t.defaultHighlight = (1,0,0)
-t.iconTexture = "alienIcon"
-t.iconMaskTexture = "alienIconColorMask"
-t.headModel =     "alienHead"
-t.torsoModel =    "alienTorso"
-t.pelvisModel =   "alienPelvis"
-t.upperArmModel = "alienUpperArm"
-t.foreArmModel =  "alienForeArm"
-t.handModel =     "alienHand"
-t.upperLegModel = "alienUpperLeg"
-t.lowerLegModel = "alienLowerLeg"
-t.toesModel =     "alienToes"
-alienSounds =    ['alien1','alien2','alien3','alien4']
-alienHitSounds = ['alienHit1','alienHit2']
-t.attackSounds = alienSounds
-t.jumpSounds = alienSounds
-t.impactSounds = alienHitSounds
-t.deathSounds=["alienDeath"]
-t.pickupSounds = alienSounds
-t.fallSounds=["alienFall"]
-t.style = 'spaz'
-
-# OldLady ###################################
-t = Appearance("OldLady")
-t.colorTexture = "oldLadyColor"
-t.colorMaskTexture = "oldLadyColorMask"
-t.defaultColor = (0.3,0.5,0.8)
-t.defaultHighlight = (1,0,0)
-t.iconTexture = "oldLadyIcon"
-t.iconMaskTexture = "oldLadyIconColorMask"
-t.headModel =     "oldLadyHead"
-t.torsoModel =    "oldLadyTorso"
-t.pelvisModel =   "oldLadyPelvis"
-t.upperArmModel = "oldLadyUpperArm"
-t.foreArmModel =  "oldLadyForeArm"
-t.handModel =     "oldLadyHand"
-t.upperLegModel = "oldLadyUpperLeg"
-t.lowerLegModel = "oldLadyLowerLeg"
-t.toesModel =     "oldLadyToes"
-oldLadySounds =    ['oldLady1','oldLady2','oldLady3','oldLady4']
-oldLadyHitSounds = ['oldLadyHit1','oldLadyHit2']
-t.attackSounds = oldLadySounds
-t.jumpSounds = oldLadySounds
-t.impactSounds = oldLadyHitSounds
-t.deathSounds=["oldLadyDeath"]
-t.pickupSounds = oldLadySounds
-t.fallSounds=["oldLadyFall"]
-t.style = 'spaz'
-
-# Gladiator ###################################
-t = Appearance("Gladiator")
-t.colorTexture = "gladiatorColor"
-t.colorMaskTexture = "gladiatorColorMask"
-t.defaultColor = (0.3,0.5,0.8)
-t.defaultHighlight = (1,0,0)
-t.iconTexture = "gladiatorIcon"
-t.iconMaskTexture = "gladiatorIconColorMask"
-t.headModel =     "gladiatorHead"
-t.torsoModel =    "gladiatorTorso"
-t.pelvisModel =   "gladiatorPelvis"
-t.upperArmModel = "gladiatorUpperArm"
-t.foreArmModel =  "gladiatorForeArm"
-t.handModel =     "gladiatorHand"
-t.upperLegModel = "gladiatorUpperLeg"
-t.lowerLegModel = "gladiatorLowerLeg"
-t.toesModel =     "gladiatorToes"
-gladiatorSounds =    ['gladiator1','gladiator2','gladiator3','gladiator4']
-gladiatorHitSounds = ['gladiatorHit1','gladiatorHit2']
-t.attackSounds = gladiatorSounds
-t.jumpSounds = gladiatorSounds
-t.impactSounds = gladiatorHitSounds
-t.deathSounds=["gladiatorDeath"]
-t.pickupSounds = gladiatorSounds
-t.fallSounds=["gladiatorFall"]
-t.style = 'spaz'
-
-# Wrestler ###################################
-t = Appearance("Wrestler")
-t.colorTexture = "wrestlerColor"
-t.colorMaskTexture = "wrestlerColorMask"
-t.defaultColor = (0.3,0.5,0.8)
-t.defaultHighlight = (1,0,0)
-t.iconTexture = "wrestlerIcon"
-t.iconMaskTexture = "wrestlerIconColorMask"
-t.headModel =     "wrestlerHead"
-t.torsoModel =    "wrestlerTorso"
-t.pelvisModel =   "wrestlerPelvis"
-t.upperArmModel = "wrestlerUpperArm"
-t.foreArmModel =  "wrestlerForeArm"
-t.handModel =     "wrestlerHand"
-t.upperLegModel = "wrestlerUpperLeg"
-t.lowerLegModel = "wrestlerLowerLeg"
-t.toesModel =     "wrestlerToes"
-wrestlerSounds =    ['wrestler1','wrestler2','wrestler3','wrestler4']
-wrestlerHitSounds = ['wrestlerHit1','wrestlerHit2']
-t.attackSounds = wrestlerSounds
-t.jumpSounds = wrestlerSounds
-t.impactSounds = wrestlerHitSounds
-t.deathSounds=["wrestlerDeath"]
-t.pickupSounds = wrestlerSounds
-t.fallSounds=["wrestlerFall"]
-t.style = 'spaz'
-
-# OperaSinger ###################################
-t = Appearance("Gretel")
-t.colorTexture = "operaSingerColor"
-t.colorMaskTexture = "operaSingerColorMask"
-t.defaultColor = (0.3,0.5,0.8)
-t.defaultHighlight = (1,0,0)
-t.iconTexture = "operaSingerIcon"
-t.iconMaskTexture = "operaSingerIconColorMask"
-t.headModel =     "operaSingerHead"
-t.torsoModel =    "operaSingerTorso"
-t.pelvisModel =   "operaSingerPelvis"
-t.upperArmModel = "operaSingerUpperArm"
-t.foreArmModel =  "operaSingerForeArm"
-t.handModel =     "operaSingerHand"
-t.upperLegModel = "operaSingerUpperLeg"
-t.lowerLegModel = "operaSingerLowerLeg"
-t.toesModel =     "operaSingerToes"
-operaSingerSounds =    ['operaSinger1','operaSinger2','operaSinger3','operaSinger4']
-operaSingerHitSounds = ['operaSingerHit1','operaSingerHit2']
-t.attackSounds = operaSingerSounds
-t.jumpSounds = operaSingerSounds
-t.impactSounds = operaSingerHitSounds
-t.deathSounds=["operaSingerDeath"]
-t.pickupSounds = operaSingerSounds
-t.fallSounds=["operaSingerFall"]
-t.style = 'spaz'
-
 # Pixie ###################################
 t = Appearance("Pixel")
 t.colorTexture = "pixieColor"
@@ -3531,33 +3876,6 @@ t.pickupSounds = pixieSounds
 t.fallSounds=["pixieFall"]
 t.style = 'pixie'
 
-# Robot ###################################
-t = Appearance("Robot")
-t.colorTexture = "robotColor"
-t.colorMaskTexture = "robotColorMask"
-t.defaultColor = (0.3,0.5,0.8)
-t.defaultHighlight = (1,0,0)
-t.iconTexture = "robotIcon"
-t.iconMaskTexture = "robotIconColorMask"
-t.headModel =     "robotHead"
-t.torsoModel =    "robotTorso"
-t.pelvisModel =   "robotPelvis"
-t.upperArmModel = "robotUpperArm"
-t.foreArmModel =  "robotForeArm"
-t.handModel =     "robotHand"
-t.upperLegModel = "robotUpperLeg"
-t.lowerLegModel = "robotLowerLeg"
-t.toesModel =     "robotToes"
-robotSounds =    ['robot1','robot2','robot3','robot4']
-robotHitSounds = ['robotHit1','robotHit2']
-t.attackSounds = robotSounds
-t.jumpSounds = robotSounds
-t.impactSounds = robotHitSounds
-t.deathSounds=["robotDeath"]
-t.pickupSounds = robotSounds
-t.fallSounds=["robotFall"]
-t.style = 'spaz'
-
 # Bunny ###################################
 t = Appearance("Easter Bunny")
 t.colorTexture = "bunnyColor"
@@ -3584,3 +3902,270 @@ t.deathSounds=["bunnyDeath"]
 t.pickupSounds = bunnySounds
 t.fallSounds=["bunnyFall"]
 t.style = 'bunny'
+
+# Ronnie ###################################
+t = Appearance("Ronnie")
+t.colorTexture = "ronnieColor"
+t.colorMaskTexture = "ronnieColorMask"
+t.defaultColor = (1,0.5,)
+t.defaultHighlight = (1,1,1)
+t.iconTexture = "ronnieIcon"
+t.iconMaskTexture = "ronnieIconColorMask"
+t.headModel =     "ronnieHead"
+t.torsoModel =    "ronnieTorso"
+t.pelvisModel =   "aliPelvis"
+t.upperArmModel = "zero"
+t.foreArmModel =  "zero"
+t.handModel =     "ronnieHand"
+t.upperLegModel = "zero"
+t.lowerLegModel = "zero"
+t.toesModel =     "ronnieToes"
+ronnieSounds =    ['ronnie1','ronnie2','ronnie3','ronnie4','ronnie5','ronnie6','ronnie7']
+ronnieHitSounds = ['ronniePain1','ronniePain2','ronniePain3','ronniePain4','ronniePain5']
+t.attackSounds = ronnieSounds
+t.jumpSounds = ronnieSounds
+t.impactSounds = ronnieHitSounds
+t.deathSounds=['ronnieDeath1','ronnieDeath2']
+t.pickupSounds = ronnieSounds
+t.fallSounds=["ronnieFall"]
+t.style = 'ali'
+
+##CUSTOM CHARACTERS BELOW
+# Looie ###################################
+t = Appearance("Looie")
+t.colorTexture = "looieColor"
+t.colorMaskTexture = "looieMask"
+t.defaultColor = (1,0.7,0.0)
+t.defaultHighlight = (1,1,1)
+t.iconTexture = "looieIcon"
+t.iconMaskTexture = "looieIconMask"
+t.headModel =     "looieHead"
+t.torsoModel =    "looieBody"
+t.pelvisModel =   "aliPelvis"
+t.upperArmModel = "zero"
+t.foreArmModel =  "zero"
+t.handModel =     "looieHand"
+t.upperLegModel = "zero"
+t.lowerLegModel = "looieLowerLeg"
+t.toesModel =     "zero"
+looieSounds =    ['looie1','looie2','looie3','looie4','looie5','looie6','looie7']
+looieHitSounds = ['looiePain1','looiePain2','looiePain3','looiePain4','looiePain5']
+t.attackSounds = looieSounds
+t.jumpSounds = looieSounds
+t.impactSounds = looieHitSounds
+t.deathSounds=['looieDeath1','looieDeath2','looieDeath3']
+t.pickupSounds = looieSounds
+t.fallSounds=["looieFall1","looieFall2"]
+t.style = 'agent'
+
+# AVGN ###################################
+t = Appearance("AVGN")
+t.colorTexture = "avgnColor"
+t.colorMaskTexture = "avgnColorMask"
+t.defaultColor = (1,1,1)
+t.defaultHighlight = (0.53,0.28,0.14)
+t.iconTexture = "avgnIcon"
+t.iconMaskTexture = "avgnIconColorMask"
+t.headModel =     "agentHead"
+t.torsoModel =    "agentTorso"
+t.pelvisModel =   "agentPelvis"
+t.upperArmModel = "agentUpperArm"
+t.foreArmModel =  "agentForeArm"
+t.handModel =     "agentHand"
+t.upperLegModel = "agentUpperLeg"
+t.lowerLegModel = "agentLowerLeg"
+t.toesModel =     "agentToes"
+agentSounds =    ['avgn1','avgn2','avgn3','avgn4']
+agentHitSounds = ['avgnPain1','avgnPain2','avgnPain3']
+t.attackSounds = agentSounds
+t.jumpSounds = agentSounds
+t.impactSounds = agentHitSounds
+t.deathSounds=["avgnDeath1","avgnDeath2","avgnDeath3","avgnDeath4","avgnDeath5"]
+t.pickupSounds = agentSounds
+t.fallSounds=["avgnFall1","avgnFall2","avgnFall3"]
+t.style = 'agent'
+
+# Zill ###################################
+t = Appearance("Zill")
+t.colorTexture = "zillColor"
+t.colorMaskTexture = "zillColorMask"
+t.defaultColor = (0.1,1,0.1)
+t.defaultHighlight = (1,1,0)
+t.iconTexture = "zillIcon"
+t.iconMaskTexture = "zillIconColorMask"
+t.headModel =     "zillHead"
+t.torsoModel =    "zillBody"
+t.pelvisModel =   "zero"
+t.upperArmModel = "zillUpperArm"
+t.foreArmModel =  "zillForeArm"
+t.handModel =     "zillHand"
+t.upperLegModel = "zillUpperLeg"
+t.lowerLegModel = "zillLowerLeg"
+t.toesModel =     "zero"
+t.attackSounds = ['zillAttack1','zillAttack2','zillAttack3','zillAttack4','zillAttack5']
+t.jumpSounds = ['zillJump1','zillJump2','zillJump3','zillJump4']
+t.impactSounds = ['zillPain1','zillPain2','zillPain3','zillPain4','zillPain5']
+t.pickupSounds = ['zillPickup1','zillPickup2','zillPickup3','zillPickup4','zillPickup5']
+t.deathSounds=['zillDeath1','zillDeath2','zillDeath3','zillDeath4']
+t.fallSounds=["zillFall1","zillFall2"]
+t.style = 'cyborg'
+
+# Spy ###################################
+t = Appearance("Spy")
+t.colorTexture = "spyColor"
+t.colorMaskTexture = "spyColorMask"
+t.defaultColor = (1,1,1)
+t.defaultHighlight = (0.1,0.1,0.1)
+t.iconTexture = "spyIcon"
+t.iconMaskTexture = "spyIconColorMask"
+t.headModel =     "spyHead"
+t.torsoModel =    "spyTorso"
+t.pelvisModel =   "spyPelvis"
+t.upperArmModel = "spyUpperArm"
+t.foreArmModel =  "spyForeArm"
+t.handModel =     "spyHand"
+t.upperLegModel = "spyUpperLeg"
+t.lowerLegModel = "spyLowerLeg"
+t.toesModel =     "spyToes"
+t.attackSounds = ['spyAttack1','spyAttack2','spyAttack3','spyAttack4']
+t.jumpSounds = ['spyJump1','spyJump2','spyJump3','spyJump4','spyJump5']
+t.impactSounds = ['spyPain1','spyPain2','spyPain3','spyPain4']
+t.deathSounds=['spyDeath1','spyDeath2','spyDeath3','spyDeath4','spyDeath5']
+t.pickupSounds = ['spyPickup1','spyPickup2']
+t.fallSounds=["spyFall1"]
+t.style = 'agent'
+
+# Mictlan ###################################
+t = Appearance("Mictlan")
+t.colorTexture = "mictlanColor"
+t.colorMaskTexture = "mictlanColorMask"
+t.defaultColor = (0.1,1,1)
+t.defaultHighlight = (0.1,0.1,0.1)
+t.iconTexture = "mictlanIcon"
+t.iconMaskTexture = "mictlanIconColorMask"
+t.headModel =     "zero"
+t.torsoModel =    "mictlanTorso"
+t.pelvisModel =   "aliPelvis"
+t.upperArmModel = "mictlanUpperArm"
+t.foreArmModel =  "mictlanForeArm"
+t.handModel =     "mictlanHand"
+t.upperLegModel = "mictlanUpperLeg"
+t.lowerLegModel = "mictlanLowerLeg"
+t.toesModel =     "mictlanToes"
+mictlanSounds =    ['mictlan1','mictlan2','mictlan3','mictlan4','mictlan5','mictlan6','mictlan7','mictlan8']
+mictlanHitSounds = ['mictlanPain1','mictlanPain2','mictlanPain3']
+t.attackSounds = mictlanSounds
+t.jumpSounds = mictlanSounds
+t.impactSounds = mictlanHitSounds
+t.deathSounds=["mictlanDeath"]
+t.pickupSounds = mictlanSounds
+t.fallSounds=["mictlanFall"]
+t.style = 'agent'
+
+# Wizard ###################################
+t = Appearance("Grumbledorf")
+t.colorTexture = "wizardColor"
+t.colorMaskTexture = "wizardColorMask"
+t.defaultColor = (0.5,0.25,1.0)
+t.defaultHighlight = (1,1,0)
+t.iconTexture = "wizardIcon"
+t.iconMaskTexture = "wizardIconColorMask"
+t.headModel =     "wizardHead"
+t.torsoModel =    "wizardTorso"
+t.pelvisModel =   "wizardPelvis"
+t.upperArmModel = "wizardUpperArm"
+t.foreArmModel =  "wizardForeArm"
+t.handModel =     "wizardHand"
+t.upperLegModel = "wizardUpperLeg"
+t.lowerLegModel = "wizardLowerLeg"
+t.toesModel =     "wizardToes"
+wizardSounds =    ['wizard1','wizard2','wizard3','wizard4','wizard5']
+wizardHitSounds = ['wizardPain1','wizardPain2','wizardPain3']
+t.attackSounds = wizardSounds
+t.jumpSounds = wizardSounds
+t.impactSounds = wizardHitSounds
+t.deathSounds=["wizardDeath1","wizardDeath2","wizardDeath3","wizardDeath4",]
+t.pickupSounds = ['wizardPickup1','wizardPickup2']
+t.fallSounds=["wizardFall"]
+t.style = 'agent'
+
+# Milk (Cow Character) ###################################
+t = Appearance("Milk")
+t.colorTexture = "cowColor"
+t.colorMaskTexture = "cowColorMask"
+t.defaultColor = (1,1,1)
+t.defaultHighlight = (1,0.3,0.5)
+t.iconTexture = "cowIcon"
+t.iconMaskTexture = "cowIconColorMask"
+t.headModel =     "cowHead"
+t.torsoModel =    "cowTorso"
+t.pelvisModel =   "cowPelvis"
+t.upperArmModel = "cowUpperArm"
+t.foreArmModel =  "cowForeArm"
+t.handModel =     "cowHand"
+t.upperLegModel = "cowUpperLeg"
+t.lowerLegModel = "cowLowerLeg"
+t.toesModel =     "cowToes"
+cowSounds =    ['cow1','cow2','cow3','cow4']
+t.attackSounds = cowSounds
+t.jumpSounds = cowSounds
+t.impactSounds = cowSounds
+t.deathSounds = ["cowDeath"]
+t.pickupSounds = cowSounds
+t.fallSounds = ["cowFall"]
+t.style = 'bear'
+
+# JuiceBoy ###################################
+t = Appearance("Juice-Boy")
+t.colorTexture = "juiceBoyColor"
+t.colorMaskTexture = "juiceBoyColorMask"
+t.defaultColor = (0.2,1,0.2)
+t.defaultHighlight = (1,1,0)
+t.iconTexture = "juiceBoyIcon"
+t.iconMaskTexture = "juiceBoyIconColorMask"
+t.headModel =     "zero"
+t.torsoModel =    "juiceBoyTorso"
+t.pelvisModel =   "zero"
+t.upperArmModel = "juiceBoyUpperArm"
+t.foreArmModel =  "juiceBoyForeArm"
+t.handModel =     "juiceBoyHand"
+t.upperLegModel = "juiceBoyUpperLeg"
+t.lowerLegModel = "juiceBoyLowerLeg"
+t.toesModel =     "juiceBoyToes"
+juiceSounds = ['juice1','juice2','juice3','juice4','juice5','juice6']
+t.attackSounds = juiceSounds
+t.jumpSounds = juiceSounds
+t.impactSounds = juiceSounds
+t.deathSounds = ["juiceDeath"]
+t.pickupSounds = juiceSounds
+t.fallSounds = ["juiceFall"]
+t.style = 'agent'
+
+# Klayman - WORK IN PROGRESS###################################
+'''
+t = Appearance("Klayman")
+t.colorTexture = "agentColor"
+t.colorMaskTexture = "agentColorMask"
+t.defaultColor = (1,0.1,0.1)
+t.defaultHighlight = (1,0.7,0.0)
+t.iconTexture = "klaymanIcon"
+t.iconMaskTexture = "klaymanIconColorMask"
+t.headModel =     "agentHead"
+t.torsoModel =    "agentTorso"
+t.pelvisModel =   "agentPelvis"
+t.upperArmModel = "agentUpperArm"
+t.foreArmModel =  "agentForeArm"
+t.handModel =     "agentHand"
+t.upperLegModel = "agentUpperLeg"
+t.lowerLegModel = "agentLowerLeg"
+t.toesModel =     "agentToes"
+agentSounds =    ['agent1','agent2','agent3','agent4']
+agentHitSounds = ['agentHit1','agentHit2']
+t.attackSounds = agentSounds
+t.jumpSounds = agentSounds
+t.impactSounds = agentHitSounds
+t.deathSounds=["agentDeath"]
+t.pickupSounds = agentSounds
+t.fallSounds=["agentFall"]
+t.style = 'agent'
+'''

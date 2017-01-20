@@ -53,7 +53,7 @@ class TheLastStandGame(bs.CoopGameActivity):
                                }
 
     def onTransitionIn(self):
-        bs.CoopGameActivity.onTransitionIn(self,music='Epic')
+        bs.CoopGameActivity.onTransitionIn(self,music='Last Stand')
         bs.gameTimer(1300,bs.Call(bs.playSound,self._newWaveSound))
         self._scoreBoard = bs.ScoreBoard(label=bs.Lstr(resource='scoreText'),scoreSplit=0.5)
         self._score = 0

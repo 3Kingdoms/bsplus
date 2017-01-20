@@ -11,7 +11,7 @@ def preloadPreviewMedia():
     for m in _maps.values():
         mapTexName = m.getPreviewTextureName()
         if mapTexName is not None: bs.getTexture(mapTexName)
-
+    
 def registerMap(m):
     """ Register a map class with the game. """
     if _maps.has_key(m.name):
@@ -37,7 +37,7 @@ def getMapsSupportingPlayType(playType):
     features or lend themselves to a certain style of play.
 
     Play Types:
-
+    
     'melee' - general fighting map - has 2+ 'spawn' pts, 1+ 'powerupSpawn' pts
 
     'teamFlag' - for CTF, etc - has 2+ 'spawn' pts, 2+ 'flag' pts, and 1+ 'powerupSpawn' pts
@@ -51,15 +51,15 @@ def getMapsSupportingPlayType(playType):
     'hockey' - has 2 'goal' pts, 2+ 'spawn' pts, 1+ 'flagDefault' pts, 1+ 'powerupSpawn' pts
 
     'football' - has 2 'goal' pts, 2+ 'spawn' pts, 1+ 'flagDefault' pts, 1+ 'powerupSpawn' pts
-
+    
     'race' - has 2+ 'racePoint' pts
     """
-
+    
     # we also want to limit results to maps we own..
     #unOwnedMaps = _getUnOwnedMaps()
     #maps = [m[0] for m in _maps.items() if playType in m[1].playTypes and (m[0] not in unOwnedMaps)]
     maps = [m[0] for m in _maps.items() if playType in m[1].playTypes]
-
+    
     maps.sort()
     return maps
 
@@ -67,25 +67,21 @@ def _getUnOwnedMaps():
     import bsUI
     import bsInternal
     unOwnedMaps = set()
-    #Bacon Changed Start
-    #Original:
-    # if bs.getEnvironment()['subplatform'] != 'headless':
-    #     for mapSection in bsUI._getStoreLayout()['maps']:
-    #         for m in mapSection['items']:
-    #             if not bsInternal._getPurchased(m):
-    #                 mInfo = bsUI._getStoreItem(m)
-    #                 unOwnedMaps.add(mInfo['mapType'].name)
-    #Original
-    #Bacon Changed End
+    if bs.getEnvironment()['subplatform'] != 'headless':
+        for mapSection in bsUI._getStoreLayout()['maps']:
+            for m in mapSection['items']:
+                if not bsInternal._getPurchased(m):
+                    mInfo = bsUI._getStoreItem(m)
+                    unOwnedMaps.add(mInfo['mapType'].name)
     return unOwnedMaps
-
+    
 
 def getMapClass(name):
     """ return a map type given a name """
     name = getFilteredMapName(name)
     try: return _maps[name]
     except Exception: raise Exception("Map not found: '"+name+"'")
-
+    
 class Map(bs.Actor):
     """
     category: Game Flow Classes
@@ -155,20 +151,20 @@ class Map(bs.Actor):
         """
         import bsInternal
         bs.Actor.__init__(self)
-
+        
         self.preloadData = self.preload(onDemand=True)
 
         #bsUtils.resetGlobals()
-
+        
         # set some defaults
         bsGlobals = bs.getSharedObject('globals')
-
+        
         aoiBounds = self.getDefBoundBox("areaOfInterestBounds")
         if aoiBounds is None:
             print 'WARNING: no "aoiBounds" found for map:',self.getName()
             aoiBounds = (-1,-1,-1,1,1,1)
         bsGlobals.areaOfInterestBounds = aoiBounds
-
+        
         mapBounds = self.getDefBoundBox("levelBounds")
         if mapBounds is None:
             print 'WARNING: no "levelBounds" found for map:',self.getName()
@@ -183,17 +179,17 @@ class Map(bs.Actor):
         center = ((aoiBounds[0]+aoiBounds[3])*0.5,
                   (aoiBounds[1]+aoiBounds[4])*0.5,
                   (aoiBounds[2]+aoiBounds[5])*0.5)
-
+        
         if vrOverlayCenterOffset is not None:
             center = (center[0]+vrOverlayCenterOffset[0],
                       center[1]+vrOverlayCenterOffset[1],
                       center[2]+vrOverlayCenterOffset[2])
-
+        
         #print "TEMP - center ",center
         bsGlobals.vrOverlayCenter = center
         bsGlobals.vrOverlayCenterEnabled = True
-
-
+        
+        
         self.spawnPoints = self.getDefPoints("spawn") or [(0,0,0,0,0,0)]
         self.ffaSpawnPoints = self.getDefPoints("ffaSpawn") or [(0,0,0,0,0,0)]
         self.spawnByFlagPoints = self.getDefPoints("spawnByFlag") or [(0,0,0,0,0,0)]
@@ -220,7 +216,7 @@ class Map(bs.Actor):
                     b[0]+b[6]/2.0,b[1]+b[7]/2.0,b[2]+b[8]/2.0);
         except Exception:
             return None
-
+        
     def getDefPoint(self,name):
         """Returns a single defined point or a default value in its absence."""
         try:
@@ -247,7 +243,7 @@ class Map(bs.Actor):
             return pointList
         else:
             return None
-
+        
     def getStartPosition(self,teamIndex):
         """
         Returns a random starting position in the map for the given team index.
@@ -349,7 +345,7 @@ class HockeyStadium(Map):
         m.addActions(actions=('modifyPartCollision','friction',0.01))
         data['iceMaterial'] = m
         return data
-
+    
     def __init__(self):
         Map.__init__(self)
         self.node = bs.newNode("terrain",
@@ -441,6 +437,74 @@ class FootballStadium(Map):
 
 registerMap(FootballStadium)
 
+class BasketballStadium(Map):
+    import basketballStadiumLevelDefs as defs
+    name = "Basketball Stadium"
+
+    playTypes = ['melee','basketball','keepAway']
+
+    @classmethod
+    def getPreviewTextureName(cls):
+        return 'basketballStadiumPreview'
+
+    @classmethod
+    def onPreload(cls):
+        data = {}
+        data['modelFloor'] = bs.getModel("basketballFloor")
+        data['modelWalls'] = bs.getModel("basketballWall")
+        data['modelGoalies'] = bs.getModel("basketballGoalie")
+        data['vrFillModel'] = bs.getModel('footballStadiumVRFill')
+        data['collideModel'] = bs.getCollideModel("footballStadiumCollide")
+        data['collideModelGoalies'] = bs.getCollideModel("basketballGoalieCollide")
+        data['goalieTex'] = bs.getTexture("basketballGoalie")
+        data['wallTex'] = bs.getTexture("footballStadium")
+        data['floorTex'] = bs.getTexture("basketballCourt")
+        return data
+
+    def __init__(self):
+        Map.__init__(self)
+        self.node = bs.newNode('terrain',
+                               delegate=self,
+                               attrs={'model':self.preloadData['modelFloor'],
+                                      'collideModel':self.preloadData['collideModel'],
+                                      'colorTexture':self.preloadData['floorTex'],
+                                      'materials':[bs.getSharedObject('footingMaterial')]})
+                                      
+        self.goalies = bs.newNode('terrain',
+                               delegate=self,
+                               attrs={'model':self.preloadData['modelGoalies'],
+                                      'collideModel':self.preloadData['collideModelGoalies'],
+                                      'colorTexture':self.preloadData['goalieTex'],
+                                      'materials':[bs.getSharedObject('footingMaterial')]})
+                                      
+        self.walls = bs.newNode('terrain',
+                               delegate=self,
+                               attrs={'model':self.preloadData['modelWalls'],
+                                      'colorTexture':self.preloadData['wallTex']})
+                                      
+        bs.newNode('terrain',
+                   attrs={'model':self.preloadData['vrFillModel'],
+                          'lighting':False,
+                          'vrOnly':True,
+                          'background':True,
+                          'colorTexture':self.preloadData['wallTex']})
+        g = bs.getSharedObject('globals')
+        g.tint = (1.3,1.2,1.0)
+        g.ambientColor = (1.3,1.2,1.0)
+        g.vignetteOuter = (0.57,0.57,0.57)
+        g.vignetteInner = (0.9,0.9,0.9)
+        g.vrCameraOffset = (0,-4.2,-1.1)
+        g.vrNearClip = 0.5
+
+    def _isPointNearEdge(self,p,running=False):
+        boxPosition = self.defs.boxes['edgeBox'][0:3]
+        boxScale = self.defs.boxes['edgeBox'][6:9]
+        x = (p.x() - boxPosition[0])/boxScale[0]
+        z = (p.z() - boxPosition[2])/boxScale[2]
+        return (x < -0.5 or x > 0.5 or z < -0.5 or z > 0.5)
+
+registerMap(BasketballStadium)
+
 
 class BridgitMap(Map):
     import bridgitLevelDefs as defs
@@ -464,14 +528,14 @@ class BridgitMap(Map):
         data['collideBG'] = bs.getCollideModel("natureBackgroundCollide")
 
         data['railingCollideModel'] = bs.getCollideModel("bridgitLevelRailingCollide")
-
+    
         data['bgMaterial'] = bs.Material()
         data['bgMaterial'].addActions(actions=('modifyPartCollision','friction',10.0))
         return data
 
     def __init__(self):
         Map.__init__(self)
-
+        
         self.node = bs.newNode('terrain',
                                delegate=self,
                                attrs={'collideModel':self.preloadData['collideModel'],
@@ -601,7 +665,7 @@ class RoundaboutMap(Map):
         data['bgMaterial'] = bs.Material()
         data['bgMaterial'].addActions(actions=('modifyPartCollision','friction',10.0))
         return data
-
+    
     def __init__(self):
         Map.__init__(self,vrOverlayCenterOffset=(0,-1,1))
         self.node = bs.newNode('terrain',
@@ -666,7 +730,7 @@ class MonkeyFaceMap(Map):
         data['bgMaterial'] = bs.Material()
         data['bgMaterial'].addActions(actions=('modifyPartCollision','friction',10.0))
         return data
-
+    
     def __init__(self):
         Map.__init__(self)
         self.node = bs.newNode('terrain',
@@ -731,7 +795,7 @@ class ZigZagMap(Map):
         data['bgMaterial'] = bs.Material()
         data['bgMaterial'].addActions(actions=('modifyPartCollision','friction',10.0))
         return data
-
+    
     def __init__(self):
         Map.__init__(self)
         self.node = bs.newNode('terrain',
@@ -832,9 +896,9 @@ registerMap(ThePadMap)
 
 
 class DoomShroomMap(Map):
-    import doomShroomLevelDefs as defs
-    name = 'Doom Shroom'
-    playTypes = ['melee','keepAway','teamFlag']
+    import doomShroomLevelDefsCOOP as defs
+    name = 'Doom Shroom Large'
+    playTypes = []
 
     @classmethod
     def getPreviewTextureName(cls):
@@ -843,16 +907,16 @@ class DoomShroomMap(Map):
     @classmethod
     def onPreload(cls):
         data = {}
-        data['model'] = bs.getModel('doomShroomLevel')
-        data['collideModel'] = bs.getCollideModel('doomShroomLevelCollide')
+        data['model'] = bs.getModel('doomShroomLevelCOOP')
+        data['collideModel'] = bs.getCollideModel('doomShroomLevelCollideCOOP')
         data['tex'] = bs.getTexture('doomShroomLevelColor')
         data['bgTex'] = bs.getTexture('doomShroomBGColor')
         data['bgModel'] = bs.getModel('doomShroomBG')
         data['vrFillModel'] = bs.getModel('doomShroomVRFill')
-        data['stemModel'] = bs.getModel('doomShroomStem')
-        data['collideBG'] = bs.getCollideModel('doomShroomStemCollide')
+        data['stemModel'] = bs.getModel('doomShroomStemCOOP')
+        data['collideBG'] = bs.getCollideModel('doomShroomStemCollideCOOP')
         return data
-
+    
     def __init__(self):
         Map.__init__(self)
         self.node = bs.newNode('terrain',
@@ -898,6 +962,73 @@ class DoomShroomMap(Map):
 
 registerMap(DoomShroomMap)
 
+class DoomShroomMultiMap(Map):
+    import doomShroomLevelDefs as defs
+    name = 'Doom Shroom'
+    playTypes = ['melee','keepAway','teamFlag']
+
+    @classmethod
+    def getPreviewTextureName(cls):
+        return 'doomShroomPreview'
+
+    @classmethod
+    def onPreload(cls):
+        data = {}
+        data['model'] = bs.getModel('doomShroomLevel')
+        data['collideModel'] = bs.getCollideModel('doomShroomLevelCollide')
+        data['tex'] = bs.getTexture('doomShroomLevelColor')
+        data['bgTex'] = bs.getTexture('doomShroomBGColor')
+        data['bgModel'] = bs.getModel('doomShroomBG')
+        data['vrFillModel'] = bs.getModel('doomShroomVRFill')
+        data['stemModel'] = bs.getModel('doomShroomStem')
+        data['collideBG'] = bs.getCollideModel('doomShroomStemCollide')
+        return data
+    
+    def __init__(self):
+        Map.__init__(self)
+        self.node = bs.newNode('terrain',
+                               delegate=self,
+                               attrs={'collideModel':self.preloadData['collideModel'],
+                                      'model':self.preloadData['model'],
+                                      'colorTexture':self.preloadData['tex'],
+                                      'materials':[bs.getSharedObject('footingMaterial')]})
+        self.foo = bs.newNode('terrain',
+                              attrs={'model':self.preloadData['bgModel'],
+                                     'lighting':False,
+                                     'background':True,
+                                     'colorTexture':self.preloadData['bgTex']})
+        bs.newNode('terrain',
+                   attrs={'model':self.preloadData['vrFillModel'],
+                          'lighting':False,
+                          'vrOnly':True,
+                          'background':True,
+                          'colorTexture':self.preloadData['bgTex']})
+        self.stem = bs.newNode('terrain',
+                               attrs={'model':self.preloadData['stemModel'],
+                                      'lighting':False,
+                                      'colorTexture':self.preloadData['tex']})
+        self.bgCollide = bs.newNode('terrain',
+                                    attrs={'collideModel':self.preloadData['collideBG'],
+                                           'materials':[bs.getSharedObject('footingMaterial'),bs.getSharedObject('deathMaterial')]})
+        bsGlobals = bs.getSharedObject('globals')
+        bsGlobals.tint = (0.82,1.10,1.15)
+        bsGlobals.ambientColor = (0.9,1.3,1.1)
+        bsGlobals.shadowOrtho = False
+        bsGlobals.vignetteOuter = (0.76,0.76,0.76)
+        bsGlobals.vignetteInner = (0.95,0.95,0.99)
+
+    def _isPointNearEdge(self,p,running=False):
+        x = p.x()
+        z = p.z()
+        xAdj = x*0.125
+        zAdj = (z+3.7)*0.2
+        if running:
+            xAdj *= 1.4
+            zAdj *= 1.4
+        return (xAdj*xAdj+zAdj*zAdj > 1.0)
+
+registerMap(DoomShroomMultiMap)
+
 class LakeFrigidMap(Map):
     import lakeFrigidDefs as defs
     name = 'Lake Frigid'
@@ -922,7 +1053,7 @@ class LakeFrigidMap(Map):
         m = bs.Material()
         m.addActions(actions=('modifyPartCollision','friction',0.01))
         data['iceMaterial'] = m
-
+        
         return data
 
     def __init__(self):
@@ -971,9 +1102,9 @@ class LakeFrigidMap(Map):
         g.vignetteInner = (0.95,0.95,0.99)
 
         g.vrNearClip = 0.5
-
+        
         self.isHockey = True
-
+        
     # def _isPointNearEdge(self,p,running=False):
     #     x = p.x()
     #     z = p.z()
@@ -1006,7 +1137,7 @@ class TipTopMap(Map):
         data['bgModel'] = bs.getModel('tipTopBG')
         data['railingCollideModel'] = bs.getCollideModel('tipTopLevelBumper')
         return data
-
+    
     def __init__(self):
         Map.__init__(self,vrOverlayCenterOffset=(0,-0.2,2.5))
         self.node = bs.newNode('terrain',
@@ -1062,7 +1193,7 @@ class CragCastleMap(Map):
         data['vrFillMoundModel'] = bs.getModel('cragCastleVRFillMound')
         data['vrFillMoundTex'] = bs.getTexture('vrFillMound')
         return data
-
+    
     def __init__(self):
         Map.__init__(self)
         self.node = bs.newNode('terrain',
@@ -1211,7 +1342,7 @@ class AlwaysLandMap(Map):
     @classmethod
     def getMusicType(cls):
         return 'Flying'
-
+    
     def __init__(self):
         Map.__init__(self,vrOverlayCenterOffset=(0,-3.7,2.5))
         self.node = bs.newNode('terrain',
@@ -1260,7 +1391,7 @@ class AlwaysLandMap(Map):
         bsUtils.animate(c,'input3',{3000:0,4000:1,9000:1,10000:0})
         c.connectAttr('output',t,'color')
         bs.gameTimer(10000,t.delete)
-
+        
 registerMap(AlwaysLandMap)
 
 
@@ -1285,7 +1416,7 @@ class StepRightUpMap(Map):
         data['vrFillMoundModel'] = bs.getModel('stepRightUpVRFillMound')
         data['vrFillMoundTex'] = bs.getTexture('vrFillMound')
         return data
-
+    
     def __init__(self):
         Map.__init__(self,vrOverlayCenterOffset=(0,-1,2))
         self.node = bs.newNode('terrain',
@@ -1339,7 +1470,7 @@ class CourtyardMap(Map):
         data['bgTex'] = bs.getTexture('menuBG')
         data['bgModel'] = bs.getModel('thePadBG') # fixme - chop this into vr and non-vr chunks
         data['playerWallCollideModel'] = bs.getCollideModel('courtyardPlayerWall')
-
+    
         data['playerWallMaterial'] = bs.Material()
         data['playerWallMaterial'].addActions(actions=(('modifyPartCollision','friction',0.0)))
 
@@ -1351,7 +1482,7 @@ class CourtyardMap(Map):
 
         data['vrFillMoundModel'] = bs.getModel('stepRightUpVRFillMound')
         data['vrFillMoundTex'] = bs.getTexture('vrFillMound')
-
+        
         return data
 
     def __init__(self):
@@ -1379,7 +1510,7 @@ class CourtyardMap(Map):
                           'color':(0.53,0.57,0.5),
                           'background':True,
                           'colorTexture':self.preloadData['vrFillMoundTex']})
-
+        
         # in challenge games, put up a wall to prevent players
         # from getting in the turrets (that would foil our brilliant AI)
         if 'CoopSession' in str(type(bs.getSession())):
@@ -1429,7 +1560,7 @@ class RampageMap(Map):
         data['vrFillModel'] = bs.getModel('rampageVRFill')
         data['railingCollideModel'] = bs.getCollideModel('rampageBumper')
         return data
-
+    
     def __init__(self):
         Map.__init__(self,vrOverlayCenterOffset=(0,0,2))
         self.node = bs.newNode('terrain',
@@ -1476,3 +1607,726 @@ class RampageMap(Map):
         return (x < -0.5 or x > 0.5 or z < -0.5 or z > 0.5)
 
 registerMap(RampageMap)
+
+class ToiletDonutMap(Map):
+    import toiletDonutLevelDefs as defs
+    name = 'Toilet Donut'
+    playTypes = ['melee','keepAway','teamFlag']
+
+    @classmethod
+    def getPreviewTextureName(cls):
+        return 'toiletDonutPreview'
+
+    @classmethod
+    def onPreload(cls):
+        data = {}
+        data['model'] = bs.getModel('toiletDonutLevel')
+        data['collideModel'] = bs.getCollideModel('toiletDonutLevelCollide')
+        data['tex'] = bs.getTexture('toiletDonutLevelColor')
+        data['bgTex'] = bs.getTexture('toiletDonutBGColor')
+        data['bgModel'] = bs.getModel('toiletDonutBG')
+        return data
+		
+    @classmethod
+    def getMusicType(cls):
+        return 'Toilet'
+    
+    def __init__(self):
+        Map.__init__(self)
+        self.node = bs.newNode('terrain',
+                               delegate=self,
+                               attrs={'collideModel':self.preloadData['collideModel'],
+                                      'model':self.preloadData['model'],
+                                      'colorTexture':self.preloadData['tex'],
+                                      'materials':[bs.getSharedObject('footingMaterial')]})
+        self.foo = bs.newNode('terrain',
+                              attrs={'model':self.preloadData['bgModel'],
+                                     'lighting':False,
+                                     'background':True,
+                                     'colorTexture':self.preloadData['bgTex']})
+        bsGlobals = bs.getSharedObject('globals')
+        bsGlobals.tint = (0.82,1.10,1.15)
+        bsGlobals.ambientColor = (0.9,1.3,1.1)
+        bsGlobals.shadowOrtho = False
+        bsGlobals.vignetteOuter = (0.76,0.76,0.76)
+        bsGlobals.vignetteInner = (0.95,0.95,0.99)
+
+    def _isPointNearEdge(self,p,running=False):
+        x = p.x()
+        z = p.z()
+        xAdj = x*0.125
+        zAdj = (z+3.7)*0.2
+        if running:
+            xAdj *= 1.4
+            zAdj *= 1.4
+        return (xAdj*xAdj+zAdj*zAdj > 1.0)
+
+registerMap(ToiletDonutMap)
+
+class PillarBasesMap(Map):
+    import pillarBasesLevelDefs as defs
+    name = 'Pillar Bases'
+    playTypes = ['melee','keepAway','teamFlag','kingOfTheHill']
+
+    @classmethod
+    def getPreviewTextureName(cls):
+        return 'pillarBasesPreview'
+
+    @classmethod
+    def onPreload(cls):
+        data = {}
+        data['model'] = bs.getModel('pillarBasesLevel')
+        data['bottomModel'] = bs.getModel('pillarBasesLevelBottom')
+        data['collideModel'] = bs.getCollideModel('pillarBasesLevelCollide')
+        data['railingCollideModel'] = bs.getCollideModel('pillarBasesLevelBumper')
+        data['tex'] = bs.getTexture('pillarBasesLevelColor')
+        data['bgTex'] = bs.getTexture('nightBG')
+        data['bgModel'] = bs.getModel('thePadBG') # fixme should chop this into vr/non-vr sections
+        data['vrFillMoundTex'] = bs.getTexture('pillarBasesRock')
+        return data
+
+    def __init__(self):
+        Map.__init__(self)
+        self.node = bs.newNode('terrain',
+                               delegate=self,
+                               attrs={'collideModel':self.preloadData['collideModel'],
+                                      'model':self.preloadData['model'],
+                                      'colorTexture':self.preloadData['tex'],
+                                      'materials':[bs.getSharedObject('footingMaterial')]})
+        self.bottom = bs.newNode('terrain',
+                                 attrs={'model':self.preloadData['bottomModel'],
+                                        'lighting':False,
+                                        'colorTexture':self.preloadData['vrFillMoundTex']})
+        self.foo = bs.newNode('terrain',
+                              attrs={'model':self.preloadData['bgModel'],
+                                     'lighting':False,
+                                     'background':True,
+                                     'colorTexture':self.preloadData['bgTex']})
+        self.railing = bs.newNode('terrain',
+                               attrs={'collideModel':self.preloadData['railingCollideModel'],
+                                     'materials':[bs.getSharedObject('railingMaterial')],
+                                     'bumper':True})
+        bsGlobals = bs.getSharedObject('globals')
+        bsGlobals.tint = (1.1,1.1,1.0)
+        bsGlobals.ambientColor = (1.1,1.1,1.0)
+        bsGlobals.shadowOrtho = True
+        bsGlobals.vignetteOuter = (0.7,0.65,0.75)
+        bsGlobals.vignetteInner = (0.95,0.95,0.93)
+
+registerMap(PillarBasesMap)
+
+class OuyaMap(Map):
+    import ouyaLevelDefs as defs
+    name = 'OUYA'
+    playTypes = ['melee','keepAway','kingOfTheHill']
+
+    @classmethod
+    def getPreviewTextureName(cls):
+        return 'ouyaPreview'
+
+    @classmethod
+    def onPreload(cls):
+        data = {}
+        data['model'] = bs.getModel('ouyaLevel')
+        data['collideModel'] = bs.getCollideModel('ouyaLevelCollide')
+        data['tex'] = bs.getTexture('ouyaLevelColor')
+        data['bgTex'] = bs.getTexture('reflectionSharp_+y')
+        data['bgModel'] = bs.getModel('ouyaBG')
+        return data
+    
+    def __init__(self):
+        Map.__init__(self)
+        self.node = bs.newNode('terrain',
+                               delegate=self,
+                               attrs={'collideModel':self.preloadData['collideModel'],
+                                      'model':self.preloadData['model'],
+                                      'colorTexture':self.preloadData['tex'],
+                                      'materials':[bs.getSharedObject('footingMaterial')]})
+        self.foo = bs.newNode('terrain',
+                              attrs={'model':self.preloadData['bgModel'],
+                                     'lighting':False,
+                                     'background':True,
+                                     'colorTexture':self.preloadData['bgTex']})
+
+        bsGlobals = bs.getSharedObject('globals')
+        bsGlobals.tint = (0.82,1.10,1.15)
+        bsGlobals.ambientColor = (0.9,1.3,1.1)
+        bsGlobals.shadowOrtho = False
+        bsGlobals.vignetteOuter = (0.76,0.76,0.76)
+        bsGlobals.vignetteInner = (0.95,0.95,0.99)
+
+    def _isPointNearEdge(self,p,running=False):
+        x = p.x()
+        z = p.z()
+        xAdj = x*0.125
+        zAdj = (z+3.7)*0.2
+        if running:
+            xAdj *= 1.4
+            zAdj *= 1.4
+        return (xAdj*xAdj+zAdj*zAdj > 1.0)
+
+registerMap(OuyaMap)
+
+class MorningMap(Map):
+    import morningLevelDefs as defs
+    name = 'Morning'
+    playTypes = ['melee','keepAway','kingOfTheHill']
+
+    @classmethod
+    def getPreviewTextureName(cls):
+        return 'morningPreview'
+
+    @classmethod
+    def onPreload(cls):
+        data = {}
+        data['model'] = bs.getModel('morningLevel')
+        data['collideModel'] = bs.getCollideModel('morningLevelCollide')
+        data['tex'] = bs.getTexture('morningLevelColor')
+        data['bgTex'] = bs.getTexture('morningBG')
+        data['bgModel'] = bs.getModel('thePadBG')
+        return data
+    
+    def __init__(self):
+        Map.__init__(self)
+        self.node = bs.newNode('terrain',
+                               delegate=self,
+                               attrs={'collideModel':self.preloadData['collideModel'],
+                                      'model':self.preloadData['model'],
+                                      'colorTexture':self.preloadData['tex'],
+                                      'materials':[bs.getSharedObject('footingMaterial')]})
+        self.foo = bs.newNode('terrain',
+                              attrs={'model':self.preloadData['bgModel'],
+                                     'lighting':False,
+                                     'background':True,
+                                     'colorTexture':self.preloadData['bgTex']})
+        bsGlobals = bs.getSharedObject('globals')
+        bsGlobals.tint = (1.15,1.10,0.82)
+        bsGlobals.ambientColor = (1.2,1.3,1.0)
+        bsGlobals.shadowOrtho = False
+        bsGlobals.vignetteOuter = (1,1,1)
+        bsGlobals.vignetteInner = (0.99,0.99,0.95)
+
+    def _isPointNearEdge(self,p,running=False):
+        x = p.x()
+        z = p.z()
+        xAdj = x*0.125
+        zAdj = (z+3.7)*0.2
+        if running:
+            xAdj *= 1.4
+            zAdj *= 1.4
+        return (xAdj*xAdj+zAdj*zAdj > 1.0)
+
+registerMap(MorningMap)
+
+class HoveringWoodMap(Map):
+    import hoveringWoodLevelDefs as defs
+    name = 'Hovering Plank-o-Wood'
+    playTypes = ['melee','keepAway']
+
+    @classmethod
+    def getPreviewTextureName(cls):
+        return 'hoveringWoodPreview'
+
+    @classmethod
+    def onPreload(cls):
+        data = {}
+        data['model'] = bs.getModel('hoveringWoodLevel')
+        data['collideModel'] = bs.getCollideModel('hoveringWoodLevelCollide')
+        data['tex'] = bs.getTexture('hoveringWoodLevelColor')
+        data['bgTex'] = bs.getTexture('hoveringWoodBGColor')
+        data['bgModel'] = bs.getModel('skysphere')
+        return data
+    
+    def __init__(self):
+        Map.__init__(self)
+        self.node = bs.newNode('terrain',
+                               delegate=self,
+                               attrs={'collideModel':self.preloadData['collideModel'],
+                                      'model':self.preloadData['model'],
+                                      'colorTexture':self.preloadData['tex'],
+                                      'materials':[bs.getSharedObject('footingMaterial')]})
+        self.foo = bs.newNode('terrain',
+                              attrs={'model':self.preloadData['bgModel'],
+                                     'lighting':False,
+                                     'background':True,
+                                     'colorTexture':self.preloadData['bgTex']})
+        bsGlobals = bs.getSharedObject('globals')
+        bsGlobals.tint = (1.15,1.10,0.82)
+        bsGlobals.ambientColor = (1.2,1.3,1.0)
+        bsGlobals.shadowOrtho = False
+        bsGlobals.vignetteOuter = (1,1,1)
+        bsGlobals.vignetteInner = (0.99,0.99,0.95)
+
+    def _isPointNearEdge(self,p,running=False):
+        x = p.x()
+        z = p.z()
+        xAdj = x*0.125
+        zAdj = (z+3.7)*0.2
+        if running:
+            xAdj *= 1.4
+            zAdj *= 1.4
+        return (xAdj*xAdj+zAdj*zAdj > 1.0)
+
+registerMap(HoveringWoodMap)
+
+class WhereEaglesDareMap(Map):
+    import whereEaglesDareLevelDefs as defs
+    name = 'Where Eagles Dare'
+    playTypes = ['melee','keepAway','kingOfTheHill','teamFlag']
+
+    @classmethod
+    def getPreviewTextureName(cls):
+        return 'whereEaglesDarePreview'
+
+    @classmethod
+    def onPreload(cls):
+        data = {}
+        data['model'] = bs.getModel('whereEaglesDareLevel')
+        data['collideModel'] = bs.getCollideModel('whereEaglesDareLevelCollide')
+        data['railingCollideModel'] = bs.getCollideModel('whereEaglesDareLevelBumper')
+        data['tex'] = bs.getTexture('whereEaglesDareLevelColor')
+        data['bgTex'] = bs.getTexture('rampageBGColor')
+        data['bgTex2'] = bs.getTexture('rampageBGColor2')
+        data['bgModel'] = bs.getModel('rampageBG')
+        data['bgModel2'] = bs.getModel('rampageBG2')
+        data['vrFillModel'] = bs.getModel('rampageVRFill')
+        return data
+		
+    @classmethod
+    def getMusicType(cls):
+        return 'Where Eagles Dare'
+    
+    def __init__(self):
+        Map.__init__(self)
+        self.node = bs.newNode('terrain',
+                               delegate=self,
+                               attrs={'collideModel':self.preloadData['collideModel'],
+                                      'model':self.preloadData['model'],
+                                      'colorTexture':self.preloadData['tex'],
+                                      'materials':[bs.getSharedObject('footingMaterial')]})
+        self.bg = bs.newNode('terrain',
+                             attrs={'model':self.preloadData['bgModel'],
+                                    'lighting':False,
+                                    'background':True,
+                                    'colorTexture':self.preloadData['bgTex']})
+        self.bg2 = bs.newNode('terrain',
+                              attrs={'model':self.preloadData['bgModel2'],
+                                     'lighting':False,
+                                     'background':True,
+                                     'colorTexture':self.preloadData['bgTex2']})
+        bs.newNode('terrain',
+                   attrs={'model':self.preloadData['vrFillModel'],
+                          'lighting':False,
+                          'vrOnly':True,
+                          'background':True,
+                          'colorTexture':self.preloadData['bgTex2']})
+        self.railing = bs.newNode('terrain',
+                               attrs={'collideModel':self.preloadData['railingCollideModel'],
+                                     'materials':[bs.getSharedObject('railingMaterial')],
+                                     'bumper':True})
+        bsGlobals = bs.getSharedObject('globals')
+        bsGlobals.tint = (1.15,1.10,0.82)
+        bsGlobals.ambientColor = (1.2,1.3,1.0)
+        bsGlobals.shadowOrtho = False
+        bsGlobals.vignetteOuter = (1,1,1)
+        bsGlobals.vignetteInner = (0.99,0.99,0.95)
+
+    def _isPointNearEdge(self,p,running=False):
+        x = p.x()
+        z = p.z()
+        xAdj = x*0.125
+        zAdj = (z+3.7)*0.2
+        if running:
+            xAdj *= 1.4
+            zAdj *= 1.4
+        return (xAdj*xAdj+zAdj*zAdj > 1.0)
+
+registerMap(WhereEaglesDareMap)
+
+class CourtyardNightMap(Map):
+    import courtyardLevelDefs as defs
+    name = 'Courtyard Night'
+    playTypes = []
+
+    @classmethod
+    def getPreviewTextureName(cls):
+        return 'courtyardNightPreview'
+
+    @classmethod
+    def onPreload(cls):
+        data = {}
+        data['model'] = bs.getModel('courtyardLevel')
+        data['modelBottom'] = bs.getModel('courtyardLevelBottom')
+        data['collideModel'] = bs.getCollideModel('courtyardLevelCollide')
+        data['tex'] = bs.getTexture('courtyardNightLevelColor')
+        data['bgTex'] = bs.getTexture('nightBG')
+        data['bgModel'] = bs.getModel('thePadBG') # fixme - chop this into vr and non-vr chunks
+        data['playerWallCollideModel'] = bs.getCollideModel('courtyardPlayerWall')
+        data['playerWallMaterial'] = bs.Material()
+        data['playerWallMaterial'].addActions(actions=(('modifyPartCollision','friction',0.0)))
+        # anything that needs to hit the wall can apply this material
+        data['collideWithWallMaterial'] = bs.Material()
+        data['playerWallMaterial'].addActions(conditions=('theyDontHaveMaterial',data['collideWithWallMaterial']),actions=(('modifyPartCollision','collide',False)))
+        data['vrFillMoundModel'] = bs.getModel('stepRightUpVRFillMound')
+        data['vrFillMoundTex'] = bs.getTexture('vrFillMound')
+        
+        return data
+        
+    @classmethod
+    def getMusicType(cls):
+        return 'Nightmare'
+
+    def __init__(self):
+        Map.__init__(self)
+        self.node = bs.newNode('terrain',
+                               delegate=self,
+                               attrs={'collideModel':self.preloadData['collideModel'],
+                                      'model':self.preloadData['model'],
+                                      'colorTexture':self.preloadData['tex'],
+                                      'materials':[bs.getSharedObject('footingMaterial')]})
+                          
+        self.bg = bs.newNode('terrain',
+                             attrs={'model':self.preloadData['bgModel'],
+                                    'lighting':False,
+                                    'background':True,
+                                    'colorTexture':self.preloadData['bgTex']})
+        self.bottom = bs.newNode('terrain',
+                                 attrs={'model':self.preloadData['modelBottom'],
+                                        'lighting':False,
+                                        'colorTexture':self.preloadData['tex']})
+
+        bs.newNode('terrain',
+                   attrs={'model':self.preloadData['vrFillMoundModel'],
+                          'lighting':False,
+                          'vrOnly':True,
+                          'color':(0.53,0.57,0.5),
+                          'background':True,
+                          'colorTexture':self.preloadData['vrFillMoundTex']})
+                          
+        # in challenge games, put up a wall to prevent players
+        # from getting in the turrets (that would foil our brilliant AI)
+        if 'CoopSession' in str(type(bs.getSession())):
+            self.playerWall = bs.newNode('terrain',
+                                         attrs={'collideModel':self.preloadData['playerWallCollideModel'],
+                                                'affectBGDynamics':False,
+                                                'materials':[self.preloadData['playerWallMaterial']]})
+        
+        bsGlobals = bs.getSharedObject('globals')
+        bsGlobals.tint = (0.65,0.65,0.8)
+        bsGlobals.ambientColor = (0.51,0.71,0.67)
+        bsGlobals.vignetteOuter = (0.8,0.8,0.8)
+        bsGlobals.vignetteInner = (1.0,1.0,1.0)
+        
+
+    def _isPointNearEdge(self,p,running=False):
+        # count anything off our ground level as safe (for our platforms)
+        #if p.y() > 3.1: return False
+        # see if we're within edgeBox
+        boxPosition = self.defs.boxes['edgeBox'][0:3]
+        boxScale = self.defs.boxes['edgeBox'][6:9]
+        x = (p.x() - boxPosition[0])/boxScale[0]
+        z = (p.z() - boxPosition[2])/boxScale[2]
+        return (x < -0.5 or x > 0.5 or z < -0.5 or z > 0.5)
+        
+registerMap(CourtyardNightMap)
+
+class BlockFortressMap(Map):
+    import arenaLevelDefs as defs
+    name = 'Block Fortress'
+    playTypes = ['melee','keepAway','kingOfTheHill']
+
+    @classmethod
+    def getPreviewTextureName(cls):
+        return 'arenaPreview'
+
+    @classmethod
+    def onPreload(cls):
+        data = {}
+        data['model'] = bs.getModel('arenaLevel')
+        data['collideModel'] = bs.getCollideModel('arenaLevelCollide')
+        data['tex'] = bs.getTexture('arenaLevelColor')
+        data['bgTex'] = bs.getTexture('arenaBG')
+        data['bgModel'] = bs.getModel('thePadBG')
+        return data
+    
+    def __init__(self):
+        Map.__init__(self)
+        self.node = bs.newNode('terrain',
+                               delegate=self,
+                               attrs={'collideModel':self.preloadData['collideModel'],
+                                      'model':self.preloadData['model'],
+                                      'colorTexture':self.preloadData['tex'],
+                                      'materials':[bs.getSharedObject('footingMaterial')]})
+        self.foo = bs.newNode('terrain',
+                              attrs={'model':self.preloadData['bgModel'],
+                                     'lighting':False,
+                                     'background':True,
+                                     'colorTexture':self.preloadData['bgTex']})
+        bsGlobals = bs.getSharedObject('globals')
+        bsGlobals.tint = (0.8,0.8,0.8)
+        bsGlobals.ambientColor = (0.6,0.6,0.6)
+        bsGlobals.shadowOrtho = False
+        bsGlobals.vignetteOuter = (1,1,1)
+        bsGlobals.vignetteInner = (0.95,0.95,0.95)
+
+    def _isPointNearEdge(self,p,running=False):
+        x = p.x()
+        z = p.z()
+        xAdj = x*0.125
+        zAdj = (z+3.7)*0.2
+        if running:
+            xAdj *= 1.4
+            zAdj *= 1.4
+        return (xAdj*xAdj+zAdj*zAdj > 1.0)
+
+registerMap(BlockFortressMap)
+
+class BaconGreeceMap(Map):
+    import baconGreeceLevelDefs as defs
+    name = 'Bacon Greece'
+    playTypes = ['melee','keepAway','teamFlag']
+
+    @classmethod
+    def getPreviewTextureName(cls):
+        return 'baconGreecePreview'
+
+    @classmethod
+    def onPreload(cls):
+        data = {}
+        data['model'] = bs.getModel('baconGreeceVisible')
+        data['water'] = bs.getModel('waterVisible')
+        data['collideModel'] = bs.getCollideModel('baconGreeceCollision')
+        data['railingCollideModel'] = bs.getCollideModel('baconGreeceRailing')
+        data['tex'] = bs.getTexture('baconGreeceLevelColor')
+        data['BGmodel'] = bs.getModel('baconGreeceBG')
+        data['BGtex'] = bs.getTexture('baconGreeceBG')
+        data['waterTex'] = bs.getTexture('water')
+        data['skyTex'] = bs.getTexture('hoveringWoodBGColor')
+        data['skyModel'] = bs.getModel('skysphere')
+        return data
+
+    def __init__(self):
+        Map.__init__(self)
+        self.node = bs.newNode('terrain',
+                               delegate=self,
+                               attrs={'collideModel':self.preloadData['collideModel'],
+                                      'model':self.preloadData['model'],
+                                      'colorTexture':self.preloadData['tex'],
+                                      'materials':[bs.getSharedObject('footingMaterial')]})
+        self.water = bs.newNode('terrain',
+                               attrs={'model':self.preloadData['water'],
+                                      'lighting':False,
+                                      'colorTexture':self.preloadData['waterTex']})
+        self.sky = bs.newNode('terrain',
+                              attrs={'model':self.preloadData['skyModel'],
+                                     'lighting':False,
+                                     'background':True,
+                                     'colorTexture':self.preloadData['skyTex']})
+        self.bg = bs.newNode('terrain',
+                              attrs={'model':self.preloadData['BGmodel'],
+                                     'lighting':False,
+                                     'background':True,
+                                     'colorTexture':self.preloadData['BGtex']})
+        self.railing = bs.newNode('terrain',
+                               attrs={'collideModel':self.preloadData['railingCollideModel'],
+                                     'materials':[bs.getSharedObject('railingMaterial')],
+                                     'bumper':True})
+                                         
+        bsGlobals = bs.getSharedObject('globals')
+        bsGlobals.tint = (1.1,1.1,0.9)
+        bsGlobals.ambientColor = (1.1,1.1,0.9)
+        bsGlobals.vignetteOuter = (0.65,0.65,0.68)
+        bsGlobals.vignetteInner = (0.95,0.95,0.93)
+
+registerMap(BaconGreeceMap)
+
+class MushFeudMap(Map):
+    import mushFeudLevelDefs as defs
+    name = 'Mush Feud'
+    playTypes = ['melee','keepAway','kingOfTheHill']
+
+    @classmethod
+    def getPreviewTextureName(cls):
+        return 'mushFeudPreview'
+
+    @classmethod
+    def onPreload(cls):
+        data = {}
+        data['model'] = bs.getModel('mushFeudLevel')
+        data['collideModel'] = bs.getCollideModel('mushFeudLevelCollide')
+        data['tex'] = bs.getTexture('mushFeudLevelColor')
+        data['skyTex'] = bs.getTexture('mushFeudSky')
+        data['skyModel'] = bs.getModel('alwaysLandBG')
+        data['bgTex'] = bs.getTexture('mushFeudBGColor')
+        data['bgModel'] = bs.getModel('mushFeudBG')
+        data['bgCollide'] = bs.getCollideModel('mushFeudBGCollide')
+        data['vrFillMoundModel'] = bs.getModel('thePadVRFillMound')
+        data['vrFillMoundTex'] = bs.getTexture('vrFillMound')
+        return data
+
+    def __init__(self):
+        Map.__init__(self)
+        self.node = bs.newNode('terrain',
+                               delegate=self,
+                               attrs={'collideModel':self.preloadData['collideModel'],
+                                      'model':self.preloadData['model'],
+                                      'colorTexture':self.preloadData['tex'],
+                                      'materials':[bs.getSharedObject('footingMaterial')]})
+        self.foo = bs.newNode('terrain',
+                              attrs={'model':self.preloadData['skyModel'],
+                                     'lighting':False,
+                                     'background':True,
+                                     'colorTexture':self.preloadData['skyTex']})
+        self.bg = bs.newNode('terrain',
+                              attrs={'model':self.preloadData['bgModel'],
+                                     'lighting':False,
+                                     'background':True,
+                                     'colorTexture':self.preloadData['bgTex']})
+        self.bgCollide = bs.newNode('terrain',
+                                    attrs={'collideModel':self.preloadData['bgCollide'],
+                                           'materials':[bs.getSharedObject('footingMaterial'),bs.getSharedObject('deathMaterial')]})
+        bs.newNode('terrain',
+                   attrs={'model':self.preloadData['vrFillMoundModel'],
+                          'lighting':False,
+                          'vrOnly':True,
+                          'color':(0.56,0.55,0.47),
+                          'background':True,
+                          'colorTexture':self.preloadData['vrFillMoundTex']})
+        bsGlobals = bs.getSharedObject('globals')
+        bsGlobals.tint = (0.95,0.95,1.0)
+        bsGlobals.ambientColor = (0.9,0.9,1.0)
+        bsGlobals.vignetteOuter = (0.75,0.75,0.76)
+        bsGlobals.vignetteInner = (0.94,0.94,0.95)
+
+registerMap(MushFeudMap)
+
+class SpaceMap(Map):
+    import spaceLevelDefs as defs
+    name = 'A Space Odyssey'
+    playTypes = ['melee','keepAway','kingOfTheHill']
+
+    @classmethod
+    def getPreviewTextureName(cls):
+        return 'spacePreview'
+
+    @classmethod
+    def onPreload(cls):
+        data = {}
+        data['model'] = bs.getModel('spaceLevel')
+        data['bgModel'] = bs.getModel('spaceBG')
+        data['collideModel'] = bs.getCollideModel('spaceLevelCollide')
+        data['tex'] = bs.getTexture('spaceLevelColor')
+        data['bgTex'] = bs.getTexture('spaceBGColor')
+        data['vrFillMoundModel'] = bs.getModel('alwaysLandVRFillMound')
+        data['vrFillMoundTex'] = bs.getTexture('vrFillMound')
+        return data
+
+    @classmethod
+    def getMusicType(cls):
+        return 'Flying'
+    
+    def __init__(self):
+        Map.__init__(self,vrOverlayCenterOffset=(0,-3.7,2.5))
+        self.node = bs.newNode('terrain',
+                               delegate=self,
+                               attrs={'collideModel':self.preloadData['collideModel'],
+                                      'model':self.preloadData['model'],
+                                      'colorTexture':self.preloadData['tex'],
+                                      'materials':[bs.getSharedObject('footingMaterial')]})
+        self.foo = bs.newNode('terrain',
+                              attrs={'model':self.preloadData['bgModel'],
+                                     'lighting':False,
+                                     'background':True,
+                                     'colorTexture':self.preloadData['bgTex']})
+        bs.newNode('terrain',
+                   attrs={'model':self.preloadData['vrFillMoundModel'],
+                          'lighting':False,
+                          'vrOnly':True,
+                          'color':(0.2,0.25,0.2),
+                          'background':True,
+                          'colorTexture':self.preloadData['vrFillMoundTex']})
+        g = bs.getSharedObject('globals')
+        g.happyThoughtsMode = True
+        g.shadowOffset = (0.0,8.0,5.0)
+        g.tint = (1.3,1.23,1.0)
+        g.ambientColor = (1.3,1.23,1.0)
+        g.vignetteOuter = (0.64,0.59,0.69)
+        g.vignetteInner = (0.95,0.95,0.93)
+        g.vrNearClip = 1.0
+        self.isFlying = True
+
+        # throw out some tips on flying
+        t = bs.newNode('text',
+                       attrs={'text':bs.Lstr(resource='pressJumpToFlyText'),
+                              'scale':1.2,
+                              'maxWidth':800,
+                              'position':(0,200),
+                              'shadow':0.5,
+                              'flatness':0.5,
+                              'hAlign':'center',
+                              'vAttach':'bottom'})
+        c = bs.newNode('combine',owner=t,attrs={'size':4,'input0':0.3,'input1':0.9,'input2':0.0})
+        bsUtils.animate(c,'input3',{3000:0,4000:1,9000:1,10000:0})
+        c.connectAttr('output',t,'color')
+        bs.gameTimer(10000,t.delete)
+        
+registerMap(SpaceMap)
+
+class FlaplandMap(Map):
+    import flaplandLevelDefs as defs
+    name = 'Flapland'
+    playTypes = []
+
+    @classmethod
+    def getPreviewTextureName(cls):
+        return 'flaplanfPreview'
+
+    @classmethod
+    def onPreload(cls):
+        data = {}
+        data['model'] = bs.getModel('flaplandTop')
+        data['texTop'] = bs.getTexture('flaplandLevelColor')
+        data['modelBottom'] = bs.getModel('flaplandBottom')
+        data['texBottom'] = bs.getTexture('flaplandBG')
+        data['collideModel'] = bs.getCollideModel('flaplandCollide')
+        data['bgTex'] = bs.getTexture('hoveringWoodBGColor')
+        data['bgModel'] = bs.getModel('skysphere')
+        return data
+    
+    def __init__(self):
+        Map.__init__(self)
+        self.node = bs.newNode('terrain',
+                               delegate=self,
+                               attrs={'collideModel':self.preloadData['collideModel'],
+                                      'model':self.preloadData['model'],
+                                      'colorTexture':self.preloadData['texTop'],
+                                      'materials':[bs.getSharedObject('footingMaterial')]})
+                                      
+        self.bottom = bs.newNode('terrain',
+                                 attrs={'model':self.preloadData['modelBottom'],
+                                        'lighting':False,
+                                        'colorTexture':self.preloadData['texBottom']})
+                                        
+        self.foo = bs.newNode('terrain',
+                              attrs={'model':self.preloadData['bgModel'],
+                                     'lighting':False,
+                                     'background':True,
+                                     'colorTexture':self.preloadData['bgTex']})
+        bsGlobals = bs.getSharedObject('globals')
+        bsGlobals.tint = (1.05,1.0,0.72)
+        bsGlobals.ambientColor = (1.2,1.3,1.0)
+        bsGlobals.shadowOrtho = False
+        bsGlobals.vignetteOuter = (1,1,1)
+        bsGlobals.vignetteInner = (0.99,0.99,0.95)
+
+    def _isPointNearEdge(self,p,running=False):
+        x = p.x()
+        z = p.z()
+        xAdj = x*0.125
+        zAdj = (z+3.7)*0.2
+        if running:
+            xAdj *= 1.4
+            zAdj *= 1.4
+        return (xAdj*xAdj+zAdj*zAdj > 1.0)
+
+registerMap(FlaplandMap)

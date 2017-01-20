@@ -27,7 +27,7 @@ class TargetPracticeGame(bs.TeamGameActivity):
 
     @classmethod
     def getSupportedMaps(cls,sessionType):
-        return ['Doom Shroom']
+        return ['Doom Shroom Large']
 
     @classmethod
     def supportsSessionType(cls,sessionType):

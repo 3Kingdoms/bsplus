@@ -3,7 +3,7 @@ import random
 
 
 defaultPowerupInterval = 8000
-
+coopPowerupDropRate = 3000
 
 class PowerupMessage(object):
     """
@@ -124,9 +124,21 @@ class PowerupFactory(object):
         self.texImpactBombs = bs.getTexture("powerupImpactBombs")
         self.texHealth = bs.getTexture("powerupHealth")
         self.texLandMines = bs.getTexture("powerupLandMines")
+        self.texRangerBombs = bs.getTexture("powerupRangerBombs")
+        self.texCombatBombs = bs.getTexture("powerupCombatBombs")
+        self.texFireBombs = bs.getTexture("powerupFireBombs")
+        self.texDynamitePack = bs.getTexture("powerupDynamitePack")
+        self.texGrenades = bs.getTexture("powerupGrenade")
+        self.texHealBombs = bs.getTexture("powerupHealBombs")
+        self.texKnockerBombs = bs.getTexture("powerupKnockerBombs")
         self.texCurse = bs.getTexture("powerupCurse")
+        self.texOverdrive = bs.getTexture("powerupOverdrive")
+        self.texHijump = bs.getTexture("powerupHijump")
+        self.texSpeed = bs.getTexture("powerupSpeed")
+        self.texBlast = bs.getTexture("powerupBlast")
 
         self.healthPowerupSound = bs.getSound("healthPowerup")
+        self.overdrivePowerupSound = bs.getSound("overdrivePowerup")
         self.powerupSound = bs.getSound("powerup01")
         self.powerdownSound = bs.getSound("powerdown01")
         self.dropSound = bs.getSound("boxDrop")
@@ -168,33 +180,160 @@ class PowerupFactory(object):
         Passing 'forceType' forces a given returned type while still properly interacting
         with the non-random aspects of the system (ie: forcing a 'curse' powerup will result
         in the next powerup being health).
+        
+        gameSpecificExcludeTypes include only the powerups that you don't want them in specific gamemodes where they
+        are useless, like a Healing Bomb, why the hell would you want to heal enemies?
         """
-        if forceType:
-            t = forceType
+        import weakref
+        
+        # Disable some powerups based on the gamemode
+        self._gamemode = bs.getActivity().getName()
+        self._map = bs.getActivity()._map.getName()
+        if self._gamemode == 'Race' or self._gamemode == 'Assault' or self._gamemode == 'Capture The Flag' or self._gamemode == 'Basketball' or self._gamemode == 'Conquest' or self._gamemode == 'Hockey' or self._gamemode == 'Football' or self._map == 'Crag Castle' or self._map == 'Bacon Greece' or self._map == 'Zigzag' or self._map == 'A Space Odyssey' or self._map == 'Happy Thoughts': # Disable speed where completing the objective faster is essential
+            speedDisable = ['speed']
         else:
-            # if the last one was a curse, make this one a health to provide some hope
-            if self._lastPowerupType == 'curse':
-                t = 'health'
+            speedDisable = []
+        if self._map == 'Lake Frigid' or self._map == 'Hockey Stadium' or self._map == 'Football Stadium' or self._map == 'Bridgit' or self._map == 'Monkey Face' or self._map == 'Doom Shroom Large' or self._map == 'Doom Shroom' or self._map == 'Tower D' or self._gamemode == 'Basketball' or self._map == 'Courtyard' or self._map == 'Rampage' or self._map == 'Toilet Donut' or self._map == 'OUYA' or self._map == 'Hovering Plank-o-Wood' or self._map == 'Courtyard Night' or self._map == 'Block Fortress' or self._map == 'Mush Feud' or self._map == 'Flapland' or self._map == 'A Space Odyssey' or self._map == 'Happy Thoughts' or isinstance(bs.getSession(),bs.CoopSession): # Disable hi-jump on flat maps and Coop
+            hijumpDisable = ['hijump']
+        else:
+            hijumpDisable = []
+        if bs.getConfig().get('Easy Mode', True): # If Easy Mode is enabled, disable the most difficult powerups
+            nonHardMode=['hijump','speed','combatBombs','knockerBombs']
+        else:
+            nonHardMode=[]
+        if isinstance(bs.getSession(),bs.FreeForAllSession): # Disable Healing Bombs in FFA games
+            notFFA=['healBombs']
+        else:
+            notFFA=[]
+        if forceType: t = forceType
+        else:
+            if isinstance(bs.getSession(),bs.FreeForAllSession): 
+                self.healthPowerups = ['health']
             else:
-                while True:
-                    t = self._powerupDist[random.randint(0,len(self._powerupDist)-1)]
-                    if t not in excludeTypes:
-                        break
+                self.healthPowerups = ['health','healBombs']
+            if bs.getConfig().get('Easy Mode',True): self.shieldCounters = ['grenades', 'impactBombs']
+            else: self.shieldCounters = ['grenades', 'impactBombs', 'combatBombs']
+            if self._lastPowerupType == 'curse': t = random.choice(self.healthPowerups)
+            elif self._lastPowerupType == 'shield': 
+                if not isinstance(bs.getSession(),bs.CoopSession): t = random.choice(self.shieldCounters)
+            while True:
+                t = self._powerupDist[random.randint(0,len(self._powerupDist)-1)]
+                if t not in excludeTypes and t not in notFFA and t not in speedDisable and t not in hijumpDisable and t not in nonHardMode:
+                    break
         self._lastPowerupType = t
         return t
 
 
 def getDefaultPowerupDistribution():
-    return (('tripleBombs',3),
-            ('iceBombs',3),
-            ('punch',3),
-            ('impactBombs',3),
-            ('landMines',2),
-            ('stickyBombs',3),
-            ('shield',2),
-            ('health',1),
-            ('curse',1))
-
+    try: pd = bs.getConfig()['Powerup Distribution']
+    except Exception: pd = 'JRMP'
+    if not isinstance(bs.getSession(),bs.CoopSession):
+        if (pd == 'JRMP'):
+            return (('tripleBombs',2),
+                    ('iceBombs',1),
+                    ('punch',1),
+                    ('impactBombs',3),
+                    ('landMines',2),
+                    ('stickyBombs',3),
+                    ('combatBombs',3),
+                    ('dynamitePack',2),
+                    ('rangerBombs',2),
+                    ('knockerBombs',2),
+                    ('grenades',1),
+                    ('blastBuff',2),
+                    ('fireBombs',0),
+                    ('healBombs',1),
+                    ('shield',1),
+                    ('overdrive',1),
+                    ('health',1),
+                    ('curse',1),
+                    ('hijump',1),
+                    ('speed',1))
+        if (pd == 'Classic'):
+            return (('tripleBombs',3),
+                    ('iceBombs',3),
+                    ('punch',3),
+                    ('impactBombs',3),
+                    ('landMines',2),
+                    ('stickyBombs',3),
+                    ('shield',2),
+                    ('health',1),
+                    ('curse',1),
+                    ('blastBuff',0),
+                    ('overdrive',0),
+                    ('combatBombs',0),
+                    ('dynamitePack',0),
+                    ('knockerBombs',0),
+                    ('rangerBombs',0),
+                    ('grenades',0),
+                    ('fireBombs',0),
+                    ('healBombs',0),
+                    ('hijump',0),
+                    ('speed',0))
+        if (pd == 'Competetive'):
+            return (('tripleBombs',0),
+                    ('iceBombs',1),
+                    ('punch',0),
+                    ('impactBombs',1),
+                    ('landMines',1),
+                    ('stickyBombs',1),
+                    ('combatBombs',1),
+                    ('dynamitePack',1),
+                    ('rangerBombs',1),
+                    ('grenades',0),
+                    ('knockerBombs',1),
+                    ('blastBuff',0),
+                    ('fireBombs',0),
+                    ('healBombs',1),
+                    ('shield',0),
+                    ('overdrive',0),
+                    ('health',0),
+                    ('curse',0),
+                    ('hijump',1),
+                    ('speed',0))
+        if (pd == 'No Powerups'):
+            return (('tripleBombs',0),
+                    ('iceBombs',0),
+                    ('punch',0),
+                    ('impactBombs',0),
+                    ('landMines',0),
+                    ('stickyBombs',0),
+                    ('combatBombs',0),
+                    ('dynamitePack',0),
+                    ('rangerBombs',0),
+                    ('grenades',0),
+                    ('fireBombs',0),
+                    ('healBombs',0),
+                    ('knockerBombs',0),
+                    ('shield',0),
+                    ('overdrive',0),
+                    ('blastBuff',0),
+                    ('health',0),
+                    ('curse',0),
+                    ('hijump',0),
+                    ('speed',0))
+    else:
+        return (('tripleBombs',2),
+                ('iceBombs',2),
+                ('punch',1),
+                ('impactBombs',3),
+                ('landMines',2),
+                ('stickyBombs',3),
+                ('combatBombs',3),
+                ('dynamitePack',2),
+                ('rangerBombs',1),
+                ('grenades',1),
+                ('blastBuff',2),
+                ('fireBombs',0),
+                ('healBombs',1),
+                ('knockerBombs',0),
+                ('shield',1),
+                ('overdrive',1),
+                ('health',1),
+                ('curse',0),
+                ('hijump',0),
+                ('speed',1))
+                    
 class Powerup(bs.Actor):
     """
     category: Game Flow Classes
@@ -233,9 +372,21 @@ class Powerup(bs.Actor):
         elif powerupType == 'impactBombs': tex = factory.texImpactBombs
         elif powerupType == 'landMines': tex = factory.texLandMines
         elif powerupType == 'stickyBombs': tex = factory.texStickyBombs
+        elif powerupType == 'rangerBombs': tex = factory.texRangerBombs
+        elif powerupType == 'combatBombs': tex = factory.texCombatBombs
+        elif powerupType == 'fireBombs': tex = factory.texFireBombs
+        elif powerupType == 'dynamitePack': tex = factory.texDynamitePack
+        elif powerupType == 'grenades': tex = factory.texGrenades
+        elif powerupType == 'healBombs': tex = factory.texHealBombs
+        elif powerupType == 'knockerBombs': tex = factory.texKnockerBombs
         elif powerupType == 'shield': tex = factory.texShield
         elif powerupType == 'health': tex = factory.texHealth
+        elif powerupType == 'overdrive': tex = factory.texOverdrive
         elif powerupType == 'curse': tex = factory.texCurse
+        elif powerupType == 'hijump': tex = factory.texHijump
+        elif powerupType == 'speed': tex = factory.texSpeed
+        elif powerupType == 'blastBuff': tex = factory.texBlast
+        
         else: raise Exception("invalid powerupType: "+str(powerupType))
 
         if len(position) != 3: raise Exception("expected 3 floats for position")
@@ -249,7 +400,7 @@ class Powerup(bs.Actor):
                                       'shadowSize':0.5,
                                       'colorTexture':tex,
                                       'reflection':'powerup',
-                                      'reflectionScale':[1.0],
+                                      'reflectionScale':[0.5],
                                       'materials':(factory.powerupMaterial,bs.getSharedObject('objectMaterial'))})
 
         # animate in..
@@ -283,6 +434,8 @@ class Powerup(bs.Actor):
             factory = self.getFactory()
             if self.powerupType == 'health':
                 bs.playSound(factory.healthPowerupSound,3,position=self.node.position)
+            if self.powerupType == 'overdrive':
+                bs.playSound(factory.overdrivePowerupSound,3,position=self.node.position)
             bs.playSound(factory.powerupSound,3,position=self.node.position)
             self._powersGiven = True
             self.handleMessage(bs.DieMessage())
@@ -290,8 +443,7 @@ class Powerup(bs.Actor):
         elif isinstance(m,_TouchedMessage):
             if not self._powersGiven:
                 node = bs.getCollisionInfo("opposingNode")
-                if node is not None and node.exists():
-                    node.handleMessage(PowerupMessage(self.powerupType,sourceNode=self.node))
+                if node.exists(): node.handleMessage(PowerupMessage(self.powerupType,sourceNode=self.node))
 
         elif isinstance(m,bs.DieMessage):
             if self.node.exists():
@@ -305,8 +457,8 @@ class Powerup(bs.Actor):
             self.handleMessage(bs.DieMessage())
 
         elif isinstance(m,bs.HitMessage):
-            # dont die on punches (thats annoying)
-            if m.hitType != 'punch':
+            # dont die on punches, hi-jump propel blasts and healing bomb blasts (thats annoying)
+            if m.hitType != 'punch' and m.hitSubType != 'hijump' and m.hitSubType != 'healing' and m.hitSubType != 'knocker':
                 self.handleMessage(bs.DieMessage())
         else:
             bs.Actor.handleMessage(self,m)

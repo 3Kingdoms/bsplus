@@ -89,7 +89,8 @@ class RaceGame(bs.TeamGameActivity):
         return s
 
     def onTransitionIn(self):
-        bs.TeamGameActivity.onTransitionIn(self, music='Epic Race' if self.settings['Epic Mode'] else 'Race')
+        self.randomRaceMusic = ['FlagSlip', 'Race']
+        bs.TeamGameActivity.onTransitionIn(self, music='Epic Race' if self.settings['Epic Mode'] else random.choice(self.randomRaceMusic))
 
         self._nubTex = bs.getTexture('nub')
         self._beep1Sound = bs.getSound('raceBeep1')

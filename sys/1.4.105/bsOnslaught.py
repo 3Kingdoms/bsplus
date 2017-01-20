@@ -26,7 +26,7 @@ class OnslaughtGame(bs.CoopGameActivity):
         try: self._preset = settings['preset']
         except Exception: self._preset = 'training'
 
-        if self._preset in ['training','trainingEasy','pro','proEasy','endless','endlessTournament']: settings['map'] = 'Doom Shroom'
+        if self._preset in ['training','trainingEasy','pro','proEasy','endless','endlessTournament']: settings['map'] = 'Doom Shroom Large'
         else: settings['map'] = 'Courtyard'
 
         bs.CoopGameActivity.__init__(self,settings)
@@ -41,7 +41,7 @@ class OnslaughtGame(bs.CoopGameActivity):
         self._playerHasDroppedBomb = False
 
         # fixme - should use standard map defs..
-        if settings['map'] == 'Doom Shroom':
+        if settings['map'] == 'Doom Shroom Large':
             self._spawnCenter = (0,3,-5)
             self._tntSpawnPosition = (0,3,-5)
             self._powerupCenter = (0,5,-3.6)
@@ -222,7 +222,7 @@ class OnslaughtGame(bs.CoopGameActivity):
                             {'type':bs.ToughGuyBot,'spacing':12},
                             {'type':bs.ToughGuyBot,'spacing':12} if playerCount > 2 else None,
                             ])},
-
+                
                 {'baseAngle':180,
                  'entries':([
                             {'type':bs.ToughGuyBot,'spacing':6} if playerCount > 3 else None,
@@ -234,7 +234,7 @@ class OnslaughtGame(bs.CoopGameActivity):
                             {'type':bs.ToughGuyBot,'spacing':6} if self._preset == 'pro' else None,
                             {'type':bs.ToughGuyBot,'spacing':6} if playerCount > 2 else None,
                             ])},
-
+                
                 # {'baseAngle':90,
                 #  'entries':([
                 #             {'type':bs.NinjaBot,'spacing':20},
@@ -248,7 +248,7 @@ class OnslaughtGame(bs.CoopGameActivity):
                 #             {'type':bs.BomberBot,'spacing':20},
                 #             {'type':bs.BomberBot,'spacing':20} if playerCount > 2 else None,
                 #             ])},
-
+                
                 {'baseAngle':0,
                  'entries':([
                             {'type':bs.NinjaBot,'spacing':30},
@@ -259,7 +259,7 @@ class OnslaughtGame(bs.CoopGameActivity):
                             {'type':bs.ChickBot,'spacing':30} if playerCount > 3 else None,
                             {'type':bs.NinjaBot,'spacing':30},
                             ])},
-
+                
                 {'baseAngle':90,
                  'entries':([
                             {'type':bs.MelBot,'spacing':50},
@@ -268,7 +268,7 @@ class OnslaughtGame(bs.CoopGameActivity):
                             {'type':bs.MelBot,'spacing':50} if playerCount > 1 else None,
                             {'type':bs.MelBot,'spacing':50} if playerCount > 3 else None,
                             ])},
-
+                
                 {'baseAngle':0,
                  'entries':([
                             {'type':bs.ChickBot,'spacing':72},
@@ -278,14 +278,14 @@ class OnslaughtGame(bs.CoopGameActivity):
                             {'type':bs.ChickBot,'spacing':72},
                             {'type':bs.ChickBot,'spacing':36} if playerCount > 2 else None,
                         ])},
-
+                
                 {'baseAngle':30,
                  'entries':([
-                            {'type':bs.NinjaBotProShielded,'spacing':50},
-                            {'type':bs.NinjaBotProShielded,'spacing':50},
-                            {'type':bs.NinjaBotProShielded,'spacing':50} if self._preset == 'pro' else None,
-                            {'type':bs.NinjaBotProShielded,'spacing':50} if playerCount > 1 else None,
-                            {'type':bs.NinjaBotProShielded,'spacing':50} if playerCount > 2 else None,
+                            {'type':bs.NinjaBotPro,'spacing':50},
+                            {'type':bs.NinjaBotPro,'spacing':50},
+                            {'type':bs.NinjaBotPro,'spacing':50} if self._preset == 'pro' else None,
+                            {'type':bs.NinjaBotPro,'spacing':50} if playerCount > 1 else None,
+                            {'type':bs.NinjaBotPro,'spacing':50} if playerCount > 2 else None,
                             ])},
                 ]
 
@@ -500,7 +500,8 @@ class OnslaughtGame(bs.CoopGameActivity):
         bs.Powerup(position=self.getMap().powerupSpawnPoints[index],powerupType=powerupType).autoRetain()
 
     def _startPowerupDrops(self):
-        self._powerupDropTimer = bs.Timer(3000,bs.WeakCall(self._dropPowerups),repeat=True)
+        import bsPowerup
+        self._powerupDropTimer = bs.Timer(bsPowerup.coopPowerupDropRate,bs.WeakCall(self._dropPowerups),repeat=True)
 
     def _dropPowerups(self,standardPoints=False,powerupType=None):
         """ Generic powerup drop """

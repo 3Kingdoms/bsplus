@@ -1,26 +1,62 @@
 # -*- coding: utf-8 -*-
 
 values = {
-    'macControllerSubsystemTitleText':'Controller Support',
-    'macControllerSubsystemDescriptionText':'(try changing this if your controllers aren\'t working)',
-    'macControllerSubsystemClassicText':'Classic',
-    'macControllerSubsystemMFiText':'Made-for-iOS/Mac',
-    'macControllerSubsystemBothText':'Both (not recommended)',
-    'macControllerSubsystemMFiNoteText':('Made-for-iOS/Mac controller detected;\n'
-                                         'You may want to enable these in Settings -> Controllers'),
-    'disableRemoteAppConnectionsText':'Disable Remote-App Connections',
-    'exportSuccessText':'\'${NAME}\' exported.',
+    # Powerup Names JRMP
+    # These are used to show what powerup you collected if you weren't wasting time in the How To Play menu
+    'tripleBombs':'Triple Bombs',
+    'landMine':'Land Mines',
+    'healBomb':'Healing Bomb',
+    'impactBomb':'Impact Bomb',
+    'stickyBomb':'Sticky Bomb',
+    'rangerBomb':'Ranger Bomb',
+    'combatBomb':'Combat Bomb',
+    'dynamitePack':'Dynamite Pack',
+    'knockerBomb':'Knocker',
+    'grenade':'Grenade',
+    'punch':'Boxing Gloves',
+    'shield':'Energy Shield',
+    'curse':'Cursed!',
+    'iceBomb':'Ice Bomb',
+    'fireBomb':'Fire Bomb',
+    'health':'Health Kit',
+    'overdrive':'Overdrive',
+    'hijump':'Hi-Jump',
+    'speed':'Speed Boots',
+    'blastBuff':'Bigger Blasts',
+    
+    # Unlock Message
+    'characterUnlocked':'You unlocked new a character skin!',
+    'missionUnlocked':'You unlocked a new mission!',
+    
+    # Critical Hit!
+    'crit':'CRIT!', #JRMP
+    
+    # Quick Play Button
+    'selectGame':'Select Game', #JRMP
+    'quickGame':'Quick Game', #JRMP
+        
+    'Nightmare':{
+        # Nightmare gamemode related strings
+        'Survive the apocalypse!':None,
+        # Nightmare 'Tips'
+        ('Are you sure you are brave enough to beat this stage?'):None,
+        ('Go back to kindergarten! I\'m really serious!'):None,
+        ('You should bring somebody with you, so I can kick your butt even more!'):None,
+        ('You can\'t argue with me! I\'m a frickin code!'):None,
+        ('You\'re doomed! Give up now!'):None,
+        ('This minigame is impossible. Why you\'re playing it?'):None,
+        ('99% of BombSquad players can\'t even compete with me!'):None
+    },
+    
+    # The rest    
     'newText':'New',
-    'boostText':'Boost',
     'importText':'Import',
-    'waitingInLineText':'Waiting in line (party is full)...',
     'importingText':'Importing...',
     'importPlaylistSuccessText':'Imported ${TYPE} playlist \'${NAME}\'',
     'importPlaylistCodeInstructionsText':'Use the following code to import this playlist elsewhere:',
     'shareText':'Share',
     'sharingText':'Sharing...',
     'editText':'Edit',
-    'loadingTryAgainText':'Loading; try again in a moment...',
     'duplicateText':'Duplicate',
     'deleteText':'Delete',
     'inGameClippedNameText':'in-game will be\n"${NAME}"',
@@ -169,11 +205,11 @@ values = {
             'name':'Team Player'
         },
         'Boom Goes the Dynamite':{
-            'description':'Kill 3 bad guys with TNT',
-            'descriptionComplete':'Killed 3 bad guys with TNT',
-            'descriptionFull':'Kill 3 bad guys with TNT on ${LEVEL}',
-            'descriptionFullComplete':'Killed 3 bad guys with TNT on ${LEVEL}',
-            'name':'Boom Goes the Dynamite'
+            'description':'Kill 3 bad guys with Atomic Reactor',
+            'descriptionComplete':'Killed 3 bad guys with Atomic Reactor',
+            'descriptionFull':'Kill 3 bad guys with Atomic Reactor on ${LEVEL}',
+            'descriptionFullComplete':'Killed 3 bad guys with Atomic Reactor on ${LEVEL}',
+            'name':'Boom Goes the Bomb'
         },
         'Boxer':{
             'description':'Win without using any bombs',
@@ -372,11 +408,11 @@ values = {
             'name':'Super Punch'
         },
         'TNT Terror':{
-            'description':'Kill 6 bad guys with TNT',
-            'descriptionComplete':'Killed 6 bad guys with TNT',
-            'descriptionFull':'Kill 6 bad guys with TNT on ${LEVEL}',
-            'descriptionFullComplete':'Killed 6 bad guys with TNT on ${LEVEL}',
-            'name':'TNT Terror'
+            'description':'Kill 6 bad guys with Atomic Reactor',
+            'descriptionComplete':'Killed 6 bad guys with Atomic Reactor',
+            'descriptionFull':'Kill 6 bad guys with Atomic Reactor on ${LEVEL}',
+            'descriptionFullComplete':'Killed 6 bad guys with Atomic Reactor on ${LEVEL}',
+            'name':'Nuclear Terror'
         },
         'The Great Wall':{
             'description':'Stop every single bad guy',
@@ -419,6 +455,28 @@ values = {
             'descriptionFull':'Complete all waves on ${LEVEL}',
             'descriptionFullComplete':'Completed all waves on ${LEVEL}',
             'name':'${LEVEL} Victory'
+        },
+        #My Achievements JRMP
+        'Make It Through':{
+            'description':'Survive the Nightmare mode',
+            'descriptionComplete':'Survived the Nightmare mode',
+            'descriptionFull':'Survive all waves in Nightmare mode',
+            'descriptionFullComplete':'Survived all waves in Nightmare mode',
+            'name':'Nightmare: Make It Through'
+        },
+        'Half-Marathon':{
+            'description':'Complete half the Marathon',
+            'descriptionComplete':'Completed half the Marathon',
+            'descriptionFull':'Survive half of the waves in Marathon',
+            'descriptionFullComplete':'Survived half of the waves in Marathon',
+            'name':'Marathon: Half-Marathon'
+        },
+        'The Full Run':{
+            'description':'Complete the Marathon',
+            'descriptionComplete':'Completed the Marathon',
+            'descriptionFull':'Survive all of the waves in Marathon',
+            'descriptionFullComplete':'Survived all of the waves in Marathon',
+            'name':'Marathon: The Full Run'
         }
     },
     'achievementsRemainingText':'Achievements Remaining:',
@@ -606,10 +664,10 @@ values = {
                            'receive a ${PERCENT}% point boost here.'),
         'seeMoreText':'More...',
         'timeRemainingText':'Time Remaining',
-        'tournamentInfoText':('Compete for high scores with\n'
-                              'other players in your league.\n\n'
-                              'Prizes are awarded to the top scoring\n'
-                              'players when tournament time expires.'),
+        'tournamentInfoText':('Modified BombSquad doesn\'t\n'
+                              'allow saving results.\n\n' 
+                              'You will waste tickets to play. For\n'
+                              'tournaments, go play in the unmodified game.'), #JRMP
         'toRankedText':'To Ranked',
         'totalText':'total',
         'welcome1Text':('Welcome to ${LEAGUE}. You can improve your\n'
@@ -623,23 +681,21 @@ values = {
     'copyOfText':'${NAME} Copy',
     'createText':'Create',
     'creditsWindow':{
-        'additionalAudioArtIdeasText':'Additional Audio, Early Artwork, and Ideas by ${NAME}',
-        'additionalMusicFromText':'Additional music from ${NAME}',
+        'additionalAudioArtIdeasText':'Help on scripting and modeling - Mrmaxmeier from GitHub',
+        'additionalMusicFromText':'Additional music from ${NAME} and freepd.com',
         'allMyFamilyText':'All of my friends and family who helped play test',
         'codingGraphicsAudioText':'Coding, Graphics, and Audio by ${NAME}',
-        'languageTranslationsText':'Language Translations:',
+        'languageTranslationsText':'Modpack Contents by:',
         'legalText':'Legal:',
         'publicDomainMusicViaText':'Public-domain music via ${NAME}',
         'softwareBasedOnText':'This software is based in part on the work of ${NAME}',
-        'songCreditText':('${TITLE} Performed by ${PERFORMER}\n'
-                          'Composed by ${COMPOSER}, Arranged by ${ARRANGER}, Published by ${PUBLISHER},\n'
-                          'Courtesy of ${SOURCE}'),
+        'songCreditText':('Some random Public Domain music I found.'),
         'soundAndMusicText':'Sound & Music:',
         'soundsText':'Sounds (${SOURCE}):',
         'specialThanksText':'Special Thanks:',
-        'thanksEspeciallyToText':'Thanks especially to ${NAME}',
+        'thanksEspeciallyToText':'Thanks especially to Oddworld: Abes Oddysee theme music creator',
         'titleText':'${APP_NAME} Credits',
-        'whoeverInventedCoffeeText':'Whoever invented coffee'
+        'whoeverInventedCoffeeText':'Eric Froemling for creating this amazing piece of art!'
     },
     'currentStandingText':'Your current standing is #${RANK}',
     'customizeText':'Customize...',
@@ -977,7 +1033,7 @@ values = {
                         'For best results, throw towards\n'
                         'enemy before fuse runs out.'),
         'bombInfoTextScale':0.6,
-        'canHelpText':'${APP_NAME} can help.',
+        'canHelpText':'The Joyride Modpack can make your dreams come true!', #JRMP
         'controllersInfoText':('You can play ${APP_NAME} with friends over a network, or you\n'
                                'can all play on the same device if you have enough controllers.\n'
                                '${APP_NAME} supports a variety of them; you can even use phones\n'
@@ -992,8 +1048,8 @@ values = {
                            'connect a regular version of the game to the VR version just to\n'
                            'allow people outside to watch the action.'),
         'devicesText':'Devices',
-        'friendsGoodText':('These are good to have.  ${APP_NAME} is most fun with several\n'
-                           'players and can support up to 8 at a time, which leads us to:'),
+        'friendsGoodText':('You can only play online with the Joyride Modpack only\n'
+						   'with other users of the modpack. Max 8 players are allowed ingame.\n'),
         'friendsText':'Friends',
         'jumpInfoText':('- Jump -\n'
                         'Jump to cross small gaps,\n'
@@ -1001,7 +1057,7 @@ values = {
                         'to express feelings of joy.'),
         'jumpInfoTextScale':0.6,
         'orPunchingSomethingExtraSpace':0,
-        'orPunchingSomethingText':'Or punching something, throwing it off a cliff, and blowing it up on the way down with a sticky bomb.',
+        'orPunchingSomethingText':'Or imagining something, learning to model, and blowing it up in the game.', #JRMP
         'pickUpInfoText':('- Pick Up -\n'
                           'Grab flags, enemies, or anything\n'
                           'else not bolted to the ground.\n'
@@ -1009,34 +1065,64 @@ values = {
         'pickUpInfoTextScale':0.6,
         'powerupBombDescriptionText':('Lets you whip out three bombs\n'
                                       'in a row instead of just one.'),
-        'powerupBombNameText':'Triple-Bombs',
+        'powerupBombNameText':'Triple Bombs',
         'powerupCurseDescriptionText':('You probably want to avoid these.\n'
                                        ' ...or do you?'),
         'powerupCurseNameText':'Curse',
-        'powerupHealthDescriptionText':('Restores you to full health.\n'
-                                        'You\'d never have guessed.'),
-        'powerupHealthNameText':'Med-Pack',
+        'powerupHealthDescriptionText':('Heals you damage\n'
+                                        'because video games.'), #JRMP
+        'powerupHealthNameText':'Med Pack',
         'powerupIceBombsDescriptionText':('Weaker than normal bombs\n'
                                           'but leave your enemies frozen\n'
                                           'and particularly brittle.'),
-        'powerupIceBombsNameText':'Ice-Bombs',
+        'powerupIceBombsNameText':'Ice Bombs',
         'powerupImpactBombsDescriptionText':('Slightly weaker than regular\n'
                                              'bombs, but they explode on impact.'),
-        'powerupImpactBombsNameText':'Trigger-Bombs',
+        'powerupImpactBombsNameText':'Impact Bombs',
         'powerupLandMinesDescriptionText':('These come in packs of 3;\n'
-                                           'Useful for base defense or\n'
+                                          'Useful for base defense or\n'
                                            'stopping speedy enemies.'),
-        'powerupLandMinesNameText':'Land-Mines',
+        'powerupLandMinesNameText':'Land Mines',
         'powerupPunchDescriptionText':('Makes your punches harder,\n'
-                                       'faster, better, stronger.'),
-        'powerupPunchNameText':'Boxing-Gloves',
+                                       'but slower, rewarding for timed punches.'), #JRMP
+        'powerupPunchNameText':'Boxing Gloves',
         'powerupShieldDescriptionText':('Absorbs a bit of damage\n'
                                         'so you don\'t have to.'),
-        'powerupShieldNameText':'Energy-Shield',
+        'powerupShieldNameText':'Energy Shield',
+        'powerupCombatBombsDescriptionText':('Two second fuse makes it\n'
+                                             'a perfect combat weapon.'), #JRMP
+        'powerupCombatBombsNameText':'Combat Bombs', #JRMP
         'powerupStickyBombsDescriptionText':('Stick to anything they hit.\n'
-                                             'Hilarity ensues.'),
-        'powerupStickyBombsNameText':'Sticky-Bombs',
-        'powerupsSubtitleText':'Of course, no game is complete without powerups:',
+                                             'Hilarity ensues.'), #JRMP
+        'powerupStickyBombsNameText':'Sticky Bombs',
+        'powerupKnockerBombsDescriptionText':('Launches any bombs and players in range.\n'
+                                             'Does pitiful damage, though.'), #JRMP
+        'powerupKnockerBombsNameText':'Knocker', #JRMP
+        'powerupHijumpDescriptionText':('Propel yourself upwards like a rocket..\n'
+                                             'Three charges per box.'), #JRMP
+        'powerupHijumpNameText':'Hi-Jump', #JRMP
+        'powerupDynamitePackDescriptionText':('Creates an explosive plus.\n'
+                                             'Wipes out marching troops with ease.'),
+        'powerupDynamitePackNameText':'Dynamite Packs', #JRMP
+        'powerupRangerBombsDescriptionText':('Wider range, more power.\n'
+                                             'Can you wait 4 seconds?'), #JRMP
+        'powerupRangerBombsNameText':'Ranger Bombs', #JRMP
+        'powerupGrenadeDescriptionText':('More damage with style.\n'
+                                         'Two grenades in the price of one!'),
+        'powerupGrenadeNameText':'Grenades', #JRMP
+        'powerupOverdriveDescriptionText':('Receive additional health. Better than med-packs.\n'
+                                             'Just please do not overdose. Seriously.'), #JRMP
+        'powerupOverdriveNameText':'Overdrive', #JRMP                                  
+        'powerupHealBombsDescriptionText':('Heal and fix, but only once.\n'
+                                             'Keep away from the enemy.'), #JRMP
+        'powerupHealBombsNameText':'Healing Bombs', #JRMP
+        'powerupSpeedDescriptionText':('Run super fast for 15 seconds.\n'
+                                             'Be careful! You might fall.'), #JRMP
+        'powerupSpeedNameText':'Speed Boots', #JRMP
+        'powerupBlastDescriptionText':('Increase the power of your\n'
+                                             'bombs. Sweet!'), #JRMP
+        'powerupBlastNameText':'Bigger Blasts', #JRMP
+        'powerupsSubtitleText':'So many powerups, let me introduce to them:',
         'powerupsSubtitleTextScale':0.8,
         'powerupsText':'Powerups',
         'punchInfoText':('- Punch -\n'
@@ -1049,8 +1135,8 @@ values = {
                        'Running gets you places faster but makes it hard to turn, so watch out for cliffs.'),
         'runInfoTextScale':0.6,
         'someDaysExtraSpace':0,
-        'someDaysText':'Some days you just feel like punching something.  Or blowing something up.',
-        'titleText':'${APP_NAME} Help',
+        'someDaysText':'Some days you just feel like creating something. Or make it alive.', #JRMP
+        'titleText':'BombSquad Joyride Modpack Help', #JRMP
         'toGetTheMostText':'To get the most out of this game, you\'ll need:',
         'welcomeText':'Welcome to ${APP_NAME}!'
     },
@@ -1204,9 +1290,9 @@ values = {
     'nameSuicideText':'${NAME} committed suicide.',
     'nativeText':'Native',
     'newPersonalBestText':'New personal best!',
-    'newTestBuildAvailableText':('A newer test build is available! (${VERSION} build ${BUILD}).\n'
-                                 'Get it at ${ADDRESS}'),
-    'newVersionAvailableText':'A newer version of ${APP_NAME} is available! (${VERSION})',
+    'newTestBuildAvailableText':('Welcome to the BombSquad Joyride Pack!\n'
+                                 'Have fun!'), #JRMP
+    'newVersionAvailableText':'Welcome to the BombSquad Joyride Pack!',
     'nextLevelText':'Next Level',
     'noAchievementsRemainingText':'- none',
     'noContinuesText':'(no continues)',
@@ -1227,6 +1313,23 @@ values = {
     'okText':'Ok',
     'onText':'On',
     'onslaughtRespawnText':'${PLAYER} will respawn in wave ${WAVE}',
+     # Nightmare Wave Names
+    'nWave1':'Warmup',
+    'nWave2':'The Three Little Pigs',
+    'nWave3':'Men in Black',
+    'nWave4':'Bombs Away!',
+    'nWave5':'Pain Dealers',
+    'nWave6':'That One Pig',
+    'nWave7':'Party Time!',
+    'nWave8':'BUNNIEZ',
+    'nWave9':'Something Terrible',
+    'nWave10':'Frozen Kick-ass in the morning',
+    'nWave11':'Weediots',
+    'nWave12':'FAT PIGS!',
+    'nWave13':'Bomb Thunderstorm!',
+    'nWave14':'BUNNIEZ (again)',
+    'nWave15':'Even tougher Pain Dealers',
+    'nWave16':'JUST DIE ALREADY!',
     'orText':'${A} or ${B}',
     'outOfText':'(#${RANK} out of ${ALL})',
     'ownFlagAtYourBaseWarning':('Your own flag must be\n'
@@ -1343,6 +1446,7 @@ values = {
     'rankText':'Rank',
     'ratingText':'Rating',
     'reachWave2Text':'Reach wave 2 to rank.',
+    'reachWave8Text':'Reach wave 8 to rank.',
     'readyText':'ready',
     'recentText':'Recent',
     'removeInGameAdsText':'Unlock "${PRO}" in the store to remove in-game ads.',
@@ -1383,7 +1487,8 @@ values = {
         'audioText':'Audio',
         'controllersText':'Controllers',
         'graphicsText':'Graphics',
-        'titleText':'Settings'
+        'jrmpText':'JRMP Options', # JRMP
+        'titleText':'Settings',
     },
     'settingsWindowAdvanced':{
         'showBombTrajectoriesText':'Show Bomb Trajectories',
@@ -1399,11 +1504,13 @@ values = {
                              'a translation, follow the link below. Thanks in advance!'),
         'kickIdlePlayersText':'Kick Idle Players',
         'kidFriendlyModeText':'Kid-Friendly Mode (reduced violence, etc)',
+        'powerupPopupsText':'Show Powerup Popups', # JRMP
         'languageText':'Language',
         'languageTextScale':1.0,
         'moddingGuideText':'Modding Guide',
         'mustRestartText':'You must restart the game for this to take effect.',
         'netTestingText':'Network Testing',
+        'modpackWebpageText':'Modpack Website', # JRMP
         'resetText':'Reset',
         'showPlayerNamesText':'Show Player Names',
         'showUserModsText':'Show Mods Folder',
@@ -1415,17 +1522,37 @@ values = {
         'translationUpdateNeededText':'** the current language needs updates!! **',
         'vrTestingText':'VR Testing'
     },
+    'jrmpSettingsWindow':{ #JRMP
+        'titleText':'JRMP Options',
+        'powerupPopupsText':'Powerup Popups (text after collecting powerups)',
+        'offensiveCurseSoundText':'Offensive Curse Sound',
+        'cameraShakeText':'Camera Shake',
+        'learnFuseTimesText':'Learn Fuse Times',
+        'easyModeText':'Easy Mode (disable difficult powerups)',
+        'powerupDistributionText':'Powerup Distribution Sets',
+        'powerupDistributionDesc':('This option only applies to games outside Cooperative.\n'
+                                    'Launch a new round/gamemode to apply.'),
+        'jrmpText':'JRMP',
+        'classicText':'Classic',
+        'competetiveText':'Competetive',
+        'noPowerupsText':'No Powerups',
+        'someOptionsNotCoop':'Some Options don\'t work in Cooperative games.',
+    },
     'signInWithGameCenterText':('To use a Game Center account,\n'
                                 'sign in with the Game Center app.'),
     'singleGamePlaylistNameText':'Just ${GAME}',
     'singlePlayerCountText':'1 player',
     'soloNameFilterText':'Solo ${NAME}',
     'soundtrackTypeNames':{
-        'CharSelect':'Character Selection',
+        # JRMP
+        'CharSelectCOOP':'Character Selection (COOP)',
+        'CharSelectTEAMS':'Character Selection (Teams)',
+        'CharSelectFFA':'Character Selection (FFA)',
         'Chosen One':'Chosen One',
         'Epic':'Epic Mode Games',
         'Epic Race':'Epic Race',
-        'FlagCatcher':'Capture the Flag',
+        'FlagCatcher':'CTF Orchestral',
+        'Race':'Race Original',
         'Flying':'Happy Thoughts',
         'Football':'Football',
         'ForwardMarch':'Assault',
@@ -1435,12 +1562,20 @@ values = {
         'Marching':'Runaround',
         'Menu':'Main Menu',
         'Onslaught':'Onslaught',
-        'Race':'Race',
         'Scary':'King of the Hill',
         'Scores':'Score Screen',
-        'Survival':'Elimination',
+        'Survival':'Silent Film',
         'ToTheDeath':'Death Match',
-        'Victory':'Final Score Screen'
+        'Victory':'Final Score Screen',
+        'Toilet':'Toilet Donut',
+        'FlagDropper':'CTF Synth',
+        'FlagSlip':'CTF Open / Race',
+        'FlagBomber':'CTF Bad',
+        'FlagRunner':'CTF Running',
+        'Where Eagles Dare':'Where Eagles Dare',
+        'Last Stand':'Last Standing!',
+        'Nightmare':'Nightmare',
+        'Marathon':'Marathon',
     },
     'spaceKeyText':'space',
     'store':{
@@ -1457,6 +1592,7 @@ values = {
                                 'Enjoy the new features, and thank you for your support!\n'
                                 '-Eric'),
         'holidaySpecialText':'Holiday Special',
+        'jrmpText':'Joyride Modpack Exclusive (donate to Eric Froemling and modpack creators)',
         'howToSwitchCharactersText':'(go to "${SETTINGS} -> ${PLAYER_PROFILES}" to assign & customize characters)',
         'howToUseIconsText':'(create global player profiles (in the account window) to use these)',
         'howToUseMapsText':'(use these maps in your own teams/free-for-all playlists)',
@@ -1502,7 +1638,7 @@ values = {
     'telnetAccessGrantedText':'Telnet access enabled.',
     'telnetAccessText':'Telnet access detected; allow?',
     'testBuildErrorText':'This test build is no longer active; please check for a new version.',
-    'testBuildText':'Test Build',
+    'testBuildText':'Joyride Modpack',
     'testBuildValidateErrorText':'Unable to validate test build. (no net connection?)',
     'testBuildValidatedText':'Test Build Validated; Enjoy!',
     'thankYouText':'Thank you for your support! Enjoy the game!!',
@@ -1520,9 +1656,9 @@ values = {
     'tournamentEntryText':'Tournament Entry',
     'tournamentResultsRecentText':'Recent Tournament Results',
     'tournamentStandingsText':'Tournament Standings',
-    'tournamentText':'Tournament',
+    'tournamentText':'Tournaments are not available in Joyride Modpack', #JRMP
     'tournamentTimeExpiredText':'Tournament Time Expired',
-    'tournamentsText':'Tournaments',
+    'tournamentsText':'Tournaments are not available in Joyride Modpack', #JRMP
     'translations':{
         'characterNames':{
             'Lucky':None,
@@ -1547,7 +1683,7 @@ values = {
             'Frosty':None,
             'B-9000':None,
             'Jack Morgan':None,
-            'Mel':None,
+            'Mel':'Fat Pig',
             'Kronk':None,
             'Spaz':None,
             'Snake Shadow':None,
@@ -1626,7 +1762,8 @@ values = {
             'secure all ${ARG1} flags':None,
             'secure the flag for ${ARG1} seconds':None,
             'touch ${ARG1} flags':None,
-            'touch 1 flag':None
+            'touch 1 flag':None,
+            'Stick bombs to enemies and blow them up!':None
         },
         'gameNames':{
             'Easter Egg Hunt':None,
@@ -1646,7 +1783,8 @@ values = {
             'Race':None,
             'Runaround':None,
             'Target Practice':None,
-            'The Last Stand':None
+            'The Last Stand':None,
+            'Stickies!':None #JRMP
         },
         'inputDeviceNames':{
             'Keyboard':None,
@@ -1687,6 +1825,7 @@ values = {
             'Silver':None
         },
         'mapsNames':{
+        #JRMP - You have to copy the line you want to edit and type in the map name you want to change. The code map names are case sensitive.
             'Big G':None,
             'Bridgit':None,
             'Courtyard':None,
@@ -1703,7 +1842,15 @@ values = {
             'The Pad':None,
             'Tip Top':None,
             'Tower D':None,
-            'Zigzag':None
+            'Zigzag':None,
+            'Toilet Donut':None,
+            'Mush Feud':None,
+            'Hovering Plank-o-Wood':None,
+            'Bacon Greece':None,
+            'Block Fortress':None,
+            'Where Eagles Dare':None,
+            'Morning':None,
+            'Pillar Bases':None
         },
         'playlistNames':{
             'Just Epic':None,
@@ -1718,7 +1865,6 @@ values = {
             'Time Held':None
         },
         'serverResponses':{
-            'You don\'t own that.':None,
             'You can join in ${COUNT} seconds.':None,
             ('Would you like to link your device account to this one?\n'
              '\n'
@@ -1751,7 +1897,6 @@ values = {
             'Could not establish a secure connection.':None,
             'Daily maximum reached.':None,
             'Maximum friend code rewards reached.':None,
-            'A reward has already been given for that address.':None,
             'Can\'t link; would surpass maximum of ${COUNT} linked accounts.':None,
             'Can\'t link 2 diamond league accounts.':None,
             'Can\'t link 2 accounts of this type.':None,
@@ -1824,14 +1969,14 @@ values = {
             'Killing ${NAME} for skipping part of the track!':None,
             '${TEAM} is disqualified because ${PLAYER} left':None,
         },
-        'teamNames':{
-            'Bad Guys':None,
+    'teamNames':{
+            'Bad Guys':'Douchebags',
             'Blue':None,
-            'Good Guys':None,
+            'Good Guys':'Dudes',
             'Red':None
         },
         'tips':{
-            ('Don\'t spin for too long; you\'ll become dizzy and fall.'):None,
+        #JRMP - This section contains new tips you might wanna translate
             ('A perfectly timed running-jumping-spin-punch can kill in a single hit\n'
              'and earn you lifelong respect from your friends.'):None,
             'Always remember to floss.':None,
@@ -1881,7 +2026,7 @@ values = {
             ('Run back and forth before throwing a bomb\n'
              'to \'whiplash\' it and throw it farther.'):None,
             ('Take out a group of enemies by\n'
-             'setting off a bomb near a TNT box.'):None,
+             'setting off a bomb near a TNT box.'):('Take out a group of enemies by\nsetting off a bomb near an Atomic Box.'),
             ('The head is the most vulnerable area, so a sticky-bomb\n'
              'to the noggin usually means game-over.'):None,
             ('This level never ends, but a high score here\n'
@@ -1901,7 +2046,40 @@ values = {
             'You can throw bombs higher if you jump just before throwing.':None,
             ('You take damage when you whack your head on things,\n'
              'so try to not whack your head on things.'):None,
-            'Your punches do much more damage if you are running or spinning.':None
+            'Your punches do much more damage if you are running or spinning.':None,
+			#Additional Hints - JRMP
+			'Try making your bombs explode on target\'s head for instant kills.':None,
+			('Don\'t spam your Punch button while having Boxing Gloves.\n'
+             'Take your time. One hit is enough to stun someone.'):None,
+			('Making arcs while running increases your speed.\n'
+            'After that you can jump through most gaps!'):None,
+			('Land Mines placed even in the most random places you can\n'
+             'imagine can make some serious threat.'):None,
+			('To get succesful in melee combat, try fooling your foe\n'
+            'by grabbing them or hitting him in inpredictable intervals'):None,
+			('Impact Bombs in the right hands can be one of the most\n'
+            'powerful weapons. Just aim direct hits and you\'ll be fine!'):None,
+			('Sticky Bombs can block passages for short amount of time.\n'
+            'You can use this while you\'re chased down.'):None,
+			('No matter how far from the Ice Bomb explosion you are,\n'
+            'the slightest injury from it will freeze you.'):None,
+			('Bombs are the lightest to throw, followed by players,\n'
+			'TNT boxes and flags.'):None,
+			('If you want to be sure you\'ll not fall while running,\n'
+			'try releasing the run button for a brief moment.'):None,
+			('If you jump in a precise moment after landing, you\'ll jump higher!\n'
+			'Use this to evade attacks or get to hard to reach places.'):None,
+			('Enemies wielding Boxing Gloves aren\'t as strong is caught\nStunning and throwing is easier unless he aims his fist well.'):None,
+            #Heal Bomb tips
+            ('Remember that you can only throw one Healing Bomb.\nBefore you get it, plan ahead.'):None,
+            ('Healing Bombs don\'t appear in Free For All games.\nYou wouldn\'t want to heal enemies, right?.'):None,
+            ('Healing Bombs can thaw your teammates, fix damaged Energy Shields\nand remove bombs without detonating them.'):None,
+            #Grenade tips
+            ('Grenades are limited! You only have two of them, so don\'t waste them!'):None,
+            ('Use Grenades to quickly take out an Energy Shield wielding enemy.'):None,
+            #JRMP Options tips
+            ('In Options you can change JRMP specific features of the modpack.'):None,
+            ('If you memorised all the powerups, you can disable Powerup Popups in the JRMP Options menu'):None
         }
     },
     'trophiesText':'Trophies',
@@ -1947,8 +2125,49 @@ values = {
         'skippingText':'skipping tutorial...',
         'toSkipPressAnythingText':'(tap or press anything to skip tutorial)'
     },
+    'modpackTutorial1':{
+        # JRMP
+        'phrase01Text':'Hi there!',
+        'phrase02Text':'Welcome to Joyride Modpack!',
+        'phrase03Text':'Let\'s introduce you to a few changes:',
+        'phrase04Text':'Each new level of this campaign',
+        'phrase05Text':'Is going to show you a new powerup..',
+        'phrase06Text':'..or mechanic. Who really reads tutorials?',
+        'phrase07Text':'First let\'s start with the Dynamite Pack!',
+        'phrase08Text':'Dynamite Packs are really unusual.',
+        'phrase09Text':'They explode with an X. Watch this.',
+        'phrase10Text':'It\'s primarly to stun your opponents.',
+        'phrase11Text':'They\'re also hard to land.',
+        'phrase12Text':'In groups they are really dangerous!',
+        'phrase13Text':'Crap.',
+        'phrase14Text':'This bomb is best suited for tight pathways.',
+        'phrase15Text':'You can line-up enemies for best effect.',
+        'phrase16Text':'Good luck!',
+        'skipConfirmText':'Really skip the Dynamite Pack tutorial? Tap or press to confirm.',
+        'skipVoteCountText':'${COUNT}/${TOTAL} skip votes',
+        'skippingText':'How dare you!',
+        'toSkipPressAnythingText':'(tap or press anything to skip tutorial)'
+    },
+    'modpackTutorial2':{
+        # JRMP
+        'phrase01Text':'Hi there once again!',
+        'phrase02Text':'Now let\'s focus on something more useful!',
+        'phrase03Text':'The Overdrive!',
+        'phrase04Text':'Basically lighting in a box. You want that, I know!',
+        'phrase05Text':'It\'s going to increase your lifepool!',
+        'phrase06Text':'Now watch this.',
+        'phrase07Text':'You would never survive this normally.',
+        'phrase08Text':'Don\'t collect too much of them though.',
+        'phrase09Text':'You\'ll get cursed and eventually explode.',
+        'phrase10Text':'Yeah, this modpack is kinda cruel',
+        'phrase11Text':'Be brave!',
+        'skipConfirmText':'Really skip the Overdrive tutorial? Tap or press to confirm.',
+        'skipVoteCountText':'${COUNT}/${TOTAL} skip votes',
+        'skippingText':'How dare you!',
+        'toSkipPressAnythingText':'(tap or press anything to skip tutorial)'
+    },
     'twoKillText':'DOUBLE KILL!',
-    'unavailableText':'unavailable',
+    'unavailableText':'',
     'unconfiguredControllerDetectedText':'Unconfigured controller detected:',
     'unlockThisInTheStoreText':'This must be unlocked in the store.',
     'unlockThisText':'To unlock this, you need:',
@@ -1963,6 +2182,7 @@ values = {
     'usingItunesText':'Using iTunes for soundtrack...',
     # 'usingItunesTurnRepeatAndShuffleOnText':'Please make sure shuffle is ON and repeat is ALL in iTunes.',
     'validatingTestBuildText':'Validating Test Build...',
+    'survivedText':'You have survived.', #JRMP
     'victoryText':'Victory!',
     'vsText':'vs.',
     'waitingForHostText':'(waiting for ${HOST} to continue)',

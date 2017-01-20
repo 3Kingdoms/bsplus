@@ -198,6 +198,7 @@ class CoopScoreScreen(bs.Activity):
         self.scoreDisplaySound = bs.getSound("scoreHit01")
         self.scoreDisplaySoundSmall = bs.getSound("scoreHit02")
         self.drumRollSound = bs.getSound('drumRoll')
+        self.bigScoreSound = bs.getSound('bigScore') # Plays only if you got three star rating
         self.cymbalSound = bs.getSound('cymbal')
         # these get used in UI bits so need to load them in the UI context
         with bs.Context('UI'):
@@ -523,11 +524,11 @@ class CoopScoreScreen(bs.Activity):
                 self._campaign.setSelectedLevel(self._nextLevelName)
                 
         # otherwise let the server know anyway that we attempted..
-        # else:
-        #     bsInternal._addTransaction({'type':'INCOMPLETE_LEVEL',
-        #                                 'campaign':self._campaign.getName(),
-        #                                 'level':self.settings['level']})
-        #     bsInternal._runTransactions()
+        else:
+            bsInternal._addTransaction({'type':'INCOMPLETE_LEVEL',
+                                        'campaign':self._campaign.getName(),
+                                        'level':self.settings['level']})
+            bsInternal._runTransactions()
 
         bs.gameTimer(1000,bs.WeakCall(self.requestUI))
 
@@ -913,9 +914,6 @@ class CoopScoreScreen(bs.Activity):
         if self.isFinalized(): return
         with bs.Context(self):
 
-            # print 'GOT RESULTS',results
-            # return
-            
             # delay a bit if results come in too fast
             baseDelay = max(0,2700-(bs.getGameTime()-self._beginTime))
             
@@ -930,9 +928,8 @@ class CoopScoreScreen(bs.Activity):
                                                         scale=0.7)
             else:
                 # might wanna have the server send us json at some point; start prepping for that
-                # by conforming this to json types
-                # (no longer necessary now that this is a transaction)
-                # results = bsUtils.jsonPrep(results)
+                # by confirming this to json types
+                results = bsUtils.jsonPrep(results)
                 
                 self._scoreLink = results['link']
                 if not self._scoreLink.startswith('http://'):
@@ -963,6 +960,8 @@ class CoopScoreScreen(bs.Activity):
                                                 'level':self._level,
                                                 'rating':rating})
                     bsInternal._runTransactions()
+                    
+                    #self._campaign.submitLevelRating(self._level,rating)
 
             offsX = -195
             available = (self._showInfo['results'] is not None)
@@ -1309,7 +1308,11 @@ class CoopScoreScreen(bs.Activity):
         bs.gameTimer(350,bs.Call(bs.playSound,self.scoreDisplaySound))
         
         if not error:
-            bs.gameTimer(350,bs.Call(bs.playSound,self.cymbalSound))
+            if rating >= 9.5:
+                bs.gameTimer(350,bs.Call(bs.playSound,self.bigScoreSound))
+            else:
+                bs.gameTimer(350,bs.Call(bs.playSound,self.cymbalSound))
+                
 
     def _showFail(self):
         bsUtils.ZoomText(bs.Lstr(resource='failText'),
@@ -1489,7 +1492,15 @@ class CoopGameActivity(bs.GameActivity):
             
             # now bring up a celebration banner
             a.announceCompletion(sound=sound)
-
+            def stuffUnlocked(node): # Basically an information notice about unlocked stuff
+                self.sound = bs.getSound('cashRegister2')
+                if achievement=='Make It Through' or achievement=='Onslaught God' or achievement=='The Full Run' or achievement=='Half-Marathon' or achievement=='Last Stand God': 
+                    bs.screenMessage(bs.Lstr(resource='characterUnlocked'),(0,1,0))
+                    bs.playSound(self.sound)
+                elif achievement=='Uber Runaround Victory': 
+                    bs.screenMessage(bs.Lstr(resource='missionUnlocked'),(0,1,0))
+                    bs.playSound(self.sound)
+            bs.gameTimer(4000,bs.Call(stuffUnlocked,self))
             #bsInternal._runTransactions()
 
     def fadeToRed(self):
@@ -1926,7 +1937,7 @@ class CoopSession(bs.Session):
 # fill out our campaigns (need to let other loading happen first though)
 def fillOutCampaigns():
 
-    import bsOnslaught,bsFootball,bsRunaround,bsTheLastStand,bsMeteorShower,bsRace,bsEasterEggHunt
+    import bsOnslaught,bsFootball,bsRunaround,bsTheLastStand,bsMeteorShower,bsRace,bsEasterEggHunt,bsAdditional
 
     # FIXME - once translations catch up, we can convert these to use the generic display-name '${GAME} Training' type stuff..
     c = Campaign('Easy')
@@ -1969,6 +1980,8 @@ def fillOutCampaigns():
     c.addLevel(bs.Level('The Last Stand',displayName='${GAME}',gameType=bsTheLastStand.TheLastStandGame,settings={'preset':'tournament'},previewTexName='rampagePreview'))
     c.addLevel(bs.Level('Tournament Infinite Onslaught',displayName='Infinite Onslaught',gameType=bsOnslaught.OnslaughtGame,settings={'preset':'endlessTournament'},previewTexName='doomShroomPreview'))
     c.addLevel(bs.Level('Tournament Infinite Runaround',displayName='Infinite Runaround',gameType=bsRunaround.RunaroundGame,settings={'preset':'endlessTournament'},previewTexName='towerDPreview'))
+    c.addLevel(bs.Level('Marathon', displayName='${GAME}', gameType=bsAdditional.MarathonGame, settings={'preset':'tournament'}, previewTexName='flaplandPreview'))
+    c.addLevel(bs.Level('Nightmare', displayName='${GAME}', gameType=bsAdditional.NightmareGame, settings={'preset':'tournament'}, previewTexName='courtyardNightPreview'))
 
     # these modules get pulled into 'challenges' and ignored for 'user'
     internalModules = ['bsNinjaFight','bsMeteorShower','bsTargetPractice','bsEasterEggHunt']

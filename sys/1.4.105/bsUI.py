@@ -35,7 +35,6 @@ gTitleColor = (0.72,0.7,0.75)
 gHeadingColor = (0.72,0.7,0.75)
 gInfoTextColor=(0.7,0.9,0.7)
 gDidMenuIntro = False
-gIconSelectColor = (0.4,0.3,1)
 
 gUntestedGamePads = []
 gCanAskToConfigGamePads = True
@@ -46,6 +45,7 @@ gSmallUI = env['interfaceType'] == 'small'
 gMedUI = env['interfaceType'] == 'medium'
 gToolbars = env.get('toolbarTest',True)
 
+# gDoAndroidNav = True if (env['platform'] == 'android' and env['subplatform'] == 'google') else False
 gDoAndroidNav = True
 
 # IMPORTANT - if tweaking UI stuff, you need to make sure it behaves for small, medium, and large UIs
@@ -64,6 +64,9 @@ if 0: # force-test large UI
     gMedUI = False
     with bs.Context('UI'): bs.pushCall(bs.Call(bs.screenMessage,'FORCING LARGE UI FOR TESTING',color=(1,0,1),log=True))
 
+if 0: # test android nav
+    gDoAndroidNav = True
+    with bs.Context('UI'): bs.pushCall(bs.Call(bs.screenMessage,'FORCING ANDROID NAV FOR TESTING',color=(1,0,1),log=True))
 
 if env['debugBuild']:
     bsUtils.suppressDebugReports()
@@ -77,14 +80,14 @@ def _getPrizeStrings(entry):
     except Exception: range2 = None
     try: range3 = entry['prizeRange3']
     except Exception: range3 = None
-
+    
     try: prize1 = entry['prize1']
     except Exception: prize1 = None
     try: prize2 = entry['prize2']
     except Exception: prize2 = None
     try: prize3 = entry['prize3']
     except Exception: prize3 = None
-
+    
     try: trophyType1 = entry['prizeTrophy1']
     except Exception: trophyType1 = None
     try: trophyType2 = entry['prizeTrophy2']
@@ -95,7 +98,7 @@ def _getPrizeStrings(entry):
     doingTrophies = True if (trophyType1 is not None or trophyType2 is not None or trophyType3 is not None) else False
 
     outVals = []
-
+    
     for rng,prize,trophyType in ((range1,prize1,trophyType1),(range2,prize2,trophyType2),(range3,prize3,trophyType3)):
         pr = '' if rng is None else ('#'+str(rng[0])) if (rng[0] == rng[1]) else ('#'+str(rng[0])+'-'+str(rng[1]))
         pv = ''
@@ -108,9 +111,9 @@ def _getPrizeStrings(entry):
         outVals.append(pr)
         outVals.append(pv)
     return outVals
+        
 
-
-
+    
 def getInputMapHash(inputDevice):
     global gInputMapHash
     # currently we just do a single hash of *all* inputs on android and thats it.. good enough.
@@ -153,10 +156,45 @@ def configCheckBox(parent,name,position,size,displayName=None,scale=None,maxWidt
         bs.getConfig()[name] = val
 
         if valueChangeCall is not None: valueChangeCall(val)
-
+        
         # special case: clicking kick-idle-players repeatedly unlocks co-op levels
         if name == 'Kick Idle Players':
             global gKickIdlePlayersKickCount
+            try: count = gKickIdlePlayersKickCount
+            except Exception: count = 1
+            count += 1
+            if count == 11:
+                try:
+                    import bsCoopGame
+                    #campaign = bsCoopGame.getCampaign('Default')
+                    levels = bsCoopGame.getCampaign('Default').getLevels() + bsCoopGame.getCampaign('Easy').getLevels()
+                    for level in levels: level.setComplete(True)
+                    bs.screenMessage("CO-OP LEVELS UNLOCKED! (temporarily)",color=(0,1,0))
+                    bs.playSound(bs.getSound('gunCocking'))
+                    bs.playSound(bs.getSound('gong'))
+                except Exception,e:
+                    print 'error during co-op unlock:',e
+                    bs.screenMessage("ERROR UNLOCKING CO-OP LEVELS",color=(1,0,0))
+                count = 1;
+            gKickIdlePlayersKickCount = count
+
+        bs.applySettings()
+        bs.writeConfig()
+
+    return bs.checkBoxWidget(parent=parent,autoSelect=autoSelect,position=position,size=size,text=displayName,textColor=(0.8,0.8,0.8),
+                             value=bsInternal._getSetting(name),onValueChangeCall=_valueChanged,scale=scale,maxWidth=maxWidth)
+                             
+def configCheckBoxMikirog(parent,name,defaultValue,position,size,displayName=None,scale=None,maxWidth=None,autoSelect=True,valueChangeCall=None):
+    if displayName is None: displayName = name
+
+    def _valueChanged(val):
+        bs.getConfig()[name] = val
+
+        if valueChangeCall is not None: valueChangeCall(val)
+        
+        # special case: clicking kick-idle-players repeatedly unlocks co-op levels
+        if name == 'Kick Idle Players':
+            global gKickIdlePlayersKickCountak
             try: count = gKickIdlePlayersKickCount
             except Exception: count = 1
             count += 1
@@ -178,9 +216,11 @@ def configCheckBox(parent,name,position,size,displayName=None,scale=None,maxWidt
         bs.applySettings()
         bs.writeConfig()
 
+    # return bs.checkBoxWidget(parent=parent,autoSelect=autoSelect,position=position,size=size,text=displayName,textColor=(0.8,0.8,0.8),
+    #                          value=bsInternal._getSetting(name),onValueChangeCall=_valueChanged,scale=scale,maxWidth=maxWidth)
     return bs.checkBoxWidget(parent=parent,autoSelect=autoSelect,position=position,size=size,text=displayName,textColor=(0.8,0.8,0.8),
-                             value=bsInternal._getSetting(name),onValueChangeCall=_valueChanged,scale=scale,maxWidth=maxWidth)
-
+                             value=bs.getConfig().get(name,defaultValue),onValueChangeCall=_valueChanged,scale=scale,maxWidth=maxWidth)
+    
 
 def _inc(ctrl,name,minVal,maxVal,increment,callback):
     val = float(bs.textWidget(query=ctrl))
@@ -192,7 +232,7 @@ def _inc(ctrl,name,minVal,maxVal,increment,callback):
         callback(val)
     _configChanged(val)
 
-
+    
 def configTextBox(parent,name,position,type="string",minVal=0,maxVal=100,increment=1.0,callback=None,changeSound=True,xOffset=0,displayName=None,textScale=1.0):
 
     if displayName is None: displayName = name
@@ -235,7 +275,7 @@ class ContinueWindow(Window):
 
     # def __del__(self):
     #     print '~ContinueWindow()'
-
+        
     def __init__(self,activity,cost,continueCall,cancelCall):
 
         self._activity = weakref.ref(activity)
@@ -259,11 +299,11 @@ class ContinueWindow(Window):
         tRight = t[-1]
         tRightWidth = bsInternal._getStringWidth(tRight,suppressWarning=True)
         widthTotalHalf = (tLeftWidth+tPriceWidth+tRightWidth)*0.5
-
+        
         bs.textWidget(parent=self._rootWidget,text=tLeft,flatness=1.0,shadow=1.0,
                       position=(self._width*0.5-widthTotalHalf,self._height-30),size=(0,0),
                       hAlign='left',vAlign='center')
-
+        
         bs.textWidget(parent=self._rootWidget,text=tPrice,flatness=1.0,shadow=1.0,
                       #color=(1,0.5,0),
                       color=(0.2,1.0,0.2),
@@ -285,17 +325,17 @@ class ContinueWindow(Window):
         else:
             self._ticketsTextBase = None
             self._ticketsText = None
-
+        
         self._counterText = bs.textWidget(parent=self._rootWidget,text=str(self._count),
                                           color=(0.7,0.7,0.7),
                                           scale=1.2,
                                           position=(self._width*0.5,self._height-80),size=(0,0),big=True,
                                           flatness=1.0,shadow=1.0,hAlign='center',vAlign='center')
-
+        
         self._cancelButton = bs.buttonWidget(parent=self._rootWidget,label=bs.Lstr(resource='endText',fallback='cancelText'),
                                              position=(30,30),size=(120,50),enableSound=False,autoSelect=True,
                                              onActivateCall=self._onCancelPress)
-
+        
         self._continueButton = bs.buttonWidget(parent=self._rootWidget,label=bs.Lstr(resource='continueText'),autoSelect=True,
                                                position=(self._width-130,30),size=(120,50),
                                                onActivateCall=self._onContinuePress)
@@ -305,7 +345,7 @@ class ContinueWindow(Window):
         self._countdownTimer = bs.Timer(1000,bs.WeakCall(self._tick),repeat=True,timeType='real')
         self._tick()
 
-
+        
     def _tick(self):
 
         # if our target activity is gone or has ended, go away
@@ -313,7 +353,7 @@ class ContinueWindow(Window):
         if a is None or a.hasEnded():
             self._onCancel()
             return
-
+        
         if bsInternal._getAccountState() == 'SIGNED_IN':
             s = bs.getSpecialChar('ticket')+str(bsInternal._getAccountTicketCount())
         else:
@@ -335,7 +375,7 @@ class ContinueWindow(Window):
             bs.playSound(bs.getSound('error'))
         else:
             self._onCancel()
-
+            
     def _onContinuePress(self):
         # disallow for first second
         if self._startCount-self._count < 2:
@@ -346,7 +386,7 @@ class ContinueWindow(Window):
                 bs.screenMessage(bs.Lstr(resource='notSignedInText'),color=(1,0,0))
                 bs.playSound(bs.getSound('error'))
                 return
-
+                
             # if it appears we don't have enough tickets, offer to buy more
             tickets = bsInternal._getAccountTicketCount()
             if tickets < self._cost:
@@ -356,7 +396,7 @@ class ContinueWindow(Window):
                 bs.playSound(bs.getSound('error'))
                 showGetTicketsPrompt()
                 return
-
+            
             if not self._transitioningOut:
                 bs.playSound(bs.getSound('swish'))
                 self._transitioningOut = True
@@ -369,8 +409,8 @@ class ContinueWindow(Window):
             self._transitioningOut = True
             bs.containerWidget(edit=self._rootWidget,transition='outScale')
             self._cancelCall()
-
-
+        
+        
 class ConfirmWindow(Window):
 
     def __init__(self,text="Are you sure?",action=None,width=360,height=100,
@@ -393,7 +433,7 @@ class ConfirmWindow(Window):
             self._transitionOut = None
             scaleOrigin = None
             transition = 'inRight'
-
+        
         self._rootWidget = bs.containerWidget(size=(width,height),transition=transition,
                                               toolbarVisibility='MENU_MINIMAL_NOBACK',
                                               scale=2.1 if gSmallUI else 1.5 if gMedUI else 1.0,
@@ -417,7 +457,7 @@ class ConfirmWindow(Window):
         # if they didnt want a cancel button, we still want to be able to hit cancel/back/etc to dismiss the window
         if not cancelButton:
             bs.containerWidget(edit=self._rootWidget,onCancelCall=b.activate)
-
+        
         bs.containerWidget(edit=self._rootWidget,selectedChild=cb if cb is not None and cancelIsSelected else b,startButton=b)
 
     def _cancel(self):
@@ -433,7 +473,7 @@ class ConfirmWindow(Window):
 class QuitWindow(Window):
 
     def __init__(self,swish=False,back=False,originWidget=None):
-
+        
         global quitWindowID
         self._back = back
         if quitWindowID is not None:
@@ -441,7 +481,7 @@ class QuitWindow(Window):
             quitWindowID = None
         if swish:
             bs.playSound(bs.getSound('swish'))
-
+            
         self._rootWidget = quitWindowID = ConfirmWindow(bs.Lstr(resource=('quitGameText' if 'Mac' in bs.getEnvironment()['userAgentString'] else 'exitGameText'),subs=[('${APP_NAME}',bs.Lstr(resource='titleText'))]),
                                                         self._doFadeAndQuit,originWidget=originWidget).getRootWidget()
 
@@ -453,11 +493,11 @@ class QuitWindow(Window):
         bs.realTimer(300,bsInternal._unlockAllInput)
         #bs.realTimer(300,bs.Call(bsInternal._fadeScreen,True))
 
-
+        
 class DebugWindow(Window):
 
     def __init__(self,transition='inRight'):
-
+        
         self._width = width = 580
         self._height = height = 350 if gSmallUI else 420 if gMedUI else 520
 
@@ -466,7 +506,7 @@ class DebugWindow(Window):
 
         self._subWidth = self._scrollWidth*0.95;
         self._subHeight = 520
-
+        
         self._stressTestGameType = 'Random'
         self._stressTestPlaylist = '__default__'
         self._stressTestPlayerCount = 8
@@ -478,11 +518,12 @@ class DebugWindow(Window):
         self._rootWidget = bs.containerWidget(size=(width,height),transition=transition,
                                               scale=2.35 if gSmallUI else 1.55 if gMedUI else 1.0,
                                               stackOffset=(0,-30) if gSmallUI else (0,0))
-
+        
         self._doneButton = b = bs.buttonWidget(parent=self._rootWidget,position=(40,height-67),size=(120,60),scale=0.8,
                                                autoSelect=True,label=bs.Lstr(resource='doneText'), onActivateCall=self._done)
         bs.containerWidget(edit=self._rootWidget,cancelButton=b)
         t = bs.textWidget(parent=self._rootWidget,position=(0,height-60),size=(width,30),
+                          # text=R.titleText,
                           text=bs.Lstr(resource=self._r+'.titleText'),
                           hAlign="center",color=gTitleColor,
                           vAlign="center",maxWidth=260)
@@ -490,10 +531,10 @@ class DebugWindow(Window):
         self._scrollWidget = bs.scrollWidget(parent=self._rootWidget,size=(self._scrollWidth,self._scrollHeight),
                                              highlight=False, position=((self._width-self._scrollWidth)*0.5,50))
         bs.containerWidget(edit=self._scrollWidget,claimsLeftRight=True)
-
+        
         self._subContainer = bs.containerWidget(parent=self._scrollWidget,size=(self._subWidth,self._subHeight),
                                                 background=False)
-
+        
         v = self._subHeight - 70
         buttonWidth = 300
         # b = bs.buttonWidget(parent=self._subContainer,position=((self._subWidth-buttonWidth)*0.5,v),size=(buttonWidth,60),
@@ -501,6 +542,7 @@ class DebugWindow(Window):
         # v -= 80
         b = bs.buttonWidget(parent=self._subContainer,position=((self._subWidth-buttonWidth)*0.5,v),size=(buttonWidth,60),
                             autoSelect=True,
+                            # label=R.runCPUBenchmarkText,
                             label=bs.Lstr(resource=self._r+'.runCPUBenchmarkText'),
                             onActivateCall=self._runCPUBenchmarkPressed)
         bs.widget(edit=b,upWidget=self._doneButton,leftWidget=self._doneButton)
@@ -508,17 +550,20 @@ class DebugWindow(Window):
 
         b = bs.buttonWidget(parent=self._subContainer,position=((self._subWidth-buttonWidth)*0.5,v),size=(buttonWidth,60),
                             autoSelect=True,
+                            # label=R.runGPUBenchmarkText,
                             label=bs.Lstr(resource=self._r+'.runGPUBenchmarkText'),
                             onActivateCall=self._runGPUBenchmarkPressed)
         v -= 60
 
         b = bs.buttonWidget(parent=self._subContainer,position=((self._subWidth-buttonWidth)*0.5,v),size=(buttonWidth,60),
                             autoSelect=True,
+                            # label=R.runMediaReloadBenchmarkText,
                             label=bs.Lstr(resource=self._r+'.runMediaReloadBenchmarkText'),
                             onActivateCall=self._runMediaReloadBenchmarkPressed)
         v -= 60
-
+        
         t = bs.textWidget(parent=self._subContainer,position=(self._subWidth*0.5,v+22),size=(0,0),
+                          # text=R.stressTestTitleText,
                           text=bs.Lstr(resource=self._r+'.stressTestTitleText'),
                           maxWidth=200,color=gHeadingColor,
                           scale=0.85,hAlign="center",vAlign="center")
@@ -526,6 +571,7 @@ class DebugWindow(Window):
 
         xOffs = 165
         t = bs.textWidget(parent=self._subContainer,position=(xOffs-10,v+22),size=(0,0),
+                          # text=R.stressTestPlaylistTypeText,
                           text=bs.Lstr(resource=self._r+'.stressTestPlaylistTypeText'),
                           maxWidth=130,color=gHeadingColor,
                           scale=0.65,hAlign="right",vAlign="center")
@@ -536,6 +582,7 @@ class DebugWindow(Window):
                   currentChoice='Auto',onValueChangeCall=self._stressTestGameTypeSelected)
         v -= 46
         t = bs.textWidget(parent=self._subContainer,position=(xOffs-10,v+22),size=(0,0),
+                          # text=R.stressTestPlaylistNameText,
                           text=bs.Lstr(resource=self._r+'.stressTestPlaylistNameText'),
                           maxWidth=130,color=gHeadingColor,
                           scale=0.65,hAlign="right",vAlign="center")
@@ -544,13 +591,15 @@ class DebugWindow(Window):
                                                           vAlign="center",
                                                           autoSelect=True,
                                                           color=(0.9,0.9,0.9,1.0),
+                                                          # description=R.stressTestPlaylistDescriptionText,
                                                           description=bs.Lstr(resource=self._r+'.stressTestPlaylistDescriptionText'),
                                                           editable=True,padding=4)
         v -= 29
         xSub = 60
-
+        
         # player count
         t = bs.textWidget(parent=self._subContainer,position=(xOffs-10,v),size=(0,0),
+                          # text=R.stressTestPlayerCountText,
                           text=bs.Lstr(resource=self._r+'.stressTestPlayerCountText'),
                           color=(0.8,0.8,0.8,1.0),hAlign="right",vAlign="center",scale=0.65,
                           maxWidth=130)
@@ -571,6 +620,7 @@ class DebugWindow(Window):
 
         # round duration
         t = bs.textWidget(parent=self._subContainer,position=(xOffs-10,v),size=(0,0),
+                          # text=R.stressTestRoundDurationText,
                           text=bs.Lstr(resource=self._r+'.stressTestRoundDurationText'),
                           color=(0.8,0.8,0.8,1.0),hAlign="right",vAlign="center",scale=0.65,
                           maxWidth=130)
@@ -591,6 +641,7 @@ class DebugWindow(Window):
 
         b = bs.buttonWidget(parent=self._subContainer,position=((self._subWidth-buttonWidth)*0.5,v),size=(buttonWidth,60),
                             autoSelect=True,
+                            # label=R.runStressTestText,
                             label=bs.Lstr(resource=self._r+'.runStressTestText'),
                             onActivateCall=self._stressTestPressed)
         bs.widget(b,showBufferBottom=50)
@@ -623,7 +674,7 @@ class DebugWindow(Window):
 
     def _runMediaReloadBenchmarkPressed(self):
         bsUtils.runMediaReloadBenchmark()
-
+        
     # def _unlockPressed(self):
     #     try:
     #         import bsCoopGame
@@ -651,7 +702,7 @@ class CreditsWindow(Window):
     def __init__(self,originWidget=None):
 
         bsInternal._setAnalyticsScreen('Credits Window')
-
+        
         # if they provided an origin-widget, scale up from that
         if originWidget is not None:
             self._transitionOut = 'outScale'
@@ -661,7 +712,7 @@ class CreditsWindow(Window):
             self._transitionOut = 'outRight'
             scaleOrigin = None
             transition = 'inRight'
-
+        
         width = 670
         height = 398 if gSmallUI else 500
 
@@ -683,22 +734,22 @@ class CreditsWindow(Window):
                 bs.buttonWidget(edit=b,buttonType='backSmall',position=(40,height-(68 if gSmallUI else 62)+5),size=(60,48),label=bs.getSpecialChar('back'))
                 # bs.textWidget(edit=t,hAlign='left',position=(110,height-(59 if gSmallUI else 54)))
 
-
+            
         t = bs.textWidget(parent=self._rootWidget,position=(0,height-(59 if gSmallUI else 54)),size=(width,30),
                           text=bs.Lstr(resource=self._r+'.titleText',subs=[('${APP_NAME}',bs.Lstr(resource='titleText'))]),
                           hAlign="center",
                           color=gTitleColor,
                           maxWidth=330,vAlign="center")
 
-
+        
         s = bs.scrollWidget(parent=self._rootWidget,position=(40,35),size=(width-80,height-100),captureArrows=True)
 
         if gToolbars:
             bs.widget(edit=s,rightWidget=bsInternal._getSpecialWidget('partyButton'))
             if gSmallUI:
                 bs.widget(edit=s,leftWidget=bsInternal._getSpecialWidget('backButton'))
-
-
+                
+            
         def _formatNames(names,inset):
             s = ''
             spaceWidth = bsInternal._getStringWidth(' '*10,suppressWarning=True)/10.0 # measure a series since theres overlaps and stuff..
@@ -772,12 +823,12 @@ class CreditsWindow(Window):
                         '  '+bs.Lstr(resource=self._r+'.languageTranslationsText').evaluate()+'\n'
                         '\n'
                         +'\n'.join(translationNames.splitlines()[:40]))
-
+        
         creditsText2 = ('\n'.join(translationNames.splitlines()[40:])+'\n'
                         '\n'
-                       '  Awesome Modders:\n\n'
-                        '     TheMikirog & SoK - BombSquad Joyride Modpack\n'
-                        '     Mrmaxmeier - BombSquad-Community-Mod-Manager\n'
+                       '  DISCLAIMER:\n\n'
+                        '     The Tournaments are disabled.\n'
+                        '     What did you expect?\n'
                        '\n'
                        '  Holiday theme vector art by designed by Freepik\n'
                        '\n'
@@ -796,7 +847,7 @@ class CreditsWindow(Window):
         # creditsText = (translationNames.split('ZpeedTube')[1]+'\n'
         #                '\n'
         # print 'CT IS',repr(creditsText)
-
+                       
         # print 'PUT THIS BACK TOGETHER'
 
 
@@ -845,7 +896,7 @@ class HelpWindow(Window):
     def __init__(self,mainMenu=False,originWidget=None):
 
         bsInternal._setAnalyticsScreen('Help Window')
-
+        
         # if they provided an origin-widget, scale up from that
         if originWidget is not None:
             self._transitionOut = 'outScale'
@@ -857,7 +908,7 @@ class HelpWindow(Window):
             transition = 'inRight'
 
         self._r = 'helpWindow'
-
+        
         self._mainMenu = mainMenu
         width = 750
         height = 460 if gSmallUI else 530 if gMedUI else 600
@@ -897,12 +948,13 @@ class HelpWindow(Window):
                 bs.buttonWidget(edit=b,buttonType='backSmall',size=(60,55),label=bs.getSpecialChar('back'))
                 # bs.textWidget(edit=t,hAlign='left',position=(10+(90 if gSmallUI else 120),height - (52 if gSmallUI else 39)))
 
-
+        
         interfaceType = bs.getEnvironment()['interfaceType']
 
         self._subWidth = 660
-        self._subHeight = 1590 + bsUtils._getResource(self._r+'.someDaysExtraSpace') + bsUtils._getResource(self._r+'.orPunchingSomethingExtraSpace')
-
+        #How To Play scroll size
+        self._subHeight = 2175 + bsUtils._getResource(self._r+'.someDaysExtraSpace') + bsUtils._getResource(self._r+'.orPunchingSomethingExtraSpace')
+        
         c = self._subContainer = bs.containerWidget(parent=self._scrollWidget,size=(self._subWidth,self._subHeight),background=False,claimsLeftRight=False,claimsTab=False)
 
         spacing = 1.0
@@ -923,7 +975,7 @@ class HelpWindow(Window):
         t = bs.textWidget(parent=c,position=(h,v),size=(0,0),scale=txtScale,flatness=0.5,resScale=1.5,
                           text=txt,hAlign="center",color=header,vAlign="center",maxWidth=txtMaxWidth)
         txtWidth = min(txtMaxWidth,bsInternal._getStringWidth(txt,suppressWarning=True)*txtScale)
-
+        
         iconSize = 70
         h2 = h - (txtWidth*0.5+iconSize*0.5*iconBuffer)
         i = bs.imageWidget(parent=c,size=(iconSize,iconSize),position=(h2-0.5*iconSize,v-0.45*iconSize),texture=logoTex)
@@ -1027,7 +1079,7 @@ class HelpWindow(Window):
         # to determine whether to show ouya buttons here lets look for actual OUYA hardware
         # (we could be an ouya build running on other hardware)
         ouya = bsInternal._isRunningOnOuya();
-
+        
         h2 = h - sep
         v2 = v
         i = bs.imageWidget(parent=c,size=(iconSize,iconSize),position=(h2-0.5*iconSize,v2-0.5*iconSize),
@@ -1082,6 +1134,7 @@ class HelpWindow(Window):
 
 
         txt = bs.Lstr(resource=self._r+'.powerupsText').evaluate()
+        #txtScale = R.powerupsTextScale
         txtScale = 1.4
         txtMaxWidth = 480
         t = bs.textWidget(parent=c,position=(h,v),size=(0,0),scale=txtScale,flatness=0.5,
@@ -1113,16 +1166,26 @@ class HelpWindow(Window):
 
         for tex in ['powerupPunch',
                     'powerupShield',
+                    'powerupSpeed',
+                    'powerupHijump',
                     'powerupBomb',
+                    'powerupBlast',
                     'powerupHealth',
+                    'powerupOverdrive',
                     'powerupIceBombs',
                     'powerupImpactBombs',
+                    'powerupCombatBombs',
                     'powerupStickyBombs',
+                    'powerupDynamitePack',
+                    'powerupRangerBombs',
+                    'powerupKnockerBombs',
+                    'powerupGrenade',
+                    'powerupHealBombs',
                     'powerupLandMines',
                     'powerupCurse']:
             name = bs.Lstr(resource=self._r+'.'+tex+'NameText')
             desc = bs.Lstr(resource=self._r+'.'+tex+'DescriptionText')
-
+            
             v -= spacing * 60.0
 
             i = bs.imageWidget(parent=c,size=(shadowSize,shadowSize),position=(h+m1+shadowOffsX-0.5*shadowSize,v+shadowOffsY-0.5*shadowSize),
@@ -1150,7 +1213,7 @@ class HelpWindow(Window):
 class ControllersWindow(Window):
 
     def __init__(self,transition='inRight',originWidget=None):
-
+        
         self._haveSelectedChild = False
 
         # if they provided an origin-widget, scale up from that
@@ -1165,7 +1228,7 @@ class ControllersWindow(Window):
         self._r = 'configControllersWindow'
 
         env = bs.getEnvironment()
-
+        
         ua = env['userAgentString']
         interfaceType = env['interfaceType']
         #isOuya = bsInternal._isOuyaBuild()
@@ -1227,23 +1290,14 @@ class ControllersWindow(Window):
             showMacWiimote = True
             height += spacing
 
-        # on non-oculus-vr windows, show an option to disable xinput
+        # show option to disable xinput on windows (aside from rift vr mode)
         showXInputToggle = False
         if platform == 'windows' and (subplatform != 'oculus' or env['vrMode'] == False):
             showXInputToggle = True
 
-        # on mac builds, show an option to switch between generic and made-for-iOS/Mac systems
-        # (we can run into problems where devices register as one of each type otherwise)..
-        showMacControllerSubsystemMenu = False
-        if platform == 'mac':
-            showMacControllerSubsystemMenu = True
-
-        if showMacControllerSubsystemMenu:
-            height += spacing
-
         if showXInputToggle:
             height += spacing
-
+            
         self._rootWidget = bs.containerWidget(size=(width,height),transition=transition,scaleOriginStackOffset=scaleOrigin,
                                               scale=2.2 if gSmallUI else 1.5 if gMedUI else 1.0)
         self._backButton = b = bs.buttonWidget(parent=self._rootWidget,position=(35,height-60),size=(140,65),scale=0.8,textScale=1.2,autoSelect=True,
@@ -1254,6 +1308,7 @@ class ControllersWindow(Window):
         self._gamePadsButton = self._touchButton = self._keyboardButton = self._keyboard2Button = self._iDevicesButton = self._ps3Button = self._xbox360Button = self._wiimotesButton = -1
 
         t = bs.textWidget(parent=self._rootWidget,position=(0,height-49),size=(width,25),
+                          # text=R.titleText,
                           text=bs.Lstr(resource=self._r+'.titleText'),
                           color=gTitleColor,
                           hAlign="center",vAlign="top")
@@ -1261,13 +1316,14 @@ class ControllersWindow(Window):
         if gDoAndroidNav:
             bs.buttonWidget(edit=b,buttonType='backSmall',size=(60,60),label=bs.getSpecialChar('back'))
             # bs.textWidget(edit=t,hAlign='left',position=(100,height-48))
-
+        
         v = height - 75
         v -= spacing
 
-
+        
         if showTouch:
             self._touchButton = b = bs.buttonWidget(parent=self._rootWidget,position=((width-buttonWidth)/2,v),size=(buttonWidth,43),autoSelect=True,
+                                                    # label=R.configureTouchText,
                                                     label=bs.Lstr(resource=self._r+'.configureTouchText'),
                                                     onActivateCall=self._doTouchscreen)
             if gToolbars:
@@ -1280,6 +1336,7 @@ class ControllersWindow(Window):
 
         if showGamepads:
             self._gamePadsButton = b = bs.buttonWidget(parent=self._rootWidget,position=((width-buttonWidth)/2-7,v),size=(buttonWidth,43),autoSelect=True,
+                                                       # label=R.configureControllersText,
                                                        label=bs.Lstr(resource=self._r+'.configureControllersText'),
                                                        onActivateCall=self._doGamepads)
             if gToolbars:
@@ -1295,6 +1352,7 @@ class ControllersWindow(Window):
 
         if showKeyboards:
             self._keyboardButton = b = bs.buttonWidget(parent=self._rootWidget,position=((width-buttonWidth)/2+5,v),size=(buttonWidth,43),autoSelect=True,
+                                                       # label=R.configureKeyboardText,
                                                        label=bs.Lstr(resource=self._r+'.configureKeyboardText'),
                                                        onActivateCall=self._configKeyboard)
             if gToolbars:
@@ -1305,12 +1363,14 @@ class ControllersWindow(Window):
                 self._haveSelectedChild = True
             v -= spacing
             self._keyboard2Button = b = bs.buttonWidget(parent=self._rootWidget,position=((width-buttonWidth)/2-3,v),size=(buttonWidth,43),autoSelect=True,
+                                                        # label=R.configureKeyboard2Text,
                                                         label=bs.Lstr(resource=self._r+'.configureKeyboard2Text'),
                                                         onActivateCall=self._configKeyboard2)
             v -= spacing
         if showSpace2: v -= spaceHeight
         if showRemote:
             self._iDevicesButton = b = bs.buttonWidget(parent=self._rootWidget,position=((width-buttonWidth)/2-5,v),size=(buttonWidth,43),autoSelect=True,
+                                                       # label=R.configureMobileText,
                                                        label=bs.Lstr(resource=self._r+'.configureMobileText'),
                                                        onActivateCall=self._doMobileDevices)
             if gToolbars:
@@ -1322,6 +1382,7 @@ class ControllersWindow(Window):
             v -= spacing
         if showPS3:
             self._ps3Button = b = bs.buttonWidget(parent=self._rootWidget,position=((width-buttonWidth)/2+5,v),size=(buttonWidth,43),autoSelect=True,
+                                # label=R.ps3Text,
                                 label=bs.Lstr(resource=self._r+'.ps3Text'),
                                 onActivateCall=self._doPS3Controllers)
             if gToolbars:
@@ -1329,6 +1390,7 @@ class ControllersWindow(Window):
             v -= spacing
         if show360:
             self._xbox360Button = b = bs.buttonWidget(parent=self._rootWidget,position=((width-buttonWidth)/2-1,v),size=(buttonWidth,43),autoSelect=True,
+                                # label=R.xbox360Text,
                                 label=bs.Lstr(resource=self._r+'.xbox360Text'),
                                 onActivateCall=self._do360Controllers)
             if gToolbars:
@@ -1336,6 +1398,7 @@ class ControllersWindow(Window):
             v -= spacing
         if showMacWiimote:
             self._wiimotesButton = b = bs.buttonWidget(parent=self._rootWidget,position=((width-buttonWidth)/2+5,v),size=(buttonWidth,43),autoSelect=True,
+                                # label=R.wiimotesText,
                                 label=bs.Lstr(resource=self._r+'.wiimotesText'),
                                 onActivateCall=self._doWiimotes)
             if gToolbars:
@@ -1354,28 +1417,8 @@ class ControllersWindow(Window):
             bs.textWidget(parent=self._rootWidget, position=(width*0.5,v-5), size=(0, 0), text=bs.Lstr(resource='disableXInputDescriptionText'),
                           scale=0.5, hAlign='center',vAlign='center', color=gInfoTextColor, maxWidth=width*0.8)
             v -= spacing
-
-        if showMacControllerSubsystemMenu:
-            p = PopupMenu(parent=self._rootWidget,position=(260,v-10),width=160,buttonSize=(150,50),scale=1.5,
-                          choices=['Classic','MFi','Both'],
-                          choicesDisplay=[bs.Lstr(resource='macControllerSubsystemClassicText'),
-                                          bs.Lstr(resource='macControllerSubsystemMFiText'),
-                                          bs.Lstr(resource='macControllerSubsystemBothText')],
-                          currentChoice=bsInternal._getSetting('Mac Controller Subsystem'),
-                          onValueChangeCall=self._setMacControllerSubsystem)
-            bs.textWidget(parent=self._rootWidget, position=(245,v+13), size=(0, 0), text=bs.Lstr(resource='macControllerSubsystemTitleText'),
-                          scale=1.0, hAlign='right',vAlign='center', color=gInfoTextColor, maxWidth=180)
-            bs.textWidget(parent=self._rootWidget, position=(width*0.5,v-20), size=(0, 0), text=bs.Lstr(resource='macControllerSubsystemDescriptionText'),
-                          scale=0.5, hAlign='center',vAlign='center', color=gInfoTextColor, maxWidth=width*0.8)
-            v -= spacing
-
-
+            
         self._restoreState()
-
-    def _setMacControllerSubsystem(self,val):
-        bs.getConfig()['Mac Controller Subsystem'] = val
-        bs.writeConfig()
-        bs.applySettings()
 
     def _configKeyboard(self):
         self._saveState()
@@ -1465,7 +1508,7 @@ class PopupWindow(Window):
 
         width = focusSize[0]
         height = focusSize[1]
-
+        
         # ok, we've been given a desired width, height, and scale;
         # we now need to ensure that we're all onscreen by scaling down if need be
         # and clamping it to the UI bounds
@@ -1484,12 +1527,12 @@ class PopupWindow(Window):
             scale /= (finHeight/boundsHeight)
             finWidth = width * scale
             finHeight = height * scale
-
+        
         xMin = bounds[0]+edgeBuffer+finWidth*0.5
         yMin = bounds[2]+edgeBuffer+finHeight*0.5
         xMax = bounds[1]-edgeBuffer-finWidth*0.5
         yMax = bounds[3]-edgeBuffer-finHeight*0.5
-
+                
         xFin = min(max(xMin,position[0]+offset[0]),xMax)
         yFin = min(max(yMin,position[1]+offset[1]),yMax)
 
@@ -1498,7 +1541,7 @@ class PopupWindow(Window):
         # of our window to come up with the offset we'll need to plug in to the window
         xOffs = ((focusPosition[0]+focusSize[0]*0.5) - (size[0]*0.5)) * scale
         yOffs = ((focusPosition[1]+focusSize[1]*0.5) - (size[1]*0.5)) * scale
-
+        
         self._rootWidget = bs.containerWidget(transition='inScale',scale=scale,
                                               toolbarVisibility=toolbarVisibility,
                                               size=size,
@@ -1509,7 +1552,7 @@ class PopupWindow(Window):
                                               onCancelCall=self.onPopupCancel)
     def onPopupCancel(self):
         pass
-
+        
 class ColorPicker(PopupWindow):
 
     """ pops up a ui to select from a set of colors.
@@ -1532,7 +1575,7 @@ class ColorPicker(PopupWindow):
         PopupWindow.__init__(self,position=position,size=(210,210),scale=scale,
                              focusPosition=(10,10),focusSize=(190,190),
                              bgColor=(0.5,0.5,0.5),offset=offset)
-
+        
         rows = []
         closestDist = 9999
         closest = (0,0)
@@ -1549,25 +1592,25 @@ class ColorPicker(PopupWindow):
                                     size=(35,40),label='',buttonType='square',onActivateCall=bs.WeakCall(self._select,x,y),
                                     autoSelect=True,color=color,extraTouchBorderScale=0.0)
                 row.append(b)
-
+                
         bs.containerWidget(edit=self._rootWidget,selectedChild=rows[closest[1]][closest[0]])
 
     def _select(self,x,y):
         if self._delegate: self._delegate.colorPickerSelectedColor(self,self.colors[y][x])
         bs.realTimer(50,self._transitionOut)
-
+        
     def _transitionOut(self):
         if not self._transitioningOut:
             self._transitioningOut = True
             if self._delegate is not None: self._delegate.colorPickerClosing(self)
             bs.containerWidget(edit=self._rootWidget,transition='outScale')
-
+            
     def onPopupCancel(self):
         if not self._transitioningOut:
             bs.playSound(bs.getSound('swish'))
         self._transitionOut()
 
-
+    
 class PopupMenuWindow(PopupWindow):
 
     def __init__(self,position,choices,currentChoice,delegate=None,width=230,
@@ -1582,11 +1625,11 @@ class PopupMenuWindow(PopupWindow):
                 bs.printErrorOnce('PopupMenuWindow got a raw string in \'choicesDisplay\'; please pass bs.Lstr values only')
                 choicesDisplayNew.append(choice)
         choicesDisplay = choicesDisplayNew
-
+        
         parent = None
 
         if maxWidth is None: maxWidth = width * 1.5
-
+        
         self._transitioningOut = False
         self._choices = list(choices)
         self._choicesDisplay = list(choicesDisplay)
@@ -1601,7 +1644,7 @@ class PopupMenuWindow(PopupWindow):
             self._useScroll = True
         else:
             self._height = 20+len(choices)*33
-            self._useScroll = False
+            self._useScroll = False 
         self._delegate = None # dont want this stuff called just yet..
 
         # extend width to fit our longest string (or our max-width)
@@ -1657,7 +1700,7 @@ class PopupMenuWindow(PopupWindow):
 
     def _getDelegate(self):
         return None if self._delegate is None else self._delegate()
-
+    
     def _transitionOut(self):
         if not self._rootWidget.exists():
             return
@@ -1738,27 +1781,27 @@ class PopupMenu(object):
 
     def _onCancel(self):
         self._transitionOut()
-
+                
     def onPopupCancel(self):
 
         bs.playSound(bs.getSound('swish'))
         self._onCancel()
+        
 
-
-
+        
 class TournamentEntryWindow(PopupWindow):
 
     def __init__(self,tournamentID,tournamentActivity=None,position=(0,0),delegate=None,scale=None,offset=(0,0),onCloseCall=None):
 
         bsInternal._setAnalyticsScreen('Tournament Entry Window')
-
+        
         self._tournamentID = tournamentID
         self._tournamentInfo = gTournamentInfo[self._tournamentID]
 
         # set a few vars depending on the tourney fee
         self._fee = self._tournamentInfo['fee']
         self._allowAds = self._tournamentInfo['allowAds']
-
+        
         if self._fee == 4:
             self._purchaseName = 'tournament_entry_4'
             self._purchasePriceName = 'price.tournament_entry_4'
@@ -1777,19 +1820,19 @@ class TournamentEntryWindow(PopupWindow):
             self._purchasePriceName = 'price.tournament_entry_0'
 
         self._purchasePrice = None
-
+        
         self._onCloseCall = onCloseCall
         if scale is None: scale = 2.3 if gSmallUI else 1.65 if gMedUI else 1.23
         self._delegate = delegate
         self._transitioningOut = False
 
         self._tournamentActivity = tournamentActivity
-
+        
         self._width = 340
         self._height = 220
 
         bgColor = (0.5,0.4,0.6)
-
+        
         # creates our _rootWidget
         PopupWindow.__init__(self,position=position,size=(self._width,self._height),
                              scale=scale,bgColor=bgColor,offset=offset,toolbarVisibility='MENU_CURRENCY')
@@ -1816,7 +1859,7 @@ class TournamentEntryWindow(PopupWindow):
                                         scale=0.6,
                                         text=bs.Lstr(resource='tournamentEntryText'),
                                         maxWidth=200,color=(1,1,1,0.4))
-
+        
         b = self._payWithTicketsButton = bs.buttonWidget(parent=self._rootWidget,position=(30+xOffs,60),autoSelect=True,
                                                          buttonType='square',size=(120,120),label='',
                                                          onActivateCall=self._onPayWithTicketsPress)
@@ -1875,7 +1918,7 @@ class TournamentEntryWindow(PopupWindow):
             self._getTicketsButton = None
 
         self._secondsRemaining = None
-
+        
         bs.containerWidget(edit=self._rootWidget,cancelButton=self._cancelButton)
 
         # lets also ask the server for info about this tournament (time remaining, etc)
@@ -1888,7 +1931,7 @@ class TournamentEntryWindow(PopupWindow):
                                                      scale=0.45,flatness=1.0,maxWidth=100,color=(0.7,0.7,0.7))
 
         self._lastQueryTime = None
-
+        
         # if there seems to be a relatively-recent valid cached info for this tournament, use it.
         # ..otherwise we'll kick off a query ourselves.
         if self._tournamentID in gTournamentInfo and gTournamentInfo[self._tournamentID]['valid'] and (bs.getRealTime() - gTournamentInfo[self._tournamentID]['timeReceived'] < 1000*60*5):
@@ -1902,14 +1945,14 @@ class TournamentEntryWindow(PopupWindow):
                 self._haveValidData = False
         else:
             self._haveValidData = False
-
+            
         self._fgState = bsUtils.gAppFGState
-
+        
         self._runningQuery = False
-
+        
         self._updateTimer = bs.Timer(1000,bs.WeakCall(self._update),repeat=True,timeType='real')
         self._update()
-
+        
         self._restoreState()
 
     def _onTournamentQueryResponse(self,data):
@@ -1919,7 +1962,7 @@ class TournamentEntryWindow(PopupWindow):
             _cacheTournamentInfo(data)
             self._secondsRemaining = gTournamentInfo[self._tournamentID]['timeRemaining']
             self._haveValidData = True
-
+        
     def _saveState(self):
         if not self._rootWidget.exists(): return
         sel = self._rootWidget.getSelectedChild()
@@ -1927,24 +1970,24 @@ class TournamentEntryWindow(PopupWindow):
         else: selName = 'Tickets'
         bs.getConfig()['Tournament Pay Selection'] = selName
         bs.writeConfig()
-
+    
     def _restoreState(self):
         try: selName = bs.getConfig()['Tournament Pay Selection']
         except Exception: selName = 'Tickets'
         if selName == 'Ad' and self._payWithAdButton is not None: sel = self._payWithAdButton
         else: sel = self._payWithTicketsButton
         bs.containerWidget(edit=self._rootWidget,selectedChild=sel)
-
+    
     def _update(self):
-
+        
         # we may outlive our widgets..
         if not self._rootWidget.exists(): return
-
+        
         # if we've been foregrounded/backgrounded we need to re-grab data
         if self._fgState != bsUtils.gAppFGState:
             self._fgState = bsUtils.gAppFGState
             self._haveValidData = False
-
+            
         # if we need to run another tournament query, do so..
         if not self._runningQuery and ((self._lastQueryTime is None)
                                        or (not self._haveValidData)
@@ -1953,7 +1996,7 @@ class TournamentEntryWindow(PopupWindow):
                                         callback=bs.WeakCall(self._onTournamentQueryResponse))
             self._lastQueryTime = bs.getRealTime()
             self._runningQuery = True
-
+        
         # grab the latest info on our tourney
         self._tournamentInfo = gTournamentInfo[self._tournamentID]
 
@@ -1967,7 +2010,7 @@ class TournamentEntryWindow(PopupWindow):
 
         # keep price up-to-date and update the button with it..
         self._purchasePrice = bsInternal._getAccountMiscReadVal(self._purchasePriceName,None)
-
+        
         bs.textWidget(edit=self._ticketCostText,
                       text=(bs.Lstr(resource='getTicketsWindow.freeText') if self._purchasePrice == 0
                             else bs.Lstr(resource='getTicketsWindow.ticketsText',subs=[('${COUNT}',str(self._purchasePrice) if self._purchasePrice is not None else '?')])),
@@ -1990,7 +2033,7 @@ class TournamentEntryWindow(PopupWindow):
             adPlaysRemainingText = '' if not haveAdTriesRemaining else ''+str(self._tournamentInfo['adTriesRemaining'])
             bs.textWidget(edit=self._adPlaysRemainingText,text=adPlaysRemainingText,color=(0,0.8,0) if enabled else (0.4,0.4,0.4))
 
-
+            
         try: tStr = str(bsInternal._getAccountTicketCount())
         except Exception: tStr = '?'
         #bs.textWidget(edit=self._ticketCountText,text=bs.getSpecialChar('ticket')+tStr)
@@ -2001,7 +2044,7 @@ class TournamentEntryWindow(PopupWindow):
         # go ahead and enter it. Once our outstanding transactions are again clear we'll go ahead and start
         # if (not self._entering and not bsInternal._haveOutstandingTransactions()):
         #     pass
-
+        
             # if we've entered via a ticket purchase:
             # if bsInternal._getPurchased(self._purchaseName):
             #     self._entering = True
@@ -2009,7 +2052,7 @@ class TournamentEntryWindow(PopupWindow):
             #                                 'fee':self._fee,
             #                                 'tournamentID':self._tournamentID})
             #     bsInternal._runTransactions()
-
+                
             # if we've entered via an ad purchase:
             # if self._allowAds and bsInternal._getPurchased('tournament_entry_ad'):
             #     self._entering = True
@@ -2021,7 +2064,7 @@ class TournamentEntryWindow(PopupWindow):
         # once the entry goes through, go ahead and start the game
         # if self._entering and not bsInternal._haveOutstandingTransactions() and not self._launched:
         #     self._launch()
-
+            
         # make sure our transactions are going through as fast as possible..
         # bsInternal._runTransactions()
 
@@ -2053,7 +2096,7 @@ class TournamentEntryWindow(PopupWindow):
                                                                                                           'tournamentID':self._tournamentID}))
             bs.realTimer(700, self._transitionOut)
             bs.screenMessage(bs.Lstr(translate=('serverResponses','Entering tournament...')),color=(0,1,0))
-
+        
     def _onPayWithTicketsPress(self):
 
         # if we're already entering, ignore..
@@ -2063,19 +2106,19 @@ class TournamentEntryWindow(PopupWindow):
             bs.screenMessage(bs.Lstr(resource='tournamentCheckingStateText'),color=(1,0,0))
             bs.playSound(bs.getSound('error'))
             return
-
+            
         # if we dont have a price..
         if self._purchasePrice is None:
             bs.screenMessage(bs.Lstr(resource='tournamentCheckingStateText'),color=(1,0,0))
             bs.playSound(bs.getSound('error'))
             return
-
+        
         # deny if it looks like the tourney has ended
         if self._secondsRemaining == 0:
             bs.screenMessage(bs.Lstr(resource='tournamentEndedText'),color=(1,0,0))
             bs.playSound(bs.getSound('error'))
             return
-
+        
         # deny if we don't have enough tickets
         try: ticketCount = bsInternal._getAccountTicketCount()
         except Exception: ticketCount = None
@@ -2089,16 +2132,16 @@ class TournamentEntryWindow(PopupWindow):
         #if curTime-self._lastTicketPressTime > 5000:
         self._lastTicketPressTime = curTime
         bsInternal._inGamePurchase(self._purchaseName,ticketCost)
-
+        
         self._entering = True
         bsInternal._addTransaction({'type':'ENTER_TOURNAMENT',
                                     'fee':self._fee,
                                     'tournamentID':self._tournamentID})
         bsInternal._runTransactions()
         self._launch()
-
+        
     def _onPayWithAdPress(self):
-
+        
         # if we're already entering, ignore..
         if self._entering: return
 
@@ -2106,13 +2149,13 @@ class TournamentEntryWindow(PopupWindow):
             bs.screenMessage(bs.Lstr(resource='tournamentCheckingStateText'),color=(1,0,0))
             bs.playSound(bs.getSound('error'))
             return
-
+        
         # deny if it looks like the tourney has ended
         if self._secondsRemaining == 0:
             bs.screenMessage(bs.Lstr(resource='tournamentEndedText'),color=(1,0,0))
             bs.playSound(bs.getSound('error'))
             return
-
+        
         curTime = bs.getRealTime()
         if curTime-self._lastAdPressTime > 5000:
             self._lastAdPressTime = curTime
@@ -2124,18 +2167,18 @@ class TournamentEntryWindow(PopupWindow):
         if self._entering: return
 
         if not actuallyShowed: return
-
+        
         self._entering = True
         bsInternal._addTransaction({'type':'ENTER_TOURNAMENT',
                                     'fee':'ad',
                                     'tournamentID':self._tournamentID})
         bsInternal._runTransactions()
         self._launch()
-
+        
     def _onGetTicketsPress(self):
         # if we're already entering, ignore presses..
         if self._entering: return
-
+        
         GetTicketsWindow(modal=True,originWidget=self._getTicketsButton)
 
     def _onCancel(self):
@@ -2146,9 +2189,9 @@ class TournamentEntryWindow(PopupWindow):
         if (bs.getRealTime() - self._lastTicketPressTime < 6000) and (bsInternal._haveOutstandingTransactions() or bsInternal._getPurchased(self._purchaseName) or self._entering):
             bs.playSound(bs.getSound('error'))
             return
-
+        
         self._transitionOut()
-
+        
     def _transitionOut(self):
         if not self._rootWidget.exists(): return
         if not self._transitioningOut:
@@ -2169,16 +2212,16 @@ class TournamentScoresWindow(PopupWindow):
                  tintColor=(1,1,1),tint2Color=(1,1,1),selectedCharacter=None,onCloseCall=None):
 
         self._tournamentID = tournamentID
-
+            
         self._onCloseCall = onCloseCall
         if scale is None: scale = 2.3 if gSmallUI else 1.65 if gMedUI else 1.23
         self._transitioningOut = False
-
+        
         self._width = 400
         self._height = 300 if gSmallUI else 370 if gMedUI else 450
 
         bgColor = (0.5,0.4,0.6)
-
+        
         # creates our _rootWidget
         PopupWindow.__init__(self,position=position,size=(self._width,self._height),
                              scale=scale,bgColor=bgColor,offset=offset)
@@ -2206,8 +2249,8 @@ class TournamentScoresWindow(PopupWindow):
                                           text=bs.Lstr(value='${A}...',subs=[('${A}',bs.Lstr(resource='loadingText'))]),
                                           size=(self._width-60,100),
                                           hAlign='center',vAlign='center')
-
-
+                
+        
         bs.containerWidget(edit=self._rootWidget,cancelButton=self._cancelButton)
 
 
@@ -2234,7 +2277,7 @@ class TournamentScoresWindow(PopupWindow):
             subHeight = 30+len(data[0]['scores'])*incr
             self._subContainer = bs.containerWidget(parent=self._scrollWidget,size=(subWidth,subHeight),background=False)
             for i,entry in enumerate(data[0]['scores']):
-
+                
                 bs.textWidget(parent=self._subContainer,
                               position=(subWidth*0.1-5,subHeight-20-incr*i),
                               maxWidth=20,
@@ -2243,7 +2286,7 @@ class TournamentScoresWindow(PopupWindow):
                               text=str(i+1),
                               size=(0,0),
                               hAlign='right',vAlign='center')
-
+                
                 bs.textWidget(parent=self._subContainer,
                               position=(subWidth*0.25-2,subHeight-20-incr*i),
                               maxWidth=subWidth*0.24,
@@ -2264,11 +2307,11 @@ class TournamentScoresWindow(PopupWindow):
                                   extraTouchBorderScale=0.0,
                                   size=((subWidth*0.6)/0.7,incr/0.7),
                                   hAlign='left',vAlign='center')
-
+                
                 bs.textWidget(edit=t,onActivateCall=bs.Call(self._showPlayerInfo,entry,t))
                 if i == 0:
                     bs.widget(edit=t,upWidget=self._cancelButton)
-
+                    
             # dont wanna cache this - its got scores and stuff we dont need to keep
             #_cacheTournamentInfo(data)
             #self._secondsRemaining = gTournamentInfo[self._tournamentID]['timeRemaining']
@@ -2282,10 +2325,10 @@ class TournamentScoresWindow(PopupWindow):
                           profileID=entry[2][0].get('p',None),
                           position=textWidget.getScreenSpaceCenter())
         self._transitionOut()
-
+        
     def _onCancelPress(self):
         self._transitionOut()
-
+        
     def _transitionOut(self):
         if not self._transitioningOut:
             self._transitioningOut = True
@@ -2305,15 +2348,15 @@ class AccountInfoWindow(PopupWindow):
 
         self._accountID = accountID
         self._profileID = profileID
-
+        
         if scale is None: scale = 2.6 if gSmallUI else 1.8 if gMedUI else 1.4
         self._transitioningOut = False
-
+        
         self._width = 400
         self._height = 300 if gSmallUI else 400 if gMedUI else 450
 
         bgColor = (0.5,0.4,0.6)
-
+        
         # creates our _rootWidget
         PopupWindow.__init__(self,position=position,size=(self._width,self._height),
                              scale=scale,bgColor=bgColor,offset=offset)
@@ -2346,8 +2389,8 @@ class AccountInfoWindow(PopupWindow):
             self._extrasMenuButton = b = bs.buttonWidget(parent=self._rootWidget, size=(20, 20), position=(self._width - 60, self._height - 30),
                                                      autoSelect=True, label='...', buttonType='square', color=(0.64, 0.52, 0.69),
                                                      textColor=(0.57, 0.47, 0.57), onActivateCall=self._onExtrasMenuPress)
-
-
+            
+        
         bs.containerWidget(edit=self._rootWidget,cancelButton=self._cancelButton)
 
         bsUtils.serverGet('bsAccountInfo',{'buildNumber':bs.getEnvironment()['buildNumber'],
@@ -2365,7 +2408,7 @@ class AccountInfoWindow(PopupWindow):
 
     def popupMenuClosing(self, window):
         pass
-
+    
     def _onExtrasMenuPress(self):
         PopupMenuWindow(position=self._extrasMenuButton.getScreenSpaceCenter(),
                         scale = 2.3 if gSmallUI else 1.65 if gMedUI else 1.23,
@@ -2374,14 +2417,14 @@ class AccountInfoWindow(PopupWindow):
                                         bs.Lstr(resource='reportThisPlayerText')],
                         currentChoice='more',
                         delegate=self).getRootWidget()
-
+        
     def _onReportPress(self):
         import bsUI2
         bsUI2.ReportPlayerWindow(self._accountID,originWidget=self._extrasMenuButton)
 
     def _onMorePress(self):
         bs.openURL(bsInternal._getServerAddress()+'/highscores?profile='+self._accountID)
-
+        
     def _onQueryResponse(self,data):
         # data = None
         if data is None:
@@ -2390,7 +2433,7 @@ class AccountInfoWindow(PopupWindow):
             try:
                 # at some point should actually get this as json; prepping for that..
                 data = bsUtils.jsonPrep(data)
-
+                
                 import bsAchievement
                 import bsSpaz
                 self._loadingText.delete()
@@ -2451,7 +2494,7 @@ class AccountInfoWindow(PopupWindow):
 
                 center = 0.75 if showingCharacter else 0.5
                 maxWidthScale = 0.45 if showingCharacter else 0.9
-
+                
                 v = subHeight - 20
                 if len(data['accountDisplayStrings']) <= 1:
                     accountTitle = bs.Lstr(resource='settingsWindow.accountText')
@@ -2471,7 +2514,7 @@ class AccountInfoWindow(PopupWindow):
 
                 v += accountNameSpacing
                 v -= 25 if showingCharacter else 29
-
+                
                 bs.textWidget(parent=self._subContainer,size=(0,0),position=(subWidth*center,v),flatness=1.0,
                               hAlign='center',vAlign='center',scale=titleScale,color=gInfoTextColor,
                               text=bs.Lstr(resource='rankText'),
@@ -2492,8 +2535,8 @@ class AccountInfoWindow(PopupWindow):
                     if strRaw.endswith('${SUFFIX}') and data['rank'][0] != 'Diamond':
                         suffixOffset = rankStrWidth*0.5+2
                     else: suffixOffset = None
-
-
+                    
+                    
                 bs.textWidget(parent=self._subContainer,size=(0,0),position=(subWidth*center,v),
                               hAlign='center',vAlign='center',scale=0.55,
                               text=rankStr,
@@ -2531,7 +2574,7 @@ class AccountInfoWindow(PopupWindow):
                     v -= 10
 
                 v -= 13
-
+                
                 bs.textWidget(parent=self._subContainer,size=(0,0),position=(subWidth*center,v),flatness=1.0,
                               hAlign='center',vAlign='center',scale=titleScale,color=gInfoTextColor,
                               text=bs.Lstr(resource='achievementsText'),
@@ -2544,12 +2587,12 @@ class AccountInfoWindow(PopupWindow):
 
                 if prevRanksShown == 0 and showingCharacter: v -= 20
                 elif prevRanksShown == 1 and showingCharacter: v -= 10
-
+                
                 #v -= 10 if showingCharacter else 0
 
                 center = 0.5
                 maxWidthScale = 0.9
-
+                
                 bs.textWidget(parent=self._subContainer,size=(0,0),position=(subWidth*center,v),
                               hAlign='center',vAlign='center',scale=titleScale,color=gInfoTextColor,flatness=1.0,
                               text=bs.Lstr(resource='trophiesThisSeasonText',fallback='trophiesText'),
@@ -2558,14 +2601,14 @@ class AccountInfoWindow(PopupWindow):
                 bs.textWidget(parent=self._subContainer,size=(0,tsHeight),position=(subWidth*0.5,v-tsHeight*tscale),
                               hAlign='center',vAlign='top',cornerScale=tscale,
                               text=ts)
-
-
+                
+                
             except Exception:
                 bs.printException('Error displaying account info')
-
+    
     def _onCancelPress(self):
         self._transitionOut()
-
+        
     def _transitionOut(self):
         if not self._transitioningOut:
             self._transitioningOut = True
@@ -2577,7 +2620,7 @@ class AccountInfoWindow(PopupWindow):
         bs.playSound(bs.getSound('swish'))
         self._transitionOut()
 
-
+        
 class CharacterPicker(PopupWindow):
 
     def __init__(self,parent,position=(0,0),delegate=None,scale=None,offset=(0,0),
@@ -2592,17 +2635,17 @@ class CharacterPicker(PopupWindow):
         self._spazzes.sort()
         self._iconTextures = [bs.getTexture(bsSpaz.appearances[s].iconTexture) for s in self._spazzes]
         self._iconTintTextures = [bs.getTexture(bsSpaz.appearances[s].iconMaskTexture) for s in self._spazzes]
-
+        
         count = len(self._spazzes)
-
+        
         columns = 3
         rows = int(math.ceil(float(count)/columns))
-
+        
         buttonWidth = 100
         buttonHeight = 100
         buttonBufferH = 10
         buttonBufferV = 15
-
+        
         self._width = 10+columns*(buttonWidth+2*buttonBufferH)*(1.0/0.95)*(1.0/0.8)
         self._height = self._width*(0.8 if gSmallUI else 1.06)
 
@@ -2610,15 +2653,15 @@ class CharacterPicker(PopupWindow):
         self._scrollHeight = self._height * 0.8
         self._scrollPosition = ((self._width-self._scrollWidth)*0.5,(self._height-self._scrollHeight)*0.5)
         #self._scrollPosition = ((self._width-self._scrollWidth)*-0.2,(self._height-self._scrollHeight)*1.3)
-
+        
         # creates our _rootWidget
         PopupWindow.__init__(self,position=position,size=(self._width,self._height),scale=scale,
                              bgColor=(0.5,0.5,0.5),offset=offset,
                              focusPosition=self._scrollPosition,
                              focusSize=(self._scrollWidth,self._scrollHeight))
 
-
-
+        
+        
         self._scrollWidget = bs.scrollWidget(parent=self._rootWidget,size=(self._scrollWidth,self._scrollHeight),
                                              color=(0.55,0.55,0.55),highlight=False,
                                              position=self._scrollPosition)
@@ -2654,7 +2697,7 @@ class CharacterPicker(PopupWindow):
                               size=(0,0),scale=0.5,maxWidth=buttonWidth,
                               drawController=b,hAlign='center',vAlign='center',color=(0.8,0.8,0.8,0.8))
                 index += 1
-
+                
                 if index >= count: break
             if index >= count: break
         self._getMoreCharactersButton = b = bs.buttonWidget(parent=self._subContainer,
@@ -2672,11 +2715,11 @@ class CharacterPicker(PopupWindow):
             return
         self._transitionOut()
         StoreWindow(modal=True,showTab='characters',originWidget=self._getMoreCharactersButton)
-
+        
     def _selectCharacter(self,character):
         if self._delegate is not None: self._delegate.onCharacterPickerPick(character)
         self._transitionOut()
-
+        
     def _transitionOut(self):
         if not self._transitioningOut:
             self._transitioningOut = True
@@ -2695,29 +2738,40 @@ class IconPicker(PopupWindow):
         self._delegate = delegate
         self._transitioningOut = False
 
+        # make a list of spaz icons
+        #self._spazzes = bsSpaz.getAppearances()
+        #self._spazzes.sort()
         self._icons = [bs.getSpecialChar('logo')] + _getPurchasedIcons()
+        
+        # self._iconTextures = [bs.getTexture(bsSpaz.appearances[s].iconTexture) for s in self._spazzes]
+        # self._iconTintTextures = [bs.getTexture(bsSpaz.appearances[s].iconMaskTexture) for s in self._spazzes]
+        
         count = len(self._icons)
+        
         columns = 4
         rows = int(math.ceil(float(count)/columns))
-
+        
         buttonWidth = 50
         buttonHeight = 50
         buttonBufferH = 10
         buttonBufferV = 5
-
+        
         self._width = 10+columns*(buttonWidth+2*buttonBufferH)*(1.0/0.95)*(1.0/0.8)
         self._height = self._width*(0.8 if gSmallUI else 1.06)
 
         self._scrollWidth = self._width * 0.8
         self._scrollHeight = self._height * 0.8
         self._scrollPosition = ((self._width-self._scrollWidth)*0.5,(self._height-self._scrollHeight)*0.5)
-
+        #self._scrollPosition = ((self._width-self._scrollWidth)*-0.2,(self._height-self._scrollHeight)*1.3)
+        
         # creates our _rootWidget
         PopupWindow.__init__(self,position=position,size=(self._width,self._height),scale=scale,
                              bgColor=(0.5,0.5,0.5),offset=offset,
                              focusPosition=self._scrollPosition,
                              focusSize=(self._scrollWidth,self._scrollHeight))
 
+        
+        
         self._scrollWidget = bs.scrollWidget(parent=self._rootWidget,size=(self._scrollWidth,self._scrollHeight),
                                              color=(0.55,0.55,0.55),highlight=False,
                                              position=self._scrollPosition)
@@ -2727,7 +2781,9 @@ class IconPicker(PopupWindow):
         self._subHeight = 5+rows*(buttonHeight+2*buttonBufferV) + 100
         self._subContainer = bs.containerWidget(parent=self._scrollWidget,size=(self._subWidth,self._subHeight),
                                                 background=False)
+
         index = 0
+        #maskTexture=bs.getTexture('characterIconMask')
         for y in range(rows):
             for x in range(columns):
                 pos = (x*(buttonWidth+2*buttonBufferH)+buttonBufferH,
@@ -2735,6 +2791,7 @@ class IconPicker(PopupWindow):
                 b = bs.buttonWidget(parent=self._subContainer,buttonType='square',size=(buttonWidth,buttonHeight),
                                     autoSelect=True,
                                     textScale=1.2,
+                                    #label=self._icons[index],
                                     label='',
                                     color=(0.65,0.65,0.65),
                                     onActivateCall=bs.Call(self._selectIcon,self._icons[index]),
@@ -2746,7 +2803,7 @@ class IconPicker(PopupWindow):
                 if self._icons[index] == selectedIcon:
                     bs.containerWidget(edit=self._subContainer,selectedChild=b,visibleChild=b)
                 index += 1
-
+                
                 if index >= count: break
             if index >= count: break
         self._getMoreIconsButton = b = bs.buttonWidget(parent=self._subContainer,
@@ -2764,11 +2821,11 @@ class IconPicker(PopupWindow):
             return
         self._transitionOut()
         StoreWindow(modal=True,showTab='icons',originWidget=self._getMoreIconsButton)
-
+        
     def _selectIcon(self,icon):
         if self._delegate is not None: self._delegate.onIconPickerPick(icon)
         self._transitionOut()
-
+        
     def _transitionOut(self):
         if not self._transitioningOut:
             self._transitioningOut = True
@@ -2777,10 +2834,10 @@ class IconPicker(PopupWindow):
     def onPopupCancel(self):
         bs.playSound(bs.getSound('swish'))
         self._transitionOut()
-
+        
 class UpgradeProfileWindow(Window):
 
-
+        
     def __init__(self,editProfileWindow,transition='inRight'):
 
         self._r = 'editProfileWindow'
@@ -2792,7 +2849,7 @@ class UpgradeProfileWindow(Window):
         self._name = editProfileWindow.getName()
 
         self._editProfileWindow = weakref.ref(editProfileWindow)
-
+        
         topExtra = 15 if gSmallUI else 15
         self._rootWidget = bs.containerWidget(size=(self._width, self._height+topExtra),
                                               toolbarVisibility='MENU_CURRENCY',
@@ -2857,7 +2914,7 @@ class UpgradeProfileWindow(Window):
                               text=bs.Lstr(resource=self._r+'.unavailableText',subs=[('${NAME}',self._name)]),color=(1,0,0))
                 self._status = 'unavailable'
                 bs.buttonWidget(edit=self._upgradeButton,color=(0.4,0.4,0.4),textColor=(0.5,0.5,0.5))
-
+                
     def _onUpgradePress(self):
         if self._status is None:
             # if it appears we don't have enough tickets, offer to buy more
@@ -2889,7 +2946,7 @@ class UpgradeProfileWindow(Window):
             self._upgradeStartTime = time.time()
         else:
             bs.playSound(bs.getSound('error'))
-
+        
     def _update(self):
         try: tStr = str(bsInternal._getAccountTicketCount())
         except Exception: tStr = '?'
@@ -2906,27 +2963,27 @@ class UpgradeProfileWindow(Window):
                 return
             bs.playSound(bs.getSound('gunCocking'))
             editProfileWindow.reloadWindow()
-
-
-
+            
+        
+        
     def _cancel(self):
         # if we recently sent out an upgrade request, disallow canceling for a bit.
         if self._upgradeStartTime is not None and time.time() - self._upgradeStartTime < 10.0:
             bs.playSound(bs.getSound('error'))
             return
         bs.containerWidget(edit=self._rootWidget,transition='outRight')
-
+        
 class EditProfileWindow(Window):
 
     def reloadWindow(self):
         # kinda hacky for now - we just transition out and recreate ourself..
         bs.containerWidget(edit=self._rootWidget,transition='outLeft')
         uiGlobals['mainMenuWindow'] = EditProfileWindow(self.getName(),self._inMainMenu).getRootWidget()
-
+        
     def __init__(self,existingProfile,inMainMenu,transition='inRight'):
 
         import bsMainMenu
-
+        
         self._inMainMenu=inMainMenu
         self._existingProfile = existingProfile
         self._colorPickers = {}
@@ -2954,6 +3011,7 @@ class EditProfileWindow(Window):
         bs.widget(edit=cancelButton,rightWidget=saveButton)
         bs.containerWidget(edit=self._rootWidget,startButton=b)
         t = bs.textWidget(parent=self._rootWidget,position=(self._width*0.5,height-38),size=(0,0),
+                          # text=(R.titleNewText if existingProfile is None else R.titleEditText),
                           text=(bs.Lstr(resource=self._r+'.titleNewText') if existingProfile is None else bs.Lstr(resource=self._r+'.titleEditText')),
                           color=gTitleColor,maxWidth=290,
                           scale=1.0,hAlign="center",vAlign="center")
@@ -2974,9 +3032,9 @@ class EditProfileWindow(Window):
             #     self._icon = self._icon.encode('utf-8') # we expect a utf8 string for now..
         else:
             self._icon = bs.getSpecialChar('logo')
-
+        
         assignedRandomChar = False
-
+        
         # look for existing character choice or pick random one otherwise
         try: iconIndex = self._spazzes.index(profile['character'])
         except Exception:
@@ -3005,7 +3063,7 @@ class EditProfileWindow(Window):
             if c is not None: self._color = c
             h = bsSpaz.appearances[self._spazzes[iconIndex]].defaultHighlight
             if h is not None: self._highlight = h
-
+        
         # assign a random name if they had none..
         if self._name == '':
             names = bsInternal._getRandomNames()
@@ -3016,6 +3074,7 @@ class EditProfileWindow(Window):
 
         if not self._isAccountProfile and not self._global:
             bs.textWidget(parent=self._rootWidget,
+                          # text=R.nameText,
                           text=bs.Lstr(resource=self._r+'.nameText'),
                           position=(200,v-6),size=(0,0),hAlign='right',vAlign='center',color=(1,1,1,0.5),scale=0.9)
 
@@ -3025,7 +3084,7 @@ class EditProfileWindow(Window):
             else: s = '??'
             bs.textWidget(parent=self._rootWidget,position=(self._width*0.5,v-7),size=(0,0),scale=1.2,
                           text=s,maxWidth=270,hAlign='center',vAlign='center')
-            txt = bs.Lstr(resource='editProfileWindow.accountProfileText').evaluate()
+            txt = bs.Lstr(resource='editProfileWindow.accountProfileText')
             bWidth = min(270, bsInternal._getStringWidth(txt,suppressWarning=True) * 0.6)
             bs.textWidget(parent=self._rootWidget,position=(self._width*0.5,v-39),size=(0,0),scale=0.6,color=gInfoTextColor,
                           text=txt,maxWidth=270,hAlign='center',vAlign='center')
@@ -3044,11 +3103,12 @@ class EditProfileWindow(Window):
 
             bs.textWidget(parent=self._rootWidget,hAlign='center',vAlign='center',position=(self._width*0.5-160,v-55-15),size=(0,0),
                           drawController=b,
+                          # text=R.iconText,
                           text=bs.Lstr(resource=self._r+'.iconText'),
                           scale=0.7,color=gTitleColor,maxWidth=120)
 
             self._updateIcon()
-
+            
             bs.textWidget(parent=self._rootWidget,position=(self._width*0.5,v-7),size=(0,0),scale=1.2,
                           text=self._name,maxWidth=240,hAlign='center',vAlign='center')
             # FIXME hard coded strings are bad
@@ -3064,6 +3124,7 @@ class EditProfileWindow(Window):
             self._textField = bs.textWidget(parent=self._rootWidget,position=(220,v-30),size=(265,40),
                                             text=self._name,hAlign='left',
                                             vAlign='center',maxChars=16,
+                                            # description=R.nameDescriptionText,
                                             description=bs.Lstr(resource=self._r+'.nameDescriptionText'),
                                             autoSelect=True,
                                             editable=True,padding=4,
@@ -3087,7 +3148,7 @@ class EditProfileWindow(Window):
 
         self._updateClippedName()
         self._clippedNameTimer = bs.Timer(333,bs.WeakCall(self._updateClippedName),timeType='real',repeat=True)
-
+                                          
         v -= spacing * 3.0
 
         h = 256
@@ -3102,6 +3163,7 @@ class EditProfileWindow(Window):
         bs.buttonWidget(edit=self._colorButton,onActivateCall=bs.WeakCall(self._makePicker,'color',origin))
         bs.textWidget(parent=self._rootWidget,hAlign='center',vAlign='center',position=(self._width*0.5-bOffs,v-65),size=(0,0),
                       drawController=b,
+                      # text=R.colorText,
                       text=bs.Lstr(resource=self._r+'.colorText'),
                       scale=0.7,color=gTitleColor,maxWidth=120)
 
@@ -3111,9 +3173,10 @@ class EditProfileWindow(Window):
             bs.containerWidget(edit=self._rootWidget,selectedChild=self._textField)
         bs.textWidget(parent=self._rootWidget,hAlign='center',vAlign='center',position=(self._width*0.5,v-80),size=(0,0),
                       drawController=b,
+                      # text=R.characterText,
                       text=bs.Lstr(resource=self._r+'.characterText'),
                       scale=0.7,color=gTitleColor,maxWidth=130)
-
+        
         y = v-60
         self._highlightButton = b = bs.buttonWidget(parent=self._rootWidget,autoSelect=True,position=(self._width*0.5+bOffs-bSize*0.5,v-50),
                                                     upWidget=self._upgradeButton if self._upgradeButton is not None else self._accountTypeInfoButton,
@@ -3124,11 +3187,12 @@ class EditProfileWindow(Window):
             bs.widget(edit=saveButton,downWidget=self._textField)
             bs.widget(edit=self._colorButton,upWidget=self._textField)
         bs.widget(edit=self._accountTypeInfoButton,downWidget=self._characterButton)
-
+        
         origin = self._highlightButton.getScreenSpaceCenter()
         bs.buttonWidget(edit=self._highlightButton,onActivateCall=bs.WeakCall(self._makePicker,'highlight',origin))
         bs.textWidget(parent=self._rootWidget,hAlign='center',vAlign='center',position=(self._width*0.5+bOffs,v-65),size=(0,0),
                       drawController=b,
+                      # text=R.highlightText,
                       text=bs.Lstr(resource=self._r+'.highlightText'),
                       scale=0.7,color=gTitleColor,maxWidth=120)
         self._updateCharacter()
@@ -3139,7 +3203,7 @@ class EditProfileWindow(Window):
             return
 
         UpgradeProfileWindow(self)
-
+        
     def showAccountProfileInfo(self):
         iconsStr = ' '.join([bs.getSpecialChar(n) for n in ['googlePlusLogo','gameCenterLogo','gameCircleLogo','ouyaLogo','localAccount','alibabaLogo','oculusLogo']])
         txt = bs.Lstr(resource='editProfileWindow.accountProfileInfoText',subs=[('${ICONS}',iconsStr)])
@@ -3152,8 +3216,8 @@ class EditProfileWindow(Window):
     def showGlobalProfileInfo(self):
         txt = bs.Lstr(resource='editProfileWindow.globalProfileInfoText')
         ConfirmWindow(txt, cancelButton=False, width=600, height=250, originWidget=self._accountTypeInfoButton)
-
-
+        
+        
     def refreshCharacters(self):
         self._spazzes = bsSpaz.getAppearances()
         self._spazzes.sort()
@@ -3163,13 +3227,13 @@ class EditProfileWindow(Window):
     def onIconPickerPick(self,icon):
         self._icon = icon
         self._updateIcon()
-
+        
     def onCharacterPickerPick(self,character):
         if not self._rootWidget.exists(): return
         self.refreshCharacters() # the player could have bought a new one while the picker was up..
-        self._iconIndex = self._spazzes.index(character) if character in self._spazzes else 0
+        self._iconIndex = self._spazzes.index(character)
         self._updateCharacter()
-
+        
     def _onCharacterPress(self):
         picker = CharacterPicker(parent=self._rootWidget,position=self._characterButton.getScreenSpaceCenter(),
                                  selectedCharacter=self._spazzes[self._iconIndex],delegate=self,tintColor=self._color,tint2Color=self._highlight)
@@ -3181,7 +3245,7 @@ class EditProfileWindow(Window):
                             delegate=self,
                             tintColor=self._color,
                             tint2Color=self._highlight)
-
+        
     def _makePicker(self,pickerType,origin):
         if pickerType == 'color': initialColor = self._color
         elif pickerType == 'highlight': initialColor = self._highlight
@@ -3203,7 +3267,7 @@ class EditProfileWindow(Window):
         self._highlight = color
         if self._highlightButton.exists():
             bs.buttonWidget(edit=self._highlightButton,color=color)
-
+        
     def colorPickerClosing(self,picker):
         if not self._rootWidget.exists():
             return
@@ -3235,7 +3299,7 @@ class EditProfileWindow(Window):
             bs.textWidget(edit=self._clippedNameText,text=bs.Lstr(resource='inGameClippedNameText',subs=[('${NAME}',name[:10]+'...')]))
         else:
             bs.textWidget(edit=self._clippedNameText,text='')
-
+        
     def _updateCharacter(self,change=0):
         self._iconIndex = (self._iconIndex + change)%len(self._spazzes)
         if self._characterButton.exists():
@@ -3248,7 +3312,7 @@ class EditProfileWindow(Window):
     def _updateIcon(self):
         if self._iconButtonLabel.exists():
             bs.textWidget(edit=self._iconButtonLabel,text=self._icon)
-
+        
     def getName(self):
         if self._isAccountProfile:
             newName = '__account__'
@@ -3257,16 +3321,16 @@ class EditProfileWindow(Window):
         else:
             newName = bs.textWidget(query=self._textField)
         return newName
-
+    
     def save(self, transitionOut=True):
         bsConfig = bs.getConfig()
         newName = self.getName().strip()
-
+        
         if len(newName) == 0:
             bs.screenMessage(bs.Lstr(resource='nameNotEmptyText'))
             bs.playSound(bs.getSound('error'))
             return False
-
+        
         if transitionOut:
             bs.playSound(bs.getSound('gunCocking'))
 
@@ -3298,7 +3362,7 @@ class PlayerProfilesWindow(Window):
 
     def __init__(self,transition='inRight',inMainMenu=True,
                  selectedProfile=None,originWidget=None):
-
+        
         self._inMainMenu = inMainMenu
         if self._inMainMenu:
             backLabel = bs.Lstr(resource='backText')
@@ -3312,7 +3376,7 @@ class PlayerProfilesWindow(Window):
         # if we're being called up standalone, handle pause/resume ourself
         if not self._inMainMenu:
             pause()
-
+            
         # if they provided an origin-widget, scale up from that
         if originWidget is not None:
             self._transitionOut = 'outScale'
@@ -3326,7 +3390,7 @@ class PlayerProfilesWindow(Window):
 
         # ensure we've got an account-profile in cases where we're signed in
         bsUtils._ensureHaveAccountPlayerProfile()
-
+        
         topExtra = 20 if gSmallUI else 0
         self._rootWidget = bs.containerWidget(size=(self._width,self._height+topExtra),transition=transition,
                                               scaleOriginStackOffset=scaleOrigin,
@@ -3340,13 +3404,14 @@ class PlayerProfilesWindow(Window):
         bs.containerWidget(edit=self._rootWidget,cancelButton=b)
 
         t = bs.textWidget(parent=self._rootWidget,position=(self._width*0.5,self._height-36),size=(0,0),
+                          # text=R.titleText,
                           text=bs.Lstr(resource=self._r+'.titleText'),
                           maxWidth=300,color=gTitleColor,scale=0.9,hAlign="center",vAlign="center")
 
         if self._inMainMenu and gDoAndroidNav:
             bs.buttonWidget(edit=b,buttonType='backSmall',size=(60,60),label=bs.getSpecialChar('back'))
             # bs.textWidget(edit=t,hAlign='left',position=(113,self._height-36))
-
+        
         scrollHeight = self._height - 140
         self._scrollWidth = self._width-188
 
@@ -3367,6 +3432,7 @@ class PlayerProfilesWindow(Window):
                                               autoSelect=True,
                                               textColor=(0.75,0.7,0.8),
                                               textScale=0.7,
+                                              # label=R.newButtonText
                                               label=bs.Lstr(resource=self._r+'.newButtonText')
         )
         v -= 70.0*s
@@ -3377,6 +3443,7 @@ class PlayerProfilesWindow(Window):
                                                autoSelect=True,
                                                textColor=(0.75,0.7,0.8),
                                                textScale=0.7,
+                                               # label=R.editButtonText
                                                label=bs.Lstr(resource=self._r+'.editButtonText')
         )
         v -= 70.0*s
@@ -3387,20 +3454,22 @@ class PlayerProfilesWindow(Window):
                                                  autoSelect=True,
                                                  textColor=(0.75,0.7,0.8),
                                                  textScale=0.7,
+                                                 # label=R.deleteButtonText
                                                  label=bs.Lstr(resource=self._r+'.deleteButtonText')
         )
 
 
         v = self._height - 87
 
-
+        
         # t = bs.textWidget(parent=self._rootWidget,position=(140,self._height-69),size=(0,0),
         #                   text=R.explanationText,
         #                   color=gInfoTextColor,maxWidth=self._scrollWidth,scale=0.6,hAlign="left",vAlign="center")
         t = bs.textWidget(parent=self._rootWidget,position=(self._width*0.5,self._height-71),size=(0,0),
+                          # text=R.explanationText,
                           text=bs.Lstr(resource=self._r+'.explanationText'),
                           color=gInfoTextColor,maxWidth=self._width*0.83,scale=0.6,hAlign="center",vAlign="center")
-
+        
         self._scrollWidget = bs.scrollWidget(parent=self._rootWidget,highlight=False,
                                              position=(140,v-scrollHeight),size=(self._scrollWidth,scrollHeight))
         bs.widget(edit=self._scrollWidget,autoSelect=True,leftWidget=self._newButton)
@@ -3425,7 +3494,7 @@ class PlayerProfilesWindow(Window):
             bs.screenMessage(bs.Lstr(translate=('serverResponses','Max number of profiles reached.')),color=(1,0,0))
             bs.playSound(bs.getSound('error'))
             return
-
+        
         self._saveState()
         bs.containerWidget(edit=self._rootWidget,transition='outLeft')
         uiGlobals['mainMenuWindow'] = EditProfileWindow(existingProfile=None,inMainMenu=self._inMainMenu).getRootWidget()
@@ -3443,14 +3512,14 @@ class PlayerProfilesWindow(Window):
         ConfirmWindow(bs.Lstr(resource=self._r+'.deleteConfirmText',subs=[('${PROFILE}',self._selectedProfile)]),self._doDeleteProfile,350)
 
     def _doDeleteProfile(self):
-
+        
         # try: del bs.getConfig()['Player Profiles'][self._selectedProfile]
         # except Exception: pass
         # bs.writeConfig()
         bsInternal._addTransaction({'type':'REMOVE_PLAYER_PROFILE',
                                     'name':self._selectedProfile})
         bsInternal._runTransactions()
-
+        
         bs.playSound(bs.getSound('shieldDown'))
         self._refresh()
         bs.containerWidget(edit=self._rootWidget,selectedChild=self._scrollWidget) # select profile list
@@ -3519,10 +3588,10 @@ class PlayerProfilesWindow(Window):
                 widgetToSelect = w
 
             index += 1
-
+            
         if widgetToSelect is not None:
             bs.columnWidget(edit=self._columnWidget,selectedChild=widgetToSelect,visibleChild=widgetToSelect)
-
+            
         # if there's a team-chooser in existence, tell it the profile-list has probably changed
         session = bsInternal._getForegroundHostSession()
         if session is not None: session.handleMessage(bsGame.PlayerProfilesChangedMessage())
@@ -3556,7 +3625,7 @@ class PlayerProfilesWindow(Window):
         except Exception:
             bs.printException('error restoring state for',self.__class__)
 
-
+        
 class ConfigureWiiRemotesWindow(Window):
 
     def __init__(self):
@@ -3582,7 +3651,7 @@ class ConfigureWiiRemotesWindow(Window):
         if gDoAndroidNav:
             bs.buttonWidget(edit=b,buttonType='backSmall',size=(60,60),label=bs.getSpecialChar('back'))
             # bs.textWidget(edit=t,hAlign='left',position=(110,height-26))
-
+        
         v = height - 60
         v -= spacing
         t = bs.textWidget(parent=self._rootWidget,position=(width*0.5,v-80),size=(0,0),
@@ -3754,7 +3823,7 @@ class ConnectPS3ControllersWindow(Window):
         if gDoAndroidNav:
             bs.buttonWidget(edit=b,buttonType='backSmall',size=(60,60),label=bs.getSpecialChar('back'))
             # bs.textWidget(edit=t,hAlign='left',position=(90,height-48))
-
+        
         v = height - 90
         v -= spacing
 
@@ -3783,7 +3852,7 @@ class ConnectPS3ControllersWindow(Window):
                                   scale=1.0,
                                   text=txts[1].strip(),
                                   hAlign="center",vAlign="center")
-
+            
             bs.buttonWidget(parent=self._rootWidget,position=(225,v-176),size=(300,40),
                             label=bs.Lstr(resource=self._r+'.pairingTutorialText'),
                             autoSelect=True,
@@ -3815,7 +3884,7 @@ class Connect360ControllersWindow(Window):
         if gDoAndroidNav:
             bs.buttonWidget(edit=b,buttonType='backSmall',size=(60,60),label=bs.getSpecialChar('back'))
             # bs.textWidget(edit=t,hAlign='left',position=(90,height-40))
-
+        
         v = height - 70
         v -= spacing
 
@@ -3842,8 +3911,7 @@ class Connect360ControllersWindow(Window):
                                 label=bs.Lstr(resource=self._r+'.getDriverText'),
                                 autoSelect=True,
                                 #onActivateCall=bs.Call(bs.openURL,'http://tattiebogle.net/index.php/ProjectRoot/Xbox360Controller/OsxDriver'))
-                                #onActivateCall=bs.Call(bs.openURL,'https://github.com/d235j/360Controller/releases'))
-                                onActivateCall=bs.Call(bs.openURL,'https://github.com/360Controller/360Controller/releases'))
+                                onActivateCall=bs.Call(bs.openURL,'https://github.com/d235j/360Controller/releases'))
             bs.containerWidget(edit=self._rootWidget,startButton=b)
 
             v -= 60
@@ -3865,15 +3933,15 @@ class QRCodeWindow(PopupWindow):
     def __init__(self, originWidget, qrTex):
 
         position=originWidget.getScreenSpaceCenter()
-
+        
         scale = 2.3 if gSmallUI else 1.65 if gMedUI else 1.23
         self._transitioningOut = False
-
+        
         self._width = 450
         self._height = 400
 
         bgColor = (0.5,0.4,0.6)
-
+        
         PopupWindow.__init__(self,position=position,size=(self._width,self._height),
                              scale=scale,bgColor=bgColor)
 
@@ -3886,10 +3954,10 @@ class QRCodeWindow(PopupWindow):
 
         bs.imageWidget(parent=self._rootWidget, position=(self._width*0.5-150, self._height*0.5-150), size=(300, 300),
                        texture=qrTex)
-
+        
     def _onCancelPress(self):
         self._transitionOut()
-
+        
     def _transitionOut(self):
         if not self._transitioningOut:
             self._transitioningOut = True
@@ -3898,13 +3966,13 @@ class QRCodeWindow(PopupWindow):
     def onPopupCancel(self):
         bs.playSound(bs.getSound('swish'))
         self._transitionOut()
-
+        
 class ConnectMobileDevicesWindow(Window):
 
     def __init__(self):
 
         env = bs.getEnvironment()
-
+        
         # this is different on ali..
         doAli = True if (env['platform'] == 'android' and env['subplatform'] == 'alibaba') else False
         # doAli = True
@@ -3956,7 +4024,7 @@ class ConnectMobileDevicesWindow(Window):
                                 textScale=1.1,
                                 autoSelect=True)
             bs.buttonWidget(edit=b, onActivateCall=bs.Call(QRCodeWindow, b, bs.getTexture('aliBSRemoteIOSQR')))
-
+            
             pass
             # bs.imageWidget(parent=self._rootWidget,position=(width*0.5-150,height*0.5-165),size=(300,300),
             #                texture=bs.getTexture('aliControllerQR'))
@@ -3975,7 +4043,7 @@ class ConnectMobileDevicesWindow(Window):
                               text=bs.Lstr(resource=self._r+'.explanationText',subs=[('${APP_NAME}',bs.Lstr(resource='titleText')),('${REMOTE_APP_NAME}',bsUtils._getRemoteAppName())]),
                               maxHeight=100,
                               hAlign="center",vAlign="center")
-            v -= 90
+            v -= 100
             bWidth = 200
 
             # hmm the itms:// version doesnt bounce through safari but is kinda apple-specific-ish
@@ -3988,7 +4056,7 @@ class ConnectMobileDevicesWindow(Window):
                                   text='bombsquadgame.com/remote',
                                   maxWidth=width*0.95,maxHeight=60,
                                   hAlign="center",vAlign="center")
-                v -= 30
+                v -= 40
                 pass
             else:
                 if bsInternal._isRunningOnFireTV():
@@ -4034,17 +4102,6 @@ class ConnectMobileDevicesWindow(Window):
                               maxHeight=height*0.19,
                               hAlign="center",vAlign="center")
 
-            bs.checkBoxWidget(parent=self._rootWidget,position=(width*0.5-150,v-116),size=(300,30),maxWidth=300,scale=0.8,
-                              value=not bsInternal._getSetting('Enable Remote App'),autoSelect=True,
-                              text=bs.Lstr(resource='disableRemoteAppConnectionsText'),
-                              onValueChangeCall=self._onCheckChanged)
-
-    def _onCheckChanged(self, value):
-        config = bs.getConfig()
-        config['Enable Remote App'] = not value
-        bs.writeConfig()
-        bs.applySettings()
-
     def _back(self):
         bs.containerWidget(edit=self._rootWidget,transition='outRight')
         uiGlobals['mainMenuWindow'] = ControllersWindow(transition='inLeft').getRootWidget()
@@ -4065,17 +4122,19 @@ class ConfigGamePadWindow(Window):
         # lets not have anything selected by default; its misleading looking for the controller getting configured..
         bs.containerWidget(edit=self._rootWidget,cancelButton=b,selectedChild=0)
         t = bs.textWidget(parent=self._rootWidget,position=(20,height-50),size=(width,25),
+                          #text=R.titleText,
                           text=bs.Lstr(resource=self._r+'.titleText'),
                           maxWidth=250,color=gTitleColor,hAlign="center",vAlign="center")
 
         if gDoAndroidNav:
             bs.buttonWidget(edit=b,buttonType='backSmall',size=(60,60),label=bs.getSpecialChar('back'))
             # bs.textWidget(edit=t,hAlign='left',position=(83,height-50))
-
+        
         v = height - 60
         v -= spacing
         t = bs.textWidget(parent=self._rootWidget,position=(15,v),size=(width-30,30),
                           scale=0.8,
+                          # text=R.pressAnyButtonText,
                           text=bs.Lstr(resource=self._r+'.pressAnyButtonText'),
                           maxWidth=width*0.95,color=gInfoTextColor,hAlign="center",vAlign="top")
         v -= spacing * 1.24
@@ -4083,6 +4142,7 @@ class ConfigGamePadWindow(Window):
         if 'android' in ua and not bsInternal._isOuyaBuild() and not bsInternal._isRunningOnFireTV():
             t = bs.textWidget(parent=self._rootWidget,position=(15,v),size=(width-30,30),
                               scale=0.46,
+                              # text=R.androidNoteText,
                               text=bs.Lstr(resource=self._r+'.androidNoteText'),
                               maxWidth=width*0.95,
                               color=(0.7,0.9,0.7,0.5),
@@ -4128,7 +4188,7 @@ class ConfigTouchscreenWindow(Window):
         if gDoAndroidNav:
             bs.buttonWidget(edit=b,buttonType='backSmall',size=(60,60),label=bs.getSpecialChar('back'))
             # bs.textWidget(edit=t,hAlign='left',position=(110,self._height-49))
-
+        
 
         self._scrollWidth = self._width - 100
         self._scrollHeight = self._height - 110
@@ -4152,7 +4212,7 @@ class ConfigTouchscreenWindow(Window):
         #children = bs.getWidgetChildren(self._rootWidget)
         children = self._subContainer.getChildren()
         for c in children: c.delete()
-
+        
         h = 30
         v = self._subHeight - 85
 
@@ -4182,7 +4242,7 @@ class ConfigTouchscreenWindow(Window):
         configTextBox(parent=self._subContainer,position=(h,v),xOffset=65,name="Touch Controls Scale Movement",
                       displayName=bs.Lstr(resource=self._r+'.movementControlScaleText'),
                       type="float",changeSound=False,minVal=0.1,maxVal=4.0,increment=0.1)
-
+        
         v -= 50
 
         try: curVal = bs.getConfig()['Touch Action Control Type']
@@ -4208,7 +4268,7 @@ class ConfigTouchscreenWindow(Window):
         configCheckBox(parent=self._subContainer,position=(h,v),
                        size=(400,30),maxWidth=400,name="Touch Controls Swipe Hidden",
                        displayName=bs.Lstr(resource=self._r+'.swipeControlsHiddenText'))
-
+        
         v -= 65
 
         b = bs.buttonWidget(parent=self._subContainer,position=(self._subWidth*0.5-70,v),size=(170,60),
@@ -4219,7 +4279,7 @@ class ConfigTouchscreenWindow(Window):
                           text=bs.Lstr(resource=self._r+'.dragControlsText'),
                           maxWidth=self._width*0.8,
                           scale=0.65,color=(1,1,1,0.4))
-
+        
 
     def _actionsChanged(self,v):
         bs.getConfig()['Touch Action Control Type'] = v
@@ -4298,7 +4358,7 @@ class AwaitGamePadInputWindow(Window):
         if message is None:
             print 'AwaitGamePadInputWindow message is None!'
             message = 'Press any button...' # shouldnt get here
-
+            
         self._callback = callback
         self._input = gamePad
         self._captureButton = button
@@ -4326,7 +4386,7 @@ class AwaitGamePadInputWindow(Window):
         bsInternal._releaseGamePadInput()
         if self._rootWidget.exists():
             bs.containerWidget(edit=self._rootWidget,transition='outScale')
-
+        
     def _eventCallback(self,event):
         match = (event["inputDevice"] == self._input)
 
@@ -4350,7 +4410,7 @@ class AwaitGamePadInputWindow(Window):
             bs.playSound(bs.getSound('error'))
             self.die()
 
-
+        
 class AwaitKeyboardInputWindow(Window):
 
     def __init__(self,button,ui,settings):
@@ -4376,7 +4436,7 @@ class AwaitKeyboardInputWindow(Window):
     def _die(self):
         self._decrementTimer = None # this strong-refs us; killing it allow us to die now
         bs.containerWidget(edit=self._rootWidget,transition='outLeft')
-
+        
     def _buttonCallback(self,event):
         self._settings[self._captureButton] = event["button"]
         if event['type'] == 'BUTTONDOWN':
@@ -4401,9 +4461,9 @@ def getControllerValue(c,button,exceptionOnUnknown=False):
     ua = env['userAgentString']
     platform = env['platform']
     subplatform = env['subplatform']
-
+    
     bsConfig = bs.getConfig()
-
+    
     if (bsConfig.has_key("Controllers")):
         jsconfig = bsConfig["Controllers"]
         if (jsconfig.has_key(name)):
@@ -4420,10 +4480,10 @@ def getControllerValue(c,button,exceptionOnUnknown=False):
     # print 'TEMP RETURNING NO DEFAULTS'
     # if exceptionOnUnknown: raise Exception()
     # else: return -1
-
+        
 
     if platform == 'windows':
-
+        
         # XInput (hopefully this mapping is consistent?...)
         if name.startswith('XInput Controller'):
             try: return {'triggerRun2': 3, 'unassignedButtonsRun': False, 'buttonPickUp': 4, 'buttonBomb': 2, 'buttonStart': 8, 'buttonIgnored2': 7,
@@ -4435,7 +4495,7 @@ def getControllerValue(c,button,exceptionOnUnknown=False):
             try: return {'triggerRun2': 4, 'unassignedButtonsRun': False, 'buttonPickUp': 4, 'buttonBomb': 3, 'buttonJump': 2,
                          'buttonStart': 10, 'buttonPunch': 1, 'buttonRun2': 5, 'buttonRun1': 6, 'triggerRun1': 5}[button]
             except Exception: return -1
-
+            
     # look for some exact types..
     if bsInternal._isRunningOnFireTV():
         if name in ['Thunder','Amazon Fire Game Controller']:
@@ -4550,7 +4610,7 @@ def getControllerValue(c,button,exceptionOnUnknown=False):
                          'buttonPunch': 100, 'buttonRun2': 104, 'buttonRun1': 103, 'triggerRun1': 24,
                          'buttonLeft':22, 'buttonRight':23, 'buttonUp':20, 'buttonDown':21, 'buttonVRReorient':108}[button]
             except Exception: return -1
-
+        
         # adt-1 gamepad (use funky 'mode' button for start)
         if name == 'Gamepad':
             try: return {'triggerRun2': 19, 'unassignedButtonsRun': False, 'buttonPickUp': 101,
@@ -4605,7 +4665,7 @@ def getControllerValue(c,button,exceptionOnUnknown=False):
                          'buttonDown': 21, 'startButtonActivatesDefaultWidget': False,'uiOnly': True, 'buttonIgnored':142, 'buttonIgnored2':143}[button]
             except Exception: return -1
 
-
+            
     # default keyboard vals across platforms..
     if name == 'Keyboard' and uniqueID == '#2':
         try: return  {'buttonJump':258,'buttonPunch':257,'buttonBomb':262,'buttonPickUp':261,'buttonUp':273,'buttonDown':274,'buttonLeft':276,'buttonRight':275,'buttonStart':263}[button]
@@ -4843,7 +4903,7 @@ class GamePadConfigWindow(Window):
                 bs.widget(edit=saveButton,leftWidget=cancelButton)
         except Exception:
             bs.printException('error wiring gamepad config window')
-
+            
     def _doAdvanced(self):
 
         class _AdvancedWindow(Window):
@@ -4885,12 +4945,12 @@ class GamePadConfigWindow(Window):
                 bs.containerWidget(edit=self._scrollWidget,claimsLeftRight=True,claimsTab=True,selectionLoopToParent=True)
                 bs.containerWidget(edit=self._subContainer,claimsLeftRight=True,claimsTab=True,selectionLoopToParent=True)
                 bs.containerWidget(edit=self._rootWidget,selectedChild=self._scrollWidget)
-
+                
                 h = 30
                 v = self._subHeight - 10
 
                 h2 = h + 12
-
+                
                 # dont allow secondary joysticks to handle unassigned buttons
                 if not self._parentWindow._isSecondary:
                     v -= 40
@@ -4912,7 +4972,7 @@ class GamePadConfigWindow(Window):
                               scale=0.7,hAlign='center',vAlign='center')
 
                 v -= 85
-
+                
                 self._captureButton(pos=(h2,v),name=bs.Lstr(resource=self._r+'.runTrigger1Text'),
                                     control='triggerRun1'+self._parentWindow._ext,
                                     message=bs.Lstr(resource=self._r+'.pressAnyAnalogTriggerText'))
@@ -4925,7 +4985,7 @@ class GamePadConfigWindow(Window):
                 if env['vrMode']:
                     v -= 50
                     self._captureButton(pos=(h2,v),name=bs.Lstr(resource=self._r+'.vrReorientButtonText'),control='buttonVRReorient'+self._parentWindow._ext)
-
+                    
                 v -= 60
                 self._captureButton(pos=(h2,v),name=bs.Lstr(resource=self._r+'.extraStartButtonText'),control='buttonStart2'+self._parentWindow._ext)
                 v -= 60
@@ -4974,7 +5034,7 @@ class GamePadConfigWindow(Window):
                               text=bs.Lstr(resource=self._r+'.ignoreCompletelyDescriptionText'),
                               color=(0.7,1,0.7,0.6),maxWidth=self._subWidth*0.8,
                               scale=0.7,hAlign='center',vAlign='center')
-
+                
                 v -= 80
 
                 c1 = bs.checkBoxWidget(parent=self._subContainer,autoSelect=True,position=(h+50,v),size=(400,30),
@@ -4991,13 +5051,13 @@ class GamePadConfigWindow(Window):
                                                   position=(h+40,v),minVal=0,maxVal=10.0,increment=0.1,xOffset=100)
                 bs.widget(edit=buttons[0],leftWidget=c1,upWidget=c1)
                 bs.widget(edit=c1,rightWidget=buttons[0],downWidget=buttons[0])
-
+                
                 bs.textWidget(parent=self._subContainer,position=(self._subWidth*0.5,v-12),size=(0,0),
                               text=bs.Lstr(resource=self._r+'.analogStickDeadZoneDescriptionText'),
                               color=(0.7,1,0.7,0.6),maxWidth=self._subWidth*0.8,
                               scale=0.7,hAlign='center',vAlign='center')
                 v -= 100
-
+                
                 # child joysticks cant have child joysticks.. that's just crazy talk
                 if not self._parentWindow._isSecondary:
                     bs.buttonWidget(parent=self._subContainer,autoSelect=True,label=bs.Lstr(resource=self._r+'.twoInOneSetupText'),
@@ -5137,7 +5197,7 @@ class GamePadConfigWindow(Window):
             if 'ignoreCompletely' in self._settings:
                 del(self._settings['ignoreCompletely']) # clear since this is default
         else: self._settings['ignoreCompletely'] = True
-
+        
     def _getAutoRecalibrateAnalogStickValue(self):
         if 'autoRecalibrateAnalogStick' in self._settings: return self._settings['autoRecalibrateAnalogStick']
         else: return False
@@ -5168,7 +5228,7 @@ class GamePadConfigWindow(Window):
         if control in ['triggerRun1'+self._ext,'triggerRun2'+self._ext]:
             if control in self._settings: return self._input.getAxisName(self._settings[control])
             else: return bs.Lstr(resource=self._r+'.unsetText')
-
+            
         # dead-zone
         if control == 'analogStickDeadZone'+self._ext:
             if control in self._settings: return str(self._settings[control])
@@ -5276,7 +5336,7 @@ class GamePadConfigWindow(Window):
 
         bs.realTimer(0,foo)
         return b
-
+    
     def _cancel(self):
         bs.containerWidget(edit=self._rootWidget,transition=self._transitionOut)
         if self._isMainMenu:
@@ -5306,7 +5366,7 @@ class GamePadConfigWindow(Window):
             bs.playSound(bs.getSound('gunCocking'))
         else:
             bs.playSound(bs.getSound('error'))
-
+            
         if self._isMainMenu:
             uiGlobals['mainMenuWindow'] = ControllersWindow(transition='inLeft').getRootWidget()
         global gCanAskToConfigGamePads
@@ -5359,7 +5419,7 @@ class ConfigKeyboardWindow(Window):
 
         bs.widget(edit=cancelButton,rightWidget=saveButton)
         bs.widget(edit=saveButton,leftWidget=cancelButton)
-
+        
         v = self._height - 54
         t = bs.textWidget(parent=self._rootWidget,
                           position=(self._width*0.5,v+15),
@@ -5531,6 +5591,7 @@ class EditSoundtrackWindow(Window):
             self._lastEditedSongType = None
 
         bs.textWidget(parent=self._rootWidget,
+                      # text=R.nameText,
                       text=bs.Lstr(resource=self._r+'.nameText'),
                       maxWidth=80,scale=0.8,
                       position=(105,v+19),color=(0.8,0.8,0.8,0.5),size=(0,0),hAlign='right',vAlign='center')
@@ -5552,7 +5613,7 @@ class EditSoundtrackWindow(Window):
                                         autoSelect=True,
                                         editable=True,padding=4,
                                         onReturnPressCall=self._doItWithSound)
-
+        
         scrollHeight = self._height - 180
         self._scrollWidget = scrollWidget = bs.scrollWidget(parent=self._rootWidget,highlight=False,position=(40,v-(scrollHeight+10)),size=(self._width-80,scrollHeight),simpleCullingV=10)
         bs.widget(edit=self._textField,downWidget=self._scrollWidget)
@@ -5570,20 +5631,29 @@ class EditSoundtrackWindow(Window):
 
         bs.widget(edit=self._textField,upWidget=cancelButton)
         bs.widget(edit=cancelButton,downWidget=self._textField)
-
+        
     def _refresh(self):
         for w in self._col.getChildren():
             w.delete()
-
+            
         types = ['Menu',
-                 'CharSelect',
+                 'CharSelectCOOP',
+                 'CharSelectFFA',
+                 'CharSelectTEAMS',
+                 'Last Stand',
                  'ToTheDeath',
                  'Onslaught',
                  'Keep Away',
                  'Race',
                  'Epic Race',
+                 'Nightmare',
+                 'Marathon',
                  'ForwardMarch',
                  'FlagCatcher',
+                 'FlagSlip',
+                 'FlagDropper',
+                 'FlagBomber',
+                 'FlagRunner',
                  'Survival',
                  'Epic',
                  'Hockey',
@@ -5592,6 +5662,8 @@ class EditSoundtrackWindow(Window):
                  'Scary',
                  'Marching',
                  'GrandRomp',
+                 'Where Eagles Dare',
+                 'Toilet',
                  'Chosen One',
                  'Scores',
                  'Victory',
@@ -5603,7 +5675,7 @@ class EditSoundtrackWindow(Window):
 
         bColor = (0.6,0.53,0.63)
         bTextColor = (0.75,0.7,0.8)
-
+        
         for index,songType in enumerate(types):
             r = bs.rowWidget(parent=self._col,size=(self._width-40,40))
             bs.containerWidget(edit=r,claimsLeftRight=True,claimsTab=True,selectionLoopToParent=True)
@@ -5634,7 +5706,7 @@ class EditSoundtrackWindow(Window):
                 bs.containerWidget(edit=self._col,selectedChild=r,visibleChild=r)
                 bs.containerWidget(edit=self._scrollWidget,selectedChild=self._col,visibleChild=self._col)
                 bs.containerWidget(edit=self._rootWidget,selectedChild=self._scrollWidget,visibleChild=self._scrollWidget)
-
+                
             if prevTypeButton is not None: bs.widget(edit=prevTypeButton,downWidget=b)
             prevTypeButton = b
             t = bs.textWidget(parent=r,size=(10,32),text='') # spacing..
@@ -5666,7 +5738,7 @@ class EditSoundtrackWindow(Window):
             soundtrack[musicType] = entry
 
         uiGlobals['mainMenuWindow'] = cls(state,transition='inLeft').getRootWidget()
-
+        
     def _getEntry(self,songType,entry,selectionTargetName):
         if selectionTargetName != '':
             selectionTargetName = "'"+selectionTargetName+"'"
@@ -5752,11 +5824,11 @@ class EditSoundtrackWindow(Window):
             del bsConfig['Soundtracks'][self._existingSoundtrackName]
         bsConfig['Soundtracks'][newName] = self._soundtrack
         bsConfig['Soundtrack'] = newName
-
+        
         bs.writeConfig()
         bs.playSound(bs.getSound('gunCocking'))
         bs.containerWidget(edit=self._rootWidget,transition='outRight')
-
+        
         # resets music back to normal
         bsUtils.setMusicPlayMode('regular',forceRestart=True)
 
@@ -5781,7 +5853,7 @@ class GetSoundtrackEntryTypeWindow(Window):
         self._width = 580
         self._height = 220
         spacing = 80
-
+        
         doDefault = True
         doITunesPlaylist = bsUtils._isSoundtrackEntryTypeSupported('iTunesPlaylist')
         doMusicFile = bsUtils._isSoundtrackEntryTypeSupported('musicFile')
@@ -5884,7 +5956,7 @@ class GetSoundtrackEntryTypeWindow(Window):
     def _onDefaultPress(self):
         bs.containerWidget(edit=self._rootWidget,transition='outRight')
         self._callback(None)
-
+        
     def _onCancelPress(self):
         bs.containerWidget(edit=self._rootWidget,transition='outRight')
         self._callback(self._currentEntry)
@@ -5906,6 +5978,7 @@ class GetMacITunesPlaylistWindow(Window):
                             label=bs.Lstr(resource='cancelText'),onActivateCall=self._back)
         bs.containerWidget(edit=self._rootWidget,cancelButton=b)
         t = bs.textWidget(parent=self._rootWidget,position=(20,self._height-54),size=(self._width,25),
+                          # text=R.selectAPlaylistText,
                           text=bs.Lstr(resource=self._r+'.selectAPlaylistText'),
                           color=gTitleColor,
                           hAlign="center",vAlign="center",maxWidth=200)
@@ -5915,7 +5988,7 @@ class GetMacITunesPlaylistWindow(Window):
         # so selection loops through everything and doesn't get stuck in sub-containers
         bs.containerWidget(edit=self._scrollWidget,claimsLeftRight=True,claimsTab=True,selectionLoopToParent=True)
         bs.containerWidget(edit=self._column,claimsLeftRight=True,claimsTab=True,selectionLoopToParent=True)
-
+        
         bs.textWidget(parent=self._column,size=(self._width-80,22),
                       text=bs.Lstr(resource=self._r+'.fetchingITunesText'),
                       color=(0.6,0.9,0.6,1.0),scale=0.8)
@@ -5979,13 +6052,13 @@ class SoundtracksWindow(Window):
             if gDoAndroidNav:
                 bs.buttonWidget(edit=self._backButton,buttonType='backSmall',size=(60,60),label=bs.getSpecialChar('back'))
                 # bs.textWidget(edit=t,hAlign='left',position=(116,self._height-38))
-
+                
         t = bs.textWidget(parent=self._rootWidget,position=(self._width*0.5,self._height-35),size=(0,0),maxWidth=300,
                           text=bs.Lstr(resource=self._r+'.titleText'),
                           color=gTitleColor,
                           hAlign="center",vAlign="center")
 
-
+        
         h = 43
         v = self._height - 60
         hspacing = 15
@@ -6046,7 +6119,7 @@ class SoundtracksWindow(Window):
         bs.widget(edit=self._scrollWidget,leftWidget=self._newButton,rightWidget=bsInternal._getSpecialWidget('partyButton') if gToolbars else self._scrollWidget)
         self._c = bs.columnWidget(parent=scrollWidget)
 
-
+        
         self._soundtracks = None
         self._selectedSoundtrack = None
         self._selectedSoundtrackIndex = None
@@ -6065,7 +6138,7 @@ class SoundtracksWindow(Window):
         #     self._restoreState()
         # except Exception:
         #     bs.printException('exception wiring up SoundtracksWindow')
-
+        
     def _doDeleteSoundtrack(self):
         try: del bs.getConfig()['Soundtracks'][self._selectedSoundtrack]
         except Exception: pass
@@ -6101,7 +6174,7 @@ class SoundtracksWindow(Window):
         if type(baseName) is not unicode:
             print 'expected uni baseName 3fj0'
             baseName = baseName.decode('utf-8')
-
+        
         # if it looks like a copy, strip digits and spaces off the end
         if copyWord in baseName:
             while baseName[-1].isdigit() or baseName[-1] == ' ': baseName = baseName[:-1]
@@ -6163,7 +6236,7 @@ class SoundtracksWindow(Window):
             return bs.Lstr(resource=self._r+'.defaultSoundtrackNameText')
         else:
             return bs.Lstr(value=soundtrack)
-
+        
     def _refresh(self,selectSoundtrack=None):
         self._allowChangingSoundtracks = False
         oldSelection = self._selectedSoundtrack
@@ -6206,7 +6279,7 @@ class SoundtracksWindow(Window):
             index += 1
 
         # explicitly run select callback on current one and re-enable callbacks
-
+        
         # eww need to run this in a timer so it happens after our select calbacks..
         # with a small-enough time sometimes it happens before anyway.. ew.
         # need a way to just schedule a callable i guess..
@@ -6215,7 +6288,7 @@ class SoundtracksWindow(Window):
     def _setAllowChanging(self):
         self._allowChangingSoundtracks = True
         self._select(self._selectedSoundtrack,self._selectedSoundtrackIndex)
-
+        
     def _newSoundtrack(self):
         self._saveState()
         bs.containerWidget(edit=self._rootWidget,transition='outLeft')
@@ -6261,9 +6334,9 @@ class AccountWindow(Window):
     def __init__(self,transition='inRight',modal=False,originWidget=None,closeOnceSignedIn=False):
 
         self._closeOnceSignedIn = closeOnceSignedIn
-
+            
         bsInternal._setAnalyticsScreen('Account Window')
-
+        
         # if they provided an origin-widget, scale up from that
         if originWidget is not None:
             self._transitionOut = 'outScale'
@@ -6280,21 +6353,21 @@ class AccountWindow(Window):
         self._accountStateNum = bsInternal._getAccountStateNum()
         self._showLinked = True if self._signedIn and bsInternal._getAccountMiscReadVal('allowAccountLinking2',False) else False
         self._checkSignInTimer = bs.Timer(1000,bs.WeakCall(self._update),timeType='real',repeat=True)
-
+        
         # currently we can only reset achievements on game-center..
         if self._signedIn: accountType = bsInternal._getAccountType()
         else: accountType = None
         if accountType == 'Game Center': self._canResetAchievements = True
         else: self._canResetAchievements = False
-
+        
         env = bs.getEnvironment()
-
+        
         self._width = 660
         self._height = 390 if gSmallUI else 430 if gMedUI else 490
 
         self._signInButton = None
         self._signInText = None
-
+        
         self._scrollWidth = self._width - 100
         self._scrollHeight = self._height - 120
         self._subWidth = self._scrollWidth-20
@@ -6303,10 +6376,10 @@ class AccountWindow(Window):
         self._showSignInButtons = []
 
         #print 'PLATFORM',env['platform'],'SUB',env['subplatform']
-
+        
         if env['platform'] == 'android' and env['subplatform'] == 'google':
             self._showSignInButtons.append('Google Play')
-
+            
         elif env['platform'] == 'android' and env['subplatform'] == 'amazon':
             self._showSignInButtons.append('Game Circle')
 
@@ -6316,13 +6389,13 @@ class AccountWindow(Window):
         # Local accounts are generally always available with a few key exceptions
         # if not (env['platform'] == 'android' and env['subplatform'] == 'alibaba'):
         self._showSignInButtons.append('Local')
-
+        
         # show old test-account option *only* if we've been installed since before build 14101
         # (after then, people should just use device accounts for the same purpose)
         if env['testBuild'] or (env['platform'] == 'android' and env['subplatform'] in ['oculus','cardboard']):
             if bs.getConfig().get('lc14c',0) > 1:
                 self._showSignInButtons.append('Test')
-
+        
         topExtra = 15 if gSmallUI else 0
         self._rootWidget = bs.containerWidget(size=(self._width,self._height+topExtra),transition=transition,
                                               toolbarVisibility='MENU_MINIMAL',
@@ -6343,14 +6416,15 @@ class AccountWindow(Window):
             if not self._modal and gDoAndroidNav:
                 bs.buttonWidget(edit=b,buttonType='backSmall',size=(60,56),label=bs.getSpecialChar('back'))
                 # bs.textWidget(edit=t,hAlign='left',position=(113,self._height-40))
-
+            
         t = bs.textWidget(parent=self._rootWidget,position=(self._width*0.5,self._height-38),size=(0,0),
+                          # text=R.titleText,
                           text=bs.Lstr(resource=self._r+'.titleText'),
                           color=gTitleColor,maxWidth=self._width-340,
                           hAlign="center",vAlign="center")
 
 
-
+            
         self._scrollWidget = bs.scrollWidget(parent=self._rootWidget,
                                              highlight=False,position=((self._width-self._scrollWidth)*0.5,self._height - 65-self._scrollHeight),
                                              size=(self._scrollWidth,self._scrollHeight))
@@ -6364,13 +6438,13 @@ class AccountWindow(Window):
         if self._closeOnceSignedIn and self._signedIn:
             self._back()
             return
-
+        
         dirty = False
 
         # hmm should update this to use getAccountStateNum;
         # theoretically if we switch from one signed-in account to another
         # in the background this would break.
-
+        
         accountStateNum = bsInternal._getAccountStateNum()
         accountState = bsInternal._getAccountState()
 
@@ -6397,7 +6471,7 @@ class AccountWindow(Window):
         # if (env['platform'] == 'android' and env['subplatform'] in ['amazon']):
         #     t = bs.getSpecialChar('gameCircleLogo')+' '+t
         return t
-
+            
     def _refresh(self):
 
         import bsCoopGame
@@ -6409,14 +6483,14 @@ class AccountWindow(Window):
         accountType = bsInternal._getAccountType() if accountState == 'SIGNED_IN' else 'unknown'
 
         isGoogle = True if accountType == 'Google Play' else False
-
+        
         # showLocalSignedInAs = True if accountType == 'Local' else False
         showLocalSignedInAs = False
         localSignedInAsSpace = 50
-
+        
         showSignedInAs = True if self._signedIn else False
         signedInAsSpace = 95
-
+        
         showSignInBenefits = True if not self._signedIn else False
         signInBenefitsSpace = 80
 
@@ -6429,7 +6503,7 @@ class AccountWindow(Window):
         showTestSignInButton = True if (accountState == 'SIGNED_OUT' and 'Test' in self._showSignInButtons) else False
         showDeviceSignInButton = True if (accountState == 'SIGNED_OUT' and 'Local' in self._showSignInButtons) else False
         signInButtonSpace = 70
-
+        
         showGameServiceButton = True if (self._signedIn and accountType in ['Game Center','Game Circle']) else False
         gameServiceButtonSpace = 60
 
@@ -6438,33 +6512,33 @@ class AccountWindow(Window):
 
         showAchievementsButton = True if (self._signedIn and accountType in ('Google Play','Alibaba','Local','OUYA','Test')) else False
         achievementsButtonSpace = 60
-
+        
         showAchievementsText = True if (self._signedIn and not showAchievementsButton) else False
         achievementsTextSpace = 27
 
         showLeaderboardsButton = True if (self._signedIn and isGoogle) else False
         leaderboardsButtonSpace = 60
-
+        
         showCampaignProgress = True if self._signedIn else False
         campaignProgressSpace = 27
 
         showTickets = True if self._signedIn else False
         ticketsSpace = 27
-
+        
         #showResetProgressButton = True if self._signedIn else False
         showResetProgressButton = False
         resetProgressButtonSpace = 70
 
         showPlayerProfilesButton = True if self._signedIn else False
         playerProfilesButtonSpace = 70
-
+        
         showLinkAccountsButton = True if self._signedIn and bsInternal._getAccountMiscReadVal('allowAccountLinking2',False) else False
         linkAccountsButtonSpace = 70
-
+        
         #showSignOutButton = True if (self._signedIn and self._showSignOutButton) else False
         showSignOutButton = True if (self._signedIn and accountType in ['Test','Local','Google Play']) else False
         signOutButtonSpace = 70
-
+        
         if self._subContainer is not None: self._subContainer.delete()
 
         self._subHeight = 60
@@ -6489,10 +6563,10 @@ class AccountWindow(Window):
         if showPlayerProfilesButton: self._subHeight += playerProfilesButtonSpace
         if showLinkAccountsButton: self._subHeight += linkAccountsButtonSpace
         if showSignOutButton: self._subHeight += signOutButtonSpace
-
+        
         # if (self._signedIn and self._showSignOutButton) or (not self._signedIn and self._showSignInButton):
         #     self._subHeight += 50
-
+        
         self._subContainer = c = bs.containerWidget(parent=self._scrollWidget,
                                                     size=(self._subWidth,self._subHeight),background=False)
         bs.containerWidget(edit=self._scrollWidget,claimsLeftRight=True,claimsTab=True,selectionLoopToParent=True)
@@ -6511,7 +6585,7 @@ class AccountWindow(Window):
                               flatness=1.0,
                               hAlign="center",vAlign="center")
             v -= localSignedInAsSpace * 0.4
-
+            
         if showSignedInAs:
             v -= signedInAsSpace*0.2
 
@@ -6534,14 +6608,14 @@ class AccountWindow(Window):
             bb = bsInternal._getSpecialWidget('backButton')
         else:
             bb = self._backButton
-
+            
         if showSignInBenefits:
             v -= signInBenefitsSpace
             env = bs.getEnvironment()
             if env['platform'] in ['mac','ios'] and env['subplatform'] == 'appstore':
                 extra = bs.Lstr(value='\n${S}',subs=[('${S}',bs.Lstr(resource='signInWithGameCenterText'))])
             else: extra = ''
-
+            
             t = bs.textWidget(parent=self._subContainer,position=(self._subWidth*0.5,v+signInBenefitsSpace*0.4),size=(0,0),
                               text=bs.Lstr(value='${A}${B}',subs=[('${A}',bs.Lstr(resource=self._r+'.signInInfoText')),('${B}',extra)]),
                               maxHeight=signInBenefitsSpace*0.9,
@@ -6599,8 +6673,8 @@ class AccountWindow(Window):
             bs.widget(edit=b,leftWidget=bb)
             bs.widget(edit=b,showBufferBottom=40,showBufferTop=100)
             self._signInText = None
-
-
+            
+            
         if showDeviceSignInButton:
             buttonWidth = 350
             v -= signInButtonSpace
@@ -6621,8 +6695,8 @@ class AccountWindow(Window):
             bs.widget(edit=b,leftWidget=bb)
             bs.widget(edit=b,showBufferBottom=40,showBufferTop=100)
             self._signInText = None
-
-        # old test-account option..
+            
+        # old test-account option.. 
         if showTestSignInButton:
             buttonWidth = 350
             v -= signInButtonSpace
@@ -6703,7 +6777,7 @@ class AccountWindow(Window):
             self._achievementsButton = None
 
         if showAchievementsText or showAchievementsButton: self._refreshAchievements()
-
+            
         if showLeaderboardsButton:
             buttonWidth = 300
             v -= leaderboardsButtonSpace*0.85
@@ -6723,7 +6797,7 @@ class AccountWindow(Window):
 
         if showCampaignProgress:
             v -= campaignProgressSpace*0.5
-
+            
             self._campaignProgressText = t = bs.textWidget(parent=self._subContainer,position=(self._subWidth*0.5,v),size=(0,0),
                                                            scale=0.9,color=gInfoTextColor,maxWidth=self._subWidth*0.8,
                                                            hAlign="center",vAlign="center")
@@ -6735,13 +6809,13 @@ class AccountWindow(Window):
 
         if showTickets:
             v -= ticketsSpace*0.5
-
+            
             self._ticketsText = t = bs.textWidget(parent=self._subContainer,position=(self._subWidth*0.5,v),size=(0,0),
                                                   scale=0.9,color=gInfoTextColor,maxWidth=self._subWidth*0.8,flatness=1.0,
                                                   hAlign="center",vAlign="center")
             v -= ticketsSpace*0.5
             self._refreshTicketsText()
-
+            
 
         else:
             self._ticketsText = None
@@ -6749,7 +6823,7 @@ class AccountWindow(Window):
 
         # bit of spacing before the reset/sign-out section
         v -= 5
-
+        
         buttonWidth = 250
         if showResetProgressButton:
             confirmText = bs.Lstr(resource=self._r+'.resetProgressConfirmText') if self._canResetAchievements else bs.Lstr(resource=self._r+'.resetProgressConfirmNoAchievementsText')
@@ -6764,7 +6838,7 @@ class AccountWindow(Window):
             if gToolbars: bs.widget(edit=b,rightWidget=bsInternal._getSpecialWidget('partyButton'))
             bs.widget(edit=b,leftWidget=bb)
 
-
+            
         if showPlayerProfilesButton:
             v -= playerProfilesButtonSpace
             self._playerProfilesButton = b = bs.buttonWidget(parent=self._subContainer,position=((self._subWidth-buttonWidth)*0.5,v),
@@ -6796,7 +6870,7 @@ class AccountWindow(Window):
             if firstSelectable is None: firstSelectable = b
             if gToolbars: bs.widget(edit=b,rightWidget=bsInternal._getSpecialWidget('partyButton'))
             bs.widget(edit=b,leftWidget=bb,showBufferBottom=50)
-
+            
         if showSignOutButton:
             v -= signOutButtonSpace
             self._signOutButton = b = bs.buttonWidget(parent=self._subContainer,position=((self._subWidth-buttonWidth)*0.5,v),
@@ -6817,7 +6891,7 @@ class AccountWindow(Window):
             bs.containerWidget(edit=self._subContainer,visibleChild=firstSelectable)
 
         self._needsRefresh = False
-
+        
     def _onAchievementsPress(self):
         accountState = bsInternal._getAccountState()
         accountType = bsInternal._getAccountType() if accountState == 'SIGNED_IN' else 'unknown'
@@ -6828,7 +6902,7 @@ class AccountWindow(Window):
             AchievementsWindow(position=self._achievementsButton.getScreenSpaceCenter())
         else:
             print 'ERROR: unknown account type in onAchievementsPress:',accountType
-
+            
 
     def _onLeaderboardsPress(self):
         bs.realTimer(150,bs.Call(bsInternal._showOnlineScoreUI,'leaderboards')),
@@ -6856,7 +6930,7 @@ class AccountWindow(Window):
             pStr = '?'
             bs.printException('error calculating co-op campaign progress')
         bs.textWidget(edit=self._campaignProgressText,text=pStr)
-
+                
     def _refreshTicketsText(self):
         if self._ticketsText is None: return
         try: tcStr = str(bsInternal._getAccountTicketCount())
@@ -6873,7 +6947,7 @@ class AccountWindow(Window):
             bs.printException()
             nameStr = u'??'
         bs.textWidget(edit=self._accountNameText,text=nameStr)
-
+        
     def _refreshAchievements(self):
         import bsAchievement
         if self._achievementsText is None and self._achievementsButton is None: return
@@ -6893,12 +6967,12 @@ class AccountWindow(Window):
         self._saveState()
         bs.containerWidget(edit=self._rootWidget,transition="outLeft")
         PlayerProfilesWindow(originWidget=self._playerProfilesButton)
-
+        
     def _signOutPress(self):
         bsInternal._signOut()
 
         bsConfig = bs.getConfig()
-
+        
         # take note that its our explit intention to not be signed in at this point...
         bsConfig['Auto Account State'] = 'SIGNED_OUT'
 
@@ -6906,9 +6980,9 @@ class AccountWindow(Window):
         if bsInternal._isUsingInternalAccounts():
             if 'Test Account Sign In' in bsConfig:
                 del bsConfig['Test Account Sign In']
-
+            
         bs.writeConfig()
-
+        
         bs.buttonWidget(edit=self._signOutButton,
                         label=bs.Lstr(resource=self._r+'.signingOutText'))
 
@@ -6920,7 +6994,7 @@ class AccountWindow(Window):
         bs.writeConfig()
         self._needsRefresh = True
         bs.realTimer(100,bs.WeakCall(self._update))
-
+        
     def _resetProgress(self):
         try:
             import bsCoopGame
@@ -6937,7 +7011,7 @@ class AccountWindow(Window):
 
         bs.playSound(bs.getSound('shieldDown'))
         self._refresh()
-
+        
     def _back(self):
         self._saveState()
         bs.containerWidget(edit=self._rootWidget,transition=self._transitionOut)
@@ -6989,7 +7063,7 @@ class ConfigAudioWindow(Window):
         showVRHeadRelativeAudio = True if bs.getEnvironment()['vrMode'] else False
 
         if showVRHeadRelativeAudio: height += 70
-
+        
         showSoundtracks = False
         if bsUtils.haveMusicPlayer():
             showSoundtracks = True
@@ -7007,6 +7081,7 @@ class ConfigAudioWindow(Window):
         v = height - 60
         v -= spacing*1.0
         t = bs.textWidget(parent=self._rootWidget,position=(width*0.5,height-32),size=(0,0),
+                          # text=R.titleText,
                           text=bs.Lstr(resource=self._r+'.titleText'),
                           color=gTitleColor,
                           maxWidth=180,
@@ -7015,27 +7090,29 @@ class ConfigAudioWindow(Window):
         if gDoAndroidNav:
             bs.buttonWidget(edit=self._backButton,buttonType='backSmall',size=(60,60),label=bs.getSpecialChar('back'))
             # bs.textWidget(edit=t,hAlign='left',position=(98,height-32))
-
+        
 
         self._soundVolumeWidgets = sv = configTextBox(parent=self._rootWidget,position=(40,v),xOffset=10,name="Sound Volume",
+                                                      # displayName=R.soundVolumeText,
                                                       displayName=bs.Lstr(resource=self._r+'.soundVolumeText'),
                                                       type="float",minVal=0,maxVal=1.0,increment=0.1)
         if gToolbars:
             bs.widget(edit=sv['plusButton'],rightWidget=bsInternal._getSpecialWidget('partyButton'))
         v -= spacing
         self._musicVolumeWidgets = mv = configTextBox(parent=self._rootWidget,position=(40,v),xOffset=10,name="Music Volume",
+                                                      # displayName=R.musicVolumeText,
                                                       displayName=bs.Lstr(resource=self._r+'.musicVolumeText'),
                                                       type="float",minVal=0,maxVal=1.0,increment=0.1,callback=bsUtils._musicVolumeChanged,changeSound=None)
 
         v -= 0.5*spacing
-
+        
         if showVRHeadRelativeAudio:
             v -= 40
             t = bs.textWidget(parent=self._rootWidget,position=(40,v+24),size=(0,0),
                               text=bs.Lstr(resource=self._r+'.headRelativeVRAudioText'),
                               color=(0.8,0.8,0.8),maxWidth=230,
                               hAlign="left",vAlign="center")
-
+            
             p = PopupMenu(parent=self._rootWidget,position=(290,v),width=120,buttonSize=(135,50),scale=popupMenuScale,
                           choices=['Auto','On','Off'],
                           choicesDisplay=[bs.Lstr(resource='autoText'),
@@ -7051,16 +7128,18 @@ class ConfigAudioWindow(Window):
             v -= 30
         else:
             self._vrHeadRelativeAudioButton = None
+            
 
-
-
+        
         if showSoundtracks:
             v -= 1.2*spacing
             self._soundtrackButton = b = bs.buttonWidget(parent=self._rootWidget,position=((width-310)/2,v),size=(310,50),autoSelect=True,
+                                                         # label=R.soundtrackButtonText,
                                                          label=bs.Lstr(resource=self._r+'.soundtrackButtonText'),
                                                          onActivateCall=self._doSoundtracks)
             v -= spacing*0.5
             bs.textWidget(parent=self._rootWidget,position=(0,v),size=(width,20),
+                          # text=R.soundtrackDescriptionText,
                           text=bs.Lstr(resource=self._r+'.soundtrackDescriptionText'),
                           flatness=1.0,hAlign='center',scale=0.5,color=(0.7,0.8,0.7,1.0),maxWidth=400)
         else:
@@ -7080,7 +7159,7 @@ class ConfigAudioWindow(Window):
         bs.getConfig()['VR Head Relative Audio'] = val
         bs.applySettings()
         bs.writeConfig()
-
+            
     def _doSoundtracks(self):
         # we require disk access for soundtracks;
         # if we don't have it, request it..
@@ -7089,7 +7168,7 @@ class ConfigAudioWindow(Window):
             bs.screenMessage(bs.Lstr(resource='storagePermissionAccessText'),color=(1,0,0))
             bsInternal._requestPermission("storage")
             return
-
+        
         self._saveState()
         bs.containerWidget(edit=self._rootWidget,transition='outLeft')
         uiGlobals['mainMenuWindow'] = SoundtracksWindow(originWidget=self._soundtrackButton).getRootWidget()
@@ -7146,7 +7225,7 @@ class GraphicsWindow(Window):
 
         self._r = 'graphicsSettingsWindow'
         env = bs.getEnvironment()
-
+        
         spacing = 32
         self._haveSelectedChild = False
         ua = env['userAgentString']
@@ -7174,7 +7253,7 @@ class GraphicsWindow(Window):
 
         showResolution = True
         if env['vrMode']: showResolution = False
-
+            
         baseScale = 2.4 if gSmallUI else 1.5 if gMedUI else 1.0
         popupMenuScale = baseScale*1.2
         v = height - 50
@@ -7190,6 +7269,7 @@ class GraphicsWindow(Window):
         bs.containerWidget(edit=self._rootWidget,cancelButton=b)
 
         t = bs.textWidget(parent=self._rootWidget,position=(0,height-44),size=(width,25),
+                          # text=R.titleText,
                           text=bs.Lstr(resource=self._r+'.titleText'),
                           color=gTitleColor,
                           hAlign="center",vAlign="top")
@@ -7197,7 +7277,7 @@ class GraphicsWindow(Window):
         if gDoAndroidNav:
             bs.buttonWidget(edit=b,buttonType='backSmall',size=(60,60),label=bs.getSpecialChar('back'))
             # bs.textWidget(edit=t,hAlign='left',position=(100,height-37))
-
+        
         if self._showFullscreen:
             v -= fullscreenSpacingTop
             self._fullscreenCheckBox = configCheckBox(parent=self._rootWidget,position=(100,v),maxWidth=200,
@@ -7213,12 +7293,13 @@ class GraphicsWindow(Window):
         if showGamma:
             self._gammaControls = tb = configTextBox(parent=self._rootWidget,position=(90,v),
                                                      name="Screen Gamma",
+                                                     # displayName=R.gammaText,
                                                      displayName=bs.Lstr(resource=self._r+'.gammaText'),
                                                      type="float",minVal=0.1,maxVal=2.0,
                                                      increment=0.1,xOffset=-70,textScale=0.85)
             if gToolbars:
                 bs.widget(edit=tb['plusButton'],rightWidget=bsInternal._getSpecialWidget('partyButton'))
-
+            
             if not self._haveSelectedChild:
                 bs.containerWidget(edit=self._rootWidget,selectedChild=tb['minusButton'])
                 self._haveSelectedChild = True
@@ -7232,6 +7313,7 @@ class GraphicsWindow(Window):
         # quality
         hOffs = 15
         t = bs.textWidget(parent=self._rootWidget,position=(60,v),size=(160,25),
+                          # text=R.visualsText,
                           text=bs.Lstr(resource=self._r+'.visualsText'),
                           color=gHeadingColor,scale=0.65,maxWidth=150,
                           hAlign="center",vAlign="center")
@@ -7248,6 +7330,7 @@ class GraphicsWindow(Window):
         # texture controls
         hOffs = 210
         t = bs.textWidget(parent=self._rootWidget,position=(230,v),size=(160,25),
+                          # text=R.texturesText,
                           text=bs.Lstr(resource=self._r+'.texturesText'),
                           color=gHeadingColor,scale=0.65,maxWidth=150,
                           hAlign="center",vAlign="center")
@@ -7267,6 +7350,7 @@ class GraphicsWindow(Window):
         if showResolution:
             # resolution
             t = bs.textWidget(parent=self._rootWidget,position=(hOffs+60,v),size=(160,25),
+                              # text=R.resolutionText,
                               text=bs.Lstr(resource=self._r+'.resolutionText'),
                               color=gHeadingColor,scale=0.65,maxWidth=150,
                               hAlign="center",vAlign="center")
@@ -7313,6 +7397,7 @@ class GraphicsWindow(Window):
         if showVSync:
             t = bs.textWidget(parent=self._rootWidget,position=(230,v),
                               size=(160,25),
+                              # text=R.verticalSyncText,
                               text=bs.Lstr(resource=self._r+'.verticalSyncText'),
                               color=gHeadingColor,scale=0.65,maxWidth=150,
                               hAlign="center",vAlign="center")
@@ -7328,6 +7413,7 @@ class GraphicsWindow(Window):
         v -= 90
         fpsc = configCheckBox(parent=self._rootWidget,position=(69,v-6),
                               size=(210,30),scale=0.86,name="Show FPS",
+                              # displayName=R.showFPSText,
                               displayName=bs.Lstr(resource=self._r+'.showFPSText'),
                               maxWidth=130)
 
@@ -7335,6 +7421,7 @@ class GraphicsWindow(Window):
         if not bs.getEnvironment()['vrMode']:
             tvc = configCheckBox(parent=self._rootWidget,position=(240,v-6),
                                   size=(210,30),scale=0.86,name="TV Border",
+                                 # displayName=R.tvBorderText,
                                  displayName=bs.Lstr(resource=self._r+'.tvBorderText'),
                                  maxWidth=130)
             # grumble..
@@ -7408,12 +7495,12 @@ class GraphicsWindow(Window):
         bs.getConfig()['Resolution (Android)'] = val
         bs.writeConfig()
         bs.applySettings()
-
+        
     def _setPixelScale(self,res):
         bs.getConfig()['Screen Pixel Scale'] = float(res[:-1])/100.0
         bs.writeConfig()
         bs.applySettings()
-
+        
     def _setRes(self,res,confirm=True,playSound=False):
         self._oldRes = bsInternal._getDisplayResolution()
 
@@ -7428,7 +7515,7 @@ class GraphicsWindow(Window):
         if rp is not None: rp.setChoice(res)
 
         # if we're changing resolution in fullscreen mode, bring up a confirmation window to make sure the res is visible
-        if self._oldRes != res and confirm and bsInternal._getSetting('Fullscreen'):
+        if self._oldRes != res and confirm and bsInternal._('Fullscreen'):
             ResChangeConfirmWindow(self)
 
     def _setVSync(self,val):
@@ -7500,7 +7587,7 @@ class PromoCodeWindow(Window):
             self._transitionOut = 'outRight'
             scaleOrigin = None
             transition = 'inRight'
-
+        
         width = 450
         height = 230
         spacing = 32
@@ -7517,7 +7604,7 @@ class PromoCodeWindow(Window):
                             label='',onActivateCall=self._doBack,autoSelect=True,
                             color=(0.55,0.5,0.6),
                             icon=bs.getTexture('crossOut'),iconScale=1.2)
-
+        
         bs.textWidget(parent=self._rootWidget,
                       text=bs.Lstr(resource=self._r+'.codeText'),
                       position=(22,height-113),color=(0.8,0.8,0.8,1.0),size=(90,30),hAlign='right')
@@ -7554,7 +7641,7 @@ class PromoCodeWindow(Window):
                                     'code':bs.textWidget(query=self._textField)})
         bsInternal._runTransactions()
 
-
+        
 gValueTestDefaults = {}
 
 class TestingWindow(Window):
@@ -7574,7 +7661,7 @@ class TestingWindow(Window):
         if gDoAndroidNav:
             bs.buttonWidget(edit=self._backButton,buttonType='backSmall',size=(60,60),label=bs.getSpecialChar('back'))
             # bs.textWidget(edit=t,hAlign='left',position=(118,self._height-35))
-
+        
         t = bs.textWidget(parent=self._rootWidget,position=(self._width*0.5,self._height-75),size=(0,0),color=gInfoTextColor,
                           hAlign='center',vAlign='center', maxWidth=self._width*0.75,text=bs.Lstr(resource='settingsWindowAdvanced.forTestingText'))
         bs.containerWidget(edit=self._rootWidget,cancelButton=b)
@@ -7585,23 +7672,23 @@ class TestingWindow(Window):
         bs.containerWidget(edit=self._scrollWidget,claimsLeftRight=True)
 
         self._spacing = 50
-
+        
         self._subWidth = self._scrollWidth*0.95
         self._subHeight = 50 + len(self._entries)*self._spacing + 60
         self._subContainer = bs.containerWidget(parent=self._scrollWidget,size=(self._subWidth,self._subHeight),background=False)
 
         h = 230
         v = self._subHeight - 48
-
+        
         for i,entry in enumerate(self._entries):
 
             entryName = entry['name']
-
+            
             # if we havn't yet, record the default value for this name so we can reset if we want..
             if not entryName in gValueTestDefaults:
                 gValueTestDefaults[entryName] = bsInternal._valueTest(entryName)
                 #print 'STORING DEFAULT FOR',entryName,'of',gValueTestDefaults[entryName]
-
+                
             t = bs.textWidget(parent=self._subContainer,position=(h,v),size=(0,0),
                               hAlign='right',vAlign='center', maxWidth=200,text=entry['label'])
             b = bs.buttonWidget(parent=self._subContainer,position=(h+20,v-19),size=(40,40),autoSelect=True,repeat=True,
@@ -7622,12 +7709,12 @@ class TestingWindow(Window):
     def _getEntry(self,name):
         for entry in self._entries:
             if entry['name'] == name: return entry
-
+            
     def _onResetPress(self):
         for entry in self._entries:
             val = bsInternal._valueTest(entry['name'],absolute=gValueTestDefaults[entry['name']])
             bs.textWidget(edit=entry['widget'],text=str(round(bsInternal._valueTest(entry['name']),4)))
-
+            
     def _onMinusPress(self,entryName):
         entry = self._getEntry(entryName)
         val = bsInternal._valueTest(entry['name'],change=-entry['increment'])
@@ -7637,7 +7724,7 @@ class TestingWindow(Window):
         entry = self._getEntry(entryName)
         val = bsInternal._valueTest(entry['name'],change=entry['increment'])
         bs.textWidget(edit=entry['widget'],text=str(round(bsInternal._valueTest(entry['name']),4)))
-
+        
     def _doBack(self):
         bs.containerWidget(edit=self._rootWidget,transition='outRight')
         uiGlobals['mainMenuWindow'] = AdvancedSettingsWindow(transition='inLeft').getRootWidget()
@@ -7683,7 +7770,7 @@ class VRTestingWindow(TestingWindow):
         ]
 
         TestingWindow.__init__(self,bs.Lstr(resource='settingsWindowAdvanced.vrTestingText'),entries,transition)
-
+        
         # v = self._height - 130
         # bs.buttonWidget(parent=self._rootWidget,autoSelect=True,label='eyeOffsX -',size=(200,60),
         #                 position=(35,v),onActivateCall=bs.Call(bsInternal._valueTest,'eyeOffsX',-0.1))
@@ -7704,8 +7791,8 @@ class VRTestingWindow(TestingWindow):
         #                 position=(35,v),onActivateCall=bs.Call(bsInternal._valueTest,'headScale',-0.05))
         # bs.buttonWidget(parent=self._rootWidget,autoSelect=True,label='headScale +',size=(200,60),
         #                 position=(255,v),onActivateCall=bs.Call(bsInternal._valueTest,'headScale',0.05))
-
-
+        
+        
 class NetTestingWindow(TestingWindow):
     def __init__(self,transition='inRight'):
 
@@ -7737,19 +7824,15 @@ class NetTestingWindow(TestingWindow):
     #                     position=(35,v),onActivateCall=bs.Call(bsInternal._valueTest,'dynamicsSyncTime',-10))
     #     bs.buttonWidget(parent=self._rootWidget,autoSelect=True,label='dynamicsSyncTime +',size=(200,60),
     #                     position=(255,v),onActivateCall=bs.Call(bsInternal._valueTest,'dynamicsSyncTime',10))
-
+        
     # def _doBack(self):
-    #     bs.containerWidget(edit=self._rootWidget,transition='outRight')
-
-
-
-
-
+    #     bs.containerWidget(edit=self._rootWidget,transition='outRight')    
+        
 class AdvancedSettingsWindow(Window):
 
     # def __del__(self):
     #     print '~AdvancedSettingsWindow()'
-
+        
     def __init__(self,transition='inRight',originWidget=None):
 
         # if they provided an origin-widget, scale up from that
@@ -7760,7 +7843,7 @@ class AdvancedSettingsWindow(Window):
         else:
             self._transitionOut = 'outRight'
             scaleOrigin = None
-
+        
         self._width = 670
         self._height = 390 if gSmallUI else 450 if gMedUI else 520
         self._spacing = 32
@@ -7779,20 +7862,20 @@ class AdvancedSettingsWindow(Window):
 
         # in vr-mode, the internal keyboard is currently the *only* option, so no need to show this..
         self._showAlwaysUseInternalKeyboard = False if bs.getEnvironment()['vrMode'] else True
-
+        
         self._scrollWidth = self._width - 100
         self._scrollHeight = self._height - 115
         self._subWidth = self._scrollWidth*0.95
-        self._subHeight = 732+8+60-60
-
+        self._subHeight = 732+50+60-60
+        
         if self._showAlwaysUseInternalKeyboard: self._subHeight += 62
 
         self._doVRTestButton = True if bs.getEnvironment()['vrMode'] else False
-
+        
         self._doNetTestButton = True
 
         self._extraButtonSpacing = self._spacing * 2.5
-
+        
         if self._doVRTestButton: self._subHeight += self._extraButtonSpacing
         if self._doNetTestButton: self._subHeight += self._extraButtonSpacing
 
@@ -7807,6 +7890,7 @@ class AdvancedSettingsWindow(Window):
             bs.containerWidget(edit=self._rootWidget,cancelButton=self._backButton)
 
         self._titleText = t = bs.textWidget(parent=self._rootWidget,position=(0,self._height-52),size=(self._width,25),
+                                            #text=R.titleText,
                                             text=bs.Lstr(resource=self._r+'.titleText'),
                                             color=gTitleColor,
                                             hAlign="center",vAlign="top")
@@ -7815,22 +7899,22 @@ class AdvancedSettingsWindow(Window):
             if self._backButton is not None:
                 bs.buttonWidget(edit=self._backButton,buttonType='backSmall',size=(60,60),label=bs.getSpecialChar('back'))
             # bs.textWidget(edit=t,hAlign='left',position=(115,self._height-47))
-
+            
         self._scrollWidget = bs.scrollWidget(parent=self._rootWidget,position=(50,50),simpleCullingV=20.0,
                                              highlight=False, size=(self._scrollWidth,self._scrollHeight))
         bs.containerWidget(edit=self._scrollWidget,selectionLoopToParent=True)
         self._subContainer = c = bs.containerWidget(parent=self._scrollWidget,size=(self._subWidth,self._subHeight),
                                                     background=False,selectionLoopToParent=True)
 
-
+        
         self._rebuild()
-
+            
         # rebuild periodically to pick up language changes/additions/etc
         self._rebuildTimer = bs.Timer(1000,bs.WeakCall(self._rebuild),repeat=True,timeType='real')
 
         # fetch the list of completed languages
         bsUtils.serverGet('bsLangGetCompleted',{},callback=bs.WeakCall(self._completedLangsCB))
-
+    
     def _updateLangStatus(self):
         if self._completeLangsList is not None:
             upToDate = (bs.getLanguage() in self._completeLangsList)
@@ -7840,7 +7924,7 @@ class AdvancedSettingsWindow(Window):
             t = bs.textWidget(edit=self._langStatusText,
                               text=bs.Lstr(resource=self._r+'.translationFetchErrorText') if self._completeLangsError else bs.Lstr(resource=self._r+'.translationFetchingStatusText'),
                               color=(1.0,0.5,0.2) if self._completeLangsError else (0.7,0.7,0.7))
-
+            
 
     def _rebuild(self):
 
@@ -7860,7 +7944,7 @@ class AdvancedSettingsWindow(Window):
         children = self._subContainer.getChildren()
         for c in children: c.delete()
 
-
+        
         v = self._subHeight - 35
 
         v -= self._spacing * 1.2
@@ -7869,10 +7953,10 @@ class AdvancedSettingsWindow(Window):
         if self._backButton is not None:
             bs.buttonWidget(edit=self._backButton,label=bs.Lstr(resource='backText'))
             if gDoAndroidNav: bs.buttonWidget(edit=self._backButton,label=bs.getSpecialChar('back'))
-
+        
         bs.textWidget(edit=self._titleText,
                       text=bs.Lstr(resource=self._r+'.titleText'))
-
+        
 
         thisButtonWidth = 410
 
@@ -7925,12 +8009,13 @@ class AdvancedSettingsWindow(Window):
         #           downWidget=self._languagePopup.getButtonWidget())
         # if langWasSelected:
         #     bs.containerWidget(edit=self._subContainer,selectedChild=self._languagePopup.getButtonWidget())
-
+            
         v -= self._spacing * 1.8
 
         t = bs.textWidget(parent=self._subContainer,position=(self._subWidth*0.5,v+10),size=(0,0),
                           text=bs.Lstr(resource=self._r+'.helpTranslateText',subs=[('${APP_NAME}',bs.Lstr(resource='titleText'))]),
                           maxWidth=self._subWidth*0.9,maxHeight=55,
+                          # flatness=1.0,scale=0.65*R.helpTranslateTextScale,color=(0.4,0.9,0.4,0.8),hAlign='center',vAlign='center')
                           flatness=1.0,scale=0.65,color=(0.4,0.9,0.4,0.8),hAlign='center',vAlign='center')
         v -= self._spacing * 1.9
         thisButtonWidth = 410
@@ -7950,17 +8035,20 @@ class AdvancedSettingsWindow(Window):
 
         #v -= self._spacing * 1.0
         self._kidFriendlyCheckBox = cb = configCheckBox(parent=self._subContainer,position=(50,v),size=(self._subWidth-100,30),name="Kid Friendly Mode",
+                                                        # displayName=R.kidFriendlyModeText,
                                                         displayName=bs.Lstr(resource=self._r+'.kidFriendlyModeText'),
-                                                        scale=1.0,maxWidth=430)
+                                                        scale=1.0,maxWidth=430)                                            
+                                                        
         bs.widget(edit=self._translationEditorButton,downWidget=cb, upWidget=self._languagePopup.getButtonWidget())
         # bs.widget(edit=cb,upWidget=self._backButton,leftWidget=self._backButton)
 
         # if testButton is not None:
         #     bs.widget(edit=backButton,rightWidget=testButton,downWidget=cb)
         #     bs.widget(edit=testButton,leftWidget=backButton,downWidget=cb)
-
+        
         v -= self._spacing * 1.2
         self._kickIdlePlayersCheckBox = configCheckBox(parent=self._subContainer,position=(50,v),size=(self._subWidth-100,30),name="Kick Idle Players",autoSelect=True,
+                                                       # displayName=R.kickIdlePlayersText,
                                                        displayName=bs.Lstr(resource=self._r+'.kickIdlePlayersText'),
                                                        scale=1.0,maxWidth=430)
 
@@ -7968,24 +8056,27 @@ class AdvancedSettingsWindow(Window):
             v -= 42
             self._alwaysUseInternalKeyboardCheckBox = configCheckBox(parent=self._subContainer,position=(50,v),size=(self._subWidth-100,30),name="Always Use Internal Keyboard",
                                                                      autoSelect=True,
+                                                                     # displayName=R.alwaysUseInternalKeyboardText,
                                                                      displayName=bs.Lstr(resource=self._r+'.alwaysUseInternalKeyboardText'),
                                                                      scale=1.0,maxWidth=430)
             t = bs.textWidget(parent=self._subContainer,position=(90,v-10),size=(0,0),
+                              # text=R.alwaysUseInternalKeyboardDescriptionText,
                               text=bs.Lstr(resource=self._r+'.alwaysUseInternalKeyboardDescriptionText'),
                               maxWidth=400,flatness=1.0,scale=0.65,color=(0.4,0.9,0.4,0.8),
                               hAlign='left',vAlign='center')
             v -= 20
         else: self._alwaysUseInternalKeyboardCheckBox = None
 
-
+        
         v -= self._spacing * 2.1
-
+        
 
         thisButtonWidth = 410
         self._showUserModsButton = bs.buttonWidget(parent=self._subContainer,
                                                    position=(self._subWidth/2-thisButtonWidth/2,v-10),
                                                    size=(thisButtonWidth,60),
                                                    autoSelect=True,
+                                                   # label=R.showUserModsText,
                                                    label=bs.Lstr(resource=self._r+'.showUserModsText'),
                                                    textScale=1.0,
                                                    onActivateCall=bsUtils.showUserScripts)
@@ -7995,14 +8086,15 @@ class AdvancedSettingsWindow(Window):
         else:
             bs.widget(edit=self._showUserModsButton,upWidget=self._kickIdlePlayersCheckBox)
             bs.widget(edit=self._kickIdlePlayersCheckBox,downWidget=self._showUserModsButton)
-
-
+            
+            
         v -= self._spacing * 2.0
-
+        
         b = self._moddingGuideButton = bs.buttonWidget(parent=self._subContainer,
                                                        position=(self._subWidth/2-thisButtonWidth/2,v-10),
                                                        size=(thisButtonWidth,60),
                                                        autoSelect=True,
+                                                       # label=R.moddingGuideText,
                                                        label=bs.Lstr(resource=self._r+'.moddingGuideText'),
                                                        textScale=1.0,
                                                        onActivateCall=bs.Call(bs.openURL,'http://www.froemling.net/docs/bombsquad-modding-guide'))
@@ -8012,18 +8104,20 @@ class AdvancedSettingsWindow(Window):
         def foo(val):
             bs.screenMessage(bs.Lstr(resource=self._r+'.mustRestartText'),
                              color=(1,1,0))
-
+            
         cb = self._enablePackageModsCheckBox = configCheckBox(parent=self._subContainer,position=(80,v),size=(self._subWidth-100,30),
                                                               name="Enable Package Mods",autoSelect=True,valueChangeCall=foo,
+                                                              # displayName=R.enablePackageModsText,
                                                               displayName=bs.Lstr(resource=self._r+'.enablePackageModsText'),
                                                               scale=1.0,maxWidth=400)
         bs.widget(edit=b,downWidget=cb)
         bs.widget(edit=cb,upWidget=b)
         t = bs.textWidget(parent=self._subContainer,position=(90,v-10),size=(0,0),
+                          # text=R.enablePackageModsDescriptionText,
                           text=bs.Lstr(resource=self._r+'.enablePackageModsDescriptionText'),
                           maxWidth=400,flatness=1.0,scale=0.65,color=(0.4,0.9,0.4,0.8),
                           hAlign='left',vAlign='center')
-
+        
         v -= self._spacing * 0.6
 
         if self._doVRTestButton:
@@ -8032,18 +8126,20 @@ class AdvancedSettingsWindow(Window):
                                                  position=(self._subWidth/2-thisButtonWidth/2,v-14),
                                                  size=(thisButtonWidth,60),
                                                  autoSelect=True,
+                                                 #label=R.vrTestingText,
                                                  label=bs.Lstr(resource=self._r+'.vrTestingText'),
                                                  textScale=1.0,
                                                  onActivateCall=self._onVRTestPress)
         else:
             self._vrTestButton = None
-
+            
         if self._doNetTestButton:
             v -= self._extraButtonSpacing
             self._netTestButton = bs.buttonWidget(parent=self._subContainer,
                                                   position=(self._subWidth/2-thisButtonWidth/2,v-14),
                                                   size=(thisButtonWidth,60),
                                                   autoSelect=True,
+                                                  # label=R.netTestingText,
                                                   label=bs.Lstr(resource=self._r+'.netTestingText'),
                                                   textScale=1.0,
                                                   onActivateCall=self._onNetTestPress)
@@ -8054,14 +8150,15 @@ class AdvancedSettingsWindow(Window):
                                                  position=(self._subWidth/2-thisButtonWidth/2,v-14),
                                                  size=(thisButtonWidth,60),
                                                  autoSelect=True,
+                                                 # label=R.benchmarksText,
                                                  label=bs.Lstr(resource=self._r+'.benchmarksText'),
                                                  textScale=1.0,
                                                  onActivateCall=self._onBenchmarkPress)
 
-
+        
         bs.widget(edit=self._vrTestButton if self._vrTestButton is not None else self._netTestButton if self._netTestButton is not None else self._benchmarksButton,
                   upWidget=cb)
-
+        
         #bs.widget(edit=showUserModsButton,downWidget=promoCodeButton)
         #bs.widget(edit=moddingGuideButton,upWidget=translationEditorButton)
         # for b in [showUserModsButton,moddingGuideButton,promoCodeButton]:
@@ -8069,6 +8166,14 @@ class AdvancedSettingsWindow(Window):
 
         for w in self._subContainer.getChildren():
             bs.widget(edit=w,showBufferBottom=30,showBufferTop=20)
+            
+        self._modpackWebpageButton = bs.buttonWidget(parent=self._subContainer,
+                                                position=(self._subWidth/2-thisButtonWidth/2,v-86),
+                                                size=(thisButtonWidth,60),
+                                                autoSelect=True,
+                                                label=bs.Lstr(resource=self._r+'.modpackWebpageText'),
+                                                textScale=1.0,
+                                                onActivateCall=bs.Call(bs.openURL,'https://bombsquadjoyride.blogspot.com/'))
 
         if gToolbars:
             # print 'SETTING'
@@ -8078,9 +8183,9 @@ class AdvancedSettingsWindow(Window):
                 bs.widget(edit=self._scrollWidget,leftWidget=bsInternal._getSpecialWidget('backButton'))
             # for w in self._subContainer.getChildren():
             #     bs.widget(edit=w,rightWidget=pb)
-
+            
         self._restoreState()
-
+        
     def _onVRTestPress(self):
         self._saveState()
         bs.containerWidget(edit=self._rootWidget,transition='outLeft')
@@ -8096,14 +8201,14 @@ class AdvancedSettingsWindow(Window):
             showSignInPrompt()
             return
         doAppInvitesPress()
-
+        
     def _onPromoCodePress(self):
 
         # we have to be logged in for promo-codes to work..
         if bsInternal._getAccountState() != 'SIGNED_IN':
             showSignInPrompt()
             return
-
+        
         self._saveState()
         bs.containerWidget(edit=self._rootWidget,transition='outLeft')
         uiGlobals['mainMenuWindow'] = PromoCodeWindow(originWidget=self._promoCodeButton).getRootWidget()
@@ -8112,7 +8217,7 @@ class AdvancedSettingsWindow(Window):
         self._saveState()
         bs.containerWidget(edit=self._rootWidget,transition='outLeft')
         uiGlobals['mainMenuWindow'] = DebugWindow(transition='inRight').getRootWidget()
-
+        
     def _saveState(self):
         try:
             sel = self._rootWidget.getSelectedChild()
@@ -8131,6 +8236,7 @@ class AdvancedSettingsWindow(Window):
                 elif sel == self._showUserModsButton: selName = 'ShowUserMods'
                 elif sel == self._moddingGuideButton: selName = 'ModdingGuide'
                 elif sel == self._enablePackageModsCheckBox: selName = 'PackageMods'
+                elif sel == self._modpackWebpageButton: selName = 'ModpackWebpage'
                 else: raise Exception("unrecognized selection")
             elif sel == self._backButton: selName = 'Back'
             else: raise Exception("unrecognized selection")
@@ -8160,11 +8266,12 @@ class AdvancedSettingsWindow(Window):
                 elif selName == 'ShowUserMods': sel = self._showUserModsButton
                 elif selName == 'ModdingGuide': sel = self._moddingGuideButton
                 elif selName == 'PackageMods': sel = self._enablePackageModsCheckBox
+                elif selName == 'ModpackWebpage': sel = self._modpackWebpageButton
                 else: sel = None
                 if sel != None: bs.containerWidget(edit=self._subContainer,selectedChild=sel,visibleChild=sel)
         except Exception:
             bs.printException('error restoring state for',self.__class__)
-
+    
     def _onMenuOpen(self):
         self._menuOpen = True
 
@@ -8192,19 +8299,54 @@ class AdvancedSettingsWindow(Window):
             self._completeLangsList = None
             self._completeLangsError = True
         bs.realTimer(1,bs.WeakCall(self._updateLangStatus))
-
+            
 
     def _doBack(self):
         self._saveState()
         bs.containerWidget(edit=self._rootWidget,transition=self._transitionOut)
         uiGlobals['mainMenuWindow'] = SettingsWindow(transition='inLeft').getRootWidget()
+        
+def configCheckBox(parent,name,position,size,displayName=None,scale=None,maxWidth=None,autoSelect=True,valueChangeCall=None):
+    if displayName is None: displayName = name
 
-class SettingsWindow(Window):
+    def _valueChanged(val):
+        bs.getConfig()[name] = val
+
+        if valueChangeCall is not None: valueChangeCall(val)
+        
+        # special case: clicking kick-idle-players repeatedly unlocks co-op levels
+        if name == 'Kick Idle Players':
+            global gKickIdlePlayersKickCount
+            try: count = gKickIdlePlayersKickCount
+            except Exception: count = 1
+            count += 1
+            if count == 11:
+                try:
+                    import bsCoopGame
+                    #campaign = bsCoopGame.getCampaign('Default')
+                    levels = bsCoopGame.getCampaign('Default').getLevels() + bsCoopGame.getCampaign('Easy').getLevels()
+                    for level in levels: level.setComplete(True)
+                    bs.screenMessage("CO-OP LEVELS UNLOCKED! (temporarily)",color=(0,1,0))
+                    bs.playSound(bs.getSound('gunCocking'))
+                    bs.playSound(bs.getSound('gong'))
+                except Exception as e:
+                    print 'error during co-op unlock:',e
+                    bs.screenMessage("ERROR UNLOCKING CO-OP LEVELS",color=(1,0,0))
+                count = 1;
+            gKickIdlePlayersKickCount = count
+
+        bs.applySettings()
+        bs.writeConfig()
+
+    return bs.checkBoxWidget(parent=parent,autoSelect=autoSelect,position=position,size=size,text=displayName,textColor=(0.8,0.8,0.8),
+                             value=bsInternal._getSetting(name),onValueChangeCall=_valueChanged,scale=scale,maxWidth=maxWidth)
+                             
+                             
+class JRMPWindow(Window):
 
     def __init__(self,transition='inRight',originWidget=None):
 
-        bsInternal._setAnalyticsScreen('Settings Window')
-
+        # if they provided an origin-widget, scale up from that
         if originWidget is not None:
             self._transitionOut = 'outScale'
             scaleOrigin = originWidget.getScreenSpaceCenter()
@@ -8213,10 +8355,128 @@ class SettingsWindow(Window):
             self._transitionOut = 'outRight'
             scaleOrigin = None
 
-        width = 750 if gSmallUI else 580
+        self._r = 'jrmpSettingsWindow'
+
+        spacing = 50
+        width = 650 if gSmallUI else 700
+        height = 265
+
+        baseScale=2.0 if gSmallUI else 1.6 if gMedUI else 1.0
+        popupMenuScale = baseScale*1.2
+
+        self._rootWidget = bs.containerWidget(size=(width,height),transition=transition,scale=baseScale,
+                                              scaleOriginStackOffset=scaleOrigin,
+                                              stackOffset=(0,-20) if gSmallUI else (0,0))
+        self._backButton = backButton = b = bs.buttonWidget(parent=self._rootWidget,position=(35,height-65),size=(120,60),scale=0.8,textScale=1.2,
+                                                            label=bs.Lstr(resource='backText'),buttonType='back',onActivateCall=self._back,autoSelect=False)
+        bs.containerWidget(edit=self._rootWidget,cancelButton=b)
+        v = height - 50
+        v -= spacing*1.0
+        t = bs.textWidget(parent=self._rootWidget,position=(width*0.5,height-32),size=(0,0),
+                          # text=R.titleText,
+                          text=bs.Lstr(resource=self._r+'.titleText'),
+                          color=gTitleColor,
+                          maxWidth=180,
+                          hAlign="center",vAlign="center")
+
+        if gDoAndroidNav:
+            bs.buttonWidget(edit=self._backButton,buttonType='backSmall',size=(60,60),label=bs.getSpecialChar('back'))
+            # bs.textWidget(edit=t,hAlign='left',position=(98,height-32))
+
+        pppu = configCheckBoxMikirog(parent=self._rootWidget,position=(50,v),
+                              size=(width,30),scale=1.0,name="Powerup Popups",defaultValue=True,
+                              displayName=bs.Lstr(resource=self._r+'.powerupPopupsText'),
+                              maxWidth=430)
+        v = height - 135
+        ocs = configCheckBoxMikirog(parent=self._rootWidget,position=(50,v),
+                              size=(width,30),scale=1.0,name="Offensive Curse Sound",defaultValue=False,
+                              displayName=bs.Lstr(resource=self._r+'.offensiveCurseSoundText'),
+                              maxWidth=430)
+                              
+        
+        v = height - 170
+        cs = configCheckBoxMikirog(parent=self._rootWidget,position=(50,v),
+                              size=(width,30),scale=1.0,name="Camera Shake",defaultValue=True,
+                              displayName=bs.Lstr(resource=self._r+'.cameraShakeText'),
+                              maxWidth=430)
+                              
+        v = height - 205
+        eem = configCheckBoxMikirog(parent=self._rootWidget,position=(50,v),
+                              size=(width,30),scale=1.0,name="Easy Mode",defaultValue=False,
+                              displayName=bs.Lstr(resource=self._r+'.easyModeText'),
+                              maxWidth=430)
+                              
+        v = height - 255
+                              
+        powerupDistributionPopup = PopupMenu(parent=self._rootWidget,position=(60,v),width=150,scale=1.0,
+                                 choices=['JRMP','Classic','Competetive','No Powerups'],
+                                 choicesDisabled=[],
+                                 choicesDisplay=[bs.Lstr(resource=self._r+'.jrmpText'),
+                                                 bs.Lstr(resource=self._r+'.classicText'),
+                                                 bs.Lstr(resource=self._r+'.competetiveText'),
+                                                 bs.Lstr(resource=self._r+'.noPowerupsText')],
+                                 currentChoice=bs.getConfig().get('Powerup Distribution', 'JRMP'),onValueChangeCall=self._setPowerupDistribution)
+                                 
+        t = bs.textWidget(parent=self._rootWidget,position=(width*0.65,v+40),size=(0,0),
+                              text=bs.Lstr(resource=self._r+'.powerupDistributionText'),
+                              scale=1,
+                              color=(0.7,0.8,0.7),maxWidth=400,flatness=1.0,
+                              hAlign="center",vAlign="center")
+        d = bs.textWidget(parent=self._rootWidget,position=(width*0.65,v+12),size=(0,0),
+                              text=bs.Lstr(resource=self._r+'.powerupDistributionDesc'),
+                              scale=0.45,
+                              color=(0.6,0.7,0.6),maxWidth=400,flatness=1.0,
+                              hAlign="center",vAlign="center")
+                              
+                                 
+        self._restoreState()
+        
+    def _setPowerupDistribution(self,powerup):
+        bs.getConfig()['Powerup Distribution'] = powerup
+        bs.applySettings()
+        bs.writeConfig()
+        
+    def _back(self):
+        self._saveState()
+        bs.containerWidget(edit=self._rootWidget,transition=self._transitionOut)
+        uiGlobals['mainMenuWindow'] = SettingsWindow(transition='inLeft').getRootWidget()
+
+    def _saveState(self):
+        try:
+            sel = self._rootWidget.getSelectedChild()
+            selName = 'Back'
+            bs.screenMessage(bs.Lstr(resource=self._r+'.someOptionsNotCoop'),color=(1,0.65,0))
+            gWindowStates[self.__class__.__name__] = selName
+        except Exception:
+            bs.printException('error saving state for',self.__class__)
+
+    def _restoreState(self):
+        try:
+            try: selName = gWindowStates[self.__class__.__name__]
+            except Exception: selName = None
+            sel = self._backButton
+            bs.containerWidget(edit=self._rootWidget,selectedChild=sel)
+        except Exception:
+            bs.printException('error restoring state for',self.__class__)
+
+class SettingsWindow(Window):
+
+    def __init__(self,transition='inRight',originWidget=None):
+
+        bsInternal._setAnalyticsScreen('Settings Window')
+        
+        if originWidget is not None:
+            self._transitionOut = 'outScale'
+            scaleOrigin = originWidget.getScreenSpaceCenter()
+            transition = 'inScale'
+        else:
+            self._transitionOut = 'outRight'
+            scaleOrigin = None
+
+        width = 720
         height = 435
 
-        buttonHeight = 42
+        buttonHeight = 35 if gSmallUI else 42
 
         self._r = 'settingsWindow'
 
@@ -8231,11 +8491,12 @@ class SettingsWindow(Window):
             self._backButton = None
             bs.containerWidget(edit=self._rootWidget,onCancelCall=self._doBack)
         else:
-            self._backButton = b = bs.buttonWidget(parent=self._rootWidget,autoSelect=True,position=(40,height-55),size=(130,60),scale=0.8,textScale=1.2,
+            self._backButton = b = bs.buttonWidget(parent=self._rootWidget,autoSelect=True,position=(40,height-70),size=(130,60),scale=0.8,textScale=1.2,
                                                    label=bs.Lstr(resource='backText'),buttonType='back',onActivateCall=self._doBack)
             bs.containerWidget(edit=self._rootWidget,cancelButton=b)
 
         t = bs.textWidget(parent=self._rootWidget,position=(0,height-44),size=(width,25),
+                          # text=R.titleText,
                           text=bs.Lstr(resource=self._r+'.titleText'),
                           color=gTitleColor,hAlign="center",vAlign="center",maxWidth=130)
 
@@ -8243,8 +8504,8 @@ class SettingsWindow(Window):
             if self._backButton is not None:
                 bs.buttonWidget(edit=self._backButton,buttonType='backSmall',size=(60,60),label=bs.getSpecialChar('back'))
             # bs.textWidget(edit=t,hAlign='left',position=(103,height-45))
-
-
+        
+        
         # remind existing players that we moved this for about 10 launches...
         bsConfig = bs.getConfig()
         lc14146 = bsConfig.get('lc14146',0)
@@ -8252,24 +8513,26 @@ class SettingsWindow(Window):
         showAccountsMoved = True if lc14146 > 1 and lcSince < 10 else False
         if showAccountsMoved:
             t = bs.textWidget(parent=self._rootWidget,position=(width*0.5,50 if gSmallUI else 35),size=(0,0),
+                              # text=R.playerProfilesMovedText,
                               text=bs.Lstr(resource=self._r+'.playerProfilesMovedText'),
                               color=gInfoTextColor,flatness=1.0, scale=0.5,
                               hAlign="center",vAlign="center",maxWidth=width*0.8)
-
+        
         v = height - 80
         v -= 140 if gSmallUI and showAccountsMoved else 145
 
         #bw = 215 if gSmallUI else 180
-        bw = 280 if gSmallUI else 230
+        bw = 176 if gSmallUI else 235
         bh = 160 if gSmallUI and showAccountsMoved else 170
         #xOffs = 60 if gSmallUI else 36
-        xOffs = (105 if gSmallUI else 72) - bw # now unused
+        xOffs = (200 if gSmallUI else 145) - bw
         xOffs2 = xOffs+bw-7
         xOffs3 = xOffs+2*(bw-7)
-        #xOffs4 = xOffs+0.5*(bw-7)
-        xOffs4 = xOffs2
-        #xOffs5 = xOffs+1.5*(bw-7)
-        xOffs5 = xOffs3
+        xOffs4 = xOffs+0.5*(bw-7)
+        #xOffs4 = xOffs2
+        xOffs5 = xOffs+1.5*(bw-7)
+        #xOffs5 = xOffs3
+        xOffs6 = xOffs+2.5*(bw-7)
         def _bTitle(x,y,button,text):
             bs.textWidget(parent=self._rootWidget,text=text,position=(x+bw*0.47,y+bh*0.22),
                           maxWidth=bw*0.7,size=(0,0),hAlign='center',vAlign='center',drawController=button,
@@ -8281,7 +8544,7 @@ class SettingsWindow(Window):
         # iw = ih = 110
         # bs.imageWidget(parent=self._rootWidget,position=(xOffs+bw*0.49-iw*0.5,v+45),size=(iw,ih),
         #                            texture=bs.getTexture('accountIcon'),drawController=acb)
-
+            
         # pb = self._profilesButton = b = bs.buttonWidget(parent=self._rootWidget,autoSelect=True,position=(xOffs,v),size=(bw,bh),buttonType='square',
         #                                            label='',onActivateCall=self._doProfiles)
         # _bTitle(xOffs,v,pb,R.playerProfilesText)
@@ -8295,6 +8558,7 @@ class SettingsWindow(Window):
             pb = bsInternal._getSpecialWidget('backButton')
             bs.widget(edit=cb,leftWidget=pb)
         _bTitle(xOffs2,v,cb,
+                # R.controllersText)
                 bs.Lstr(resource=self._r+'.controllersText'))
         iw = ih = 130
         bs.imageWidget(parent=self._rootWidget,position=(xOffs2+bw*0.49-iw*0.5,v+35),size=(iw,ih),
@@ -8306,17 +8570,19 @@ class SettingsWindow(Window):
             pb = bsInternal._getSpecialWidget('partyButton')
             bs.widget(edit=gb,upWidget=pb,rightWidget=pb)
         _bTitle(xOffs3,v,gb,
+                # R.graphicsText)
                 bs.Lstr(resource=self._r+'.graphicsText'))
         iw = ih = 110
         bs.imageWidget(parent=self._rootWidget,position=(xOffs3+bw*0.49-iw*0.5,v+42),size=(iw,ih),
                                    texture=bs.getTexture('graphicsIcon'),drawController=gb)
-
+        
         v -= (bh-5)
 
 
         ab = self._audioButton = b = bs.buttonWidget(parent=self._rootWidget,autoSelect=True,position=(xOffs4,v),size=(bw,bh),buttonType='square',
                                                 label='',onActivateCall=self._doAudio)
         _bTitle(xOffs4,v,ab,
+                # R.audioText)
                 bs.Lstr(resource=self._r+'.audioText'))
         iw = ih = 120
         bs.imageWidget(parent=self._rootWidget,position=(xOffs4+bw*0.49-iw*0.5+5,v+35),size=(iw,ih),
@@ -8327,11 +8593,23 @@ class SettingsWindow(Window):
         avb = self._advancedButton = b = bs.buttonWidget(parent=self._rootWidget,autoSelect=True,position=(xOffs5,v),size=(bw,bh),buttonType='square',
                                                          label='',onActivateCall=self._doAdvanced)
         _bTitle(xOffs5,v,avb,
+                # R.advancedText)
                 bs.Lstr(resource=self._r+'.advancedText'))
         iw = ih = 120
         bs.imageWidget(parent=self._rootWidget,position=(xOffs5+bw*0.49-iw*0.5+5,v+35),size=(iw,ih),
                        color=(0.8,0.95,1),
                        texture=bs.getTexture('advancedIcon'),drawController=avb)
+                       
+        jrmp = self._jrmpButton = b = bs.buttonWidget(parent=self._rootWidget,autoSelect=True,position=(xOffs6,v),size=(bw,bh),buttonType='square',
+                                                         label='',onActivateCall=self._doJRMP)
+        _bTitle(xOffs6,v,jrmp,
+                # R.advancedText)
+                bs.Lstr(resource=self._r+'.jrmpText'))
+        iw = ih = 120
+        bs.imageWidget(parent=self._rootWidget,position=(xOffs6+bw*0.47-iw*0.5+5,v+40),size=(iw,ih),
+                       color=(1,1,1),
+                       texture=bs.getTexture('jrmpIcon'),drawController=jrmp)
+                       
 
 
         # self._profilesButton = b = bs.buttonWidget(parent=self._rootWidget,position=(53,v),size=(width-110,buttonHeight),
@@ -8395,7 +8673,7 @@ class SettingsWindow(Window):
         #     elif selName == 'Graphics': selected = self._graphicsButton
         #     elif selName == 'Audio': selected = self._audioButton
         #     elif selName == 'Advanced': selected = self._advancedButton
-        # except Exception as ex:
+        # except Exception,ex:
         #     print 'Exception restoring settings UI state:',ex
 
         # if selected is not None: bs.containerWidget(edit=self._rootWidget,selectedChild=selected)
@@ -8435,6 +8713,11 @@ class SettingsWindow(Window):
         self._saveState()
         bs.containerWidget(edit=self._rootWidget,transition='outLeft')
         uiGlobals['mainMenuWindow'] = AdvancedSettingsWindow(originWidget=self._advancedButton).getRootWidget()
+        
+    def _doJRMP(self):
+        self._saveState()
+        bs.containerWidget(edit=self._rootWidget,transition='outLeft')
+        uiGlobals['mainMenuWindow'] = JRMPWindow(originWidget=self._jrmpButton).getRootWidget()
 
     def _saveState(self):
         try:
@@ -8445,6 +8728,7 @@ class SettingsWindow(Window):
             elif sel == self._graphicsButton: selName = 'Graphics'
             elif sel == self._audioButton: selName = 'Audio'
             elif sel == self._advancedButton: selName = 'Advanced'
+            elif sel == self._jrmpButton: selName = 'Joyride Modpack Options'
             elif sel == self._backButton: selName = 'Back'
             else: raise Exception("unrecognized selection")
             gWindowStates[self.__class__.__name__] = {'selName':selName}
@@ -8461,6 +8745,7 @@ class SettingsWindow(Window):
             elif selName == 'Graphics': sel = self._graphicsButton
             elif selName == 'Audio': sel = self._audioButton
             elif selName == 'Advanced': sel = self._advancedButton
+            elif selName == 'Joyride Modpack Options': sel = self._jrmpButton
             elif selName == 'Back': sel = self._backButton
             else: sel = self._controllersButton
             #else: sel = self._profilesButton
@@ -8495,7 +8780,7 @@ class SelectMapWindow(Window):
 
         # if gToolbars:
         #     bs.widget(edit=b,upWidget=bsInternal._getSpecialWidget('partyButton'))
-
+            
         bs.containerWidget(edit=self._rootWidget,cancelButton=b)
         t = bs.textWidget(parent=self._rootWidget,position=(width*0.5,height-46),size=(0,0),maxWidth=260,scale=1.1,
                           text=bs.Lstr(resource='mapSelectTitleText',subs=[('${GAME}',self._gameClass.getDisplayString())]),
@@ -8505,7 +8790,7 @@ class SelectMapWindow(Window):
         v = height - 70
         self._scrollWidth = width-80
         self._scrollHeight = height - 140
-
+        
         self._scrollWidget = bs.scrollWidget(parent=self._rootWidget,position=(40,v-self._scrollHeight),
                                              size=(self._scrollWidth,self._scrollHeight))
         bs.containerWidget(edit=self._rootWidget,selectedChild=self._scrollWidget)
@@ -8556,14 +8841,14 @@ class SelectMapWindow(Window):
         mapList = self._gameClass.getSupportedMaps(self._sessionType)
         mapListSorted = list(mapList)
         mapListSorted.sort()
-
+        
         # unOwnedMaps = set()
         # for mapSection in _getStoreLayout()['maps']:
         #     for m in mapSection['items']:
         #         if not bsInternal._getPurchased(m['name']):
         #             unOwnedMaps.add(m['mapType'].name)
         unOwnedMaps = bsMap._getUnOwnedMaps()
-
+        
         for m in mapListSorted:
             # disallow ones we don't own
             if m in unOwnedMaps: continue
@@ -8577,20 +8862,20 @@ class SelectMapWindow(Window):
             else: print 'Error: no map preview texture for map:',m
 
         #print 'FIN MAP LIST',self._maps
-
+        
         # make a list of spaz icons
         # self._spazzes = bsSpaz.getAppearances()
         # self._spazzes.sort()
         # self._iconTextures = [bs.getTexture(bsSpaz.appearances[s].iconTexture) for s in self._spazzes]
         # self._iconTintTextures = [bs.getTexture(bsSpaz.appearances[s].iconMaskTexture) for s in self._spazzes]
         # maskTexture=bs.getTexture('characterIconMask')
-
+        
         count = len(self._maps)
-
+        
         columns = 2
         rows = int(math.ceil(float(count)/columns))
-
-        buttonWidth = 220
+        
+        buttonWidth = 225
         buttonHeight = buttonWidth * 0.5
         buttonBufferH = 16
         buttonBufferV = 19
@@ -8624,7 +8909,7 @@ class SelectMapWindow(Window):
                 if y == 0: bs.widget(edit=b,upWidget=self._cancelButton)
                 if x == columns-1 and gToolbars:
                     bs.widget(edit=b, rightWidget=bsInternal._getSpecialWidget("partyButton"))
-
+                    
                 bs.widget(edit=b,showBufferTop=60,showBufferBottom=60)
                 if self._maps[index][0] == self._previousMap:
                     bs.containerWidget(edit=self._subContainer,selectedChild=b,visibleChild=b)
@@ -8633,7 +8918,7 @@ class SelectMapWindow(Window):
                               size=(0,0),scale=0.5,maxWidth=buttonWidth,
                               drawController=b,hAlign='center',vAlign='center',color=(0.8,0.8,0.8,0.8))
                 index += 1
-
+                
                 if index >= count: break
             if index >= count: break
         self._getMoreMapsButton = b = bs.buttonWidget(parent=self._subContainer,
@@ -8656,7 +8941,7 @@ class SelectMapWindow(Window):
 
     def _onStoreClose(self):
         self._refresh(selectGetMoreMapsButton=True)
-
+        
     def _select(self,mapName):
         self._config['settings']['map'] = mapName
         bs.containerWidget(edit=self._rootWidget,transition='outRight')
@@ -8692,7 +8977,7 @@ class GameSettingsSelectWindow(Window):
         else:
             if config is None: self._editInfo = {'editType':'add'}
             else: self._editInfo = {'editType':'edit'}
-
+        
         #self._editInfo = editInfo
         self._r = 'gameSettingsWindow'
 
@@ -8769,7 +9054,7 @@ class GameSettingsSelectWindow(Window):
         if gToolbars:
             pb = bsInternal._getSpecialWidget('partyButton')
             bs.widget(edit=addButton,rightWidget=pb,upWidget=pb)
-
+            
         t = bs.textWidget(parent=self._rootWidget,position=(-8,height-70+yExtra2),size=(width,25),
                           text=gameClass.getDisplayString(),
                           color=gTitleColor,maxWidth=235,
@@ -8795,7 +9080,7 @@ class GameSettingsSelectWindow(Window):
 
         # keep track of all the selectable widgets we make so we can wire them up conveniently
         widgetColumn = []
-
+        
         # map select button
         t = bs.textWidget(parent=self._subContainer,position=(h+49,v-63),size=(100,30),maxWidth=110,
                           text=bs.Lstr(resource='mapText'),hAlign="left",color=(0.8,0.8,0.8,1.0),vAlign="center")
@@ -8814,7 +9099,7 @@ class GameSettingsSelectWindow(Window):
                                         scale=0.7,
                                         label=bs.Lstr(resource='mapSelectText'))
         widgetColumn.append([b])
-
+        
         mapNameText = bs.textWidget(parent=self._subContainer,position=(h+363-123,v-114),size=(100,30),flatness=1.0,shadow=1.0,
                                     scale=0.55,maxWidth=256*0.7*0.8,
                                     #text=bsMap.getLocalizedMapName(self._map),
@@ -8838,7 +9123,7 @@ class GameSettingsSelectWindow(Window):
 
             mw1 = 280
             mw2 = 70
-
+            
             # handle types with choices specially:
             if 'choices' in setting:
 
@@ -8888,7 +9173,7 @@ class GameSettingsSelectWindow(Window):
                 b2 = bs.buttonWidget(parent=self._subContainer,position=(h+509+5,v),size=(28,28),label="+",
                                      autoSelect=True,onActivateCall=bs.Call(self._inc,t,minValue,maxValue,increment,valueType,settingName),repeat=True)
                 widgetColumn.append([b1,b2])
-
+                
             elif valueType == bool:
                 v -= spacing
                 t = bs.textWidget(parent=self._subContainer,position=(h+50,v),size=(100,30),
@@ -8901,10 +9186,10 @@ class GameSettingsSelectWindow(Window):
                                       autoSelect=True,textColor=(0.8,0.8,0.8),
                                       value=value,onValueChangeCall=bs.Call(self._checkValueChange,settingName,t))
                 widgetColumn.append([c])
-
+                
             else: raise Exception()
 
-
+            
         # ok now wire up the column
         try:
             prevWidgets = None
@@ -8929,7 +9214,7 @@ class GameSettingsSelectWindow(Window):
 
     def _getLocalizedSettingName(self,name):
         return bs.Lstr(translate=('settingNames',name))
-
+        
     def _selectMap(self):
         # replace ourself with the map-select UI
         bs.containerWidget(edit=self._rootWidget,transition='outLeft')
@@ -8971,7 +9256,7 @@ class GameSettingsSelectWindow(Window):
 
 class AddGameWindow(Window):
 
-
+        
     def __init__(self,editSession,transition='inRight'):
         self._editSession = editSession
         self._r = 'addGameWindow'
@@ -8980,11 +9265,11 @@ class AddGameWindow(Window):
         topExtra = 30 if gSmallUI else 20
 
         self._scrollWidth = 210
-
+        
         self._rootWidget = bs.containerWidget(size=(self._width,self._height+topExtra),transition=transition,
                                               scale=2.17 if gSmallUI else 1.5 if gMedUI else 1.0,
                                               stackOffset=(0,1) if gSmallUI else (0,0))
-
+        
         self._backButton = b = bs.buttonWidget(parent=self._rootWidget,position=(58,self._height-53),
                                          size=(165,70),scale=0.75,textScale=1.2,label=bs.Lstr(resource='backText'),
                                          autoSelect=True,
@@ -8995,8 +9280,9 @@ class AddGameWindow(Window):
 
         if gToolbars:
             bs.widget(edit=selectButton,rightWidget=bsInternal._getSpecialWidget('partyButton'))
-
+            
         bs.textWidget(parent=self._rootWidget,position=(self._width*0.5,self._height-28),size=(0,0),scale=1.0,
+                      # text=R.titleText,
                       text=bs.Lstr(resource=self._r+'.titleText'),
                       hAlign='center',color=gTitleColor,maxWidth=250,
                       vAlign='center')
@@ -9025,7 +9311,7 @@ class AddGameWindow(Window):
         self._scrollWidget = bs.scrollWidget(parent=self._rootWidget,position=(61,v-scrollHeight),size=(self._scrollWidth,scrollHeight),highlight=False)
         bs.widget(edit=self._scrollWidget,upWidget=self._backButton,leftWidget=self._backButton,rightWidget=selectButton)
         self._column = None
-
+        
         v -= 35
         bs.containerWidget(edit=self._rootWidget,cancelButton=self._backButton,startButton=selectButton)
         self._selectedGameType = None
@@ -9033,7 +9319,7 @@ class AddGameWindow(Window):
         bs.containerWidget(edit=self._rootWidget,selectedChild=self._scrollWidget)
 
         self._refresh()
-
+        
 
     def _refresh(self,selectGetMoreGamesButton=False):
 
@@ -9044,10 +9330,10 @@ class AddGameWindow(Window):
 
         self._column = bs.columnWidget(parent=self._scrollWidget)
         gameTypes = [gt for gt in bsUtils.getGameTypes() if gt.supportsSessionType(self._editSession._sessionType)]
-
+        
         # sort in the current language
         gameTypes.sort(key=lambda g:g.getDisplayString().evaluate())
-
+            
         for i,gameType in enumerate(gameTypes):
             t = bs.textWidget(parent=self._column,position=(0,0),size=(self._width-88,24),
                               # text=gameType.getNameLocalized(),
@@ -9060,7 +9346,7 @@ class AddGameWindow(Window):
                               selectable=True,onActivateCall=bs.Call(bs.realTimer,100,self._selectButton.activate))
             if i == 0: bs.widget(edit=t,upWidget=self._backButton)
             #bs.containerWidget(edit=self._column,selectedChild=t,visibleChild=t)
-
+            
         self._getMoreGamesButton = bs.buttonWidget(parent=self._column,autoSelect=True,
                                                    label=bs.Lstr(resource=self._r+'.getMoreGamesText'),
                                                    color=(0.54,0.52,0.67),
@@ -9072,9 +9358,9 @@ class AddGameWindow(Window):
                                visibleChild=self._getMoreGamesButton)
         #ifbs.containerWidget(edit=col,visibleChild=
                                                    #position=(55,v-scrollHeight-16))
-
+            
         #bs.widget(edit=t,downWidget=self._getMoreGamesButton) # last game type goes to this..
-
+        
     def _onGetMoreGamesPress(self):
         if bsInternal._getAccountState() != 'SIGNED_IN':
             showSignInPrompt()
@@ -9083,7 +9369,7 @@ class AddGameWindow(Window):
 
     def _onStoreClose(self):
         self._refresh(selectGetMoreGamesButton=True)
-
+        
     def _add(self):
         bsInternal._lockAllInput() # make sure no more commands happen
         bs.realTimer(100,bsInternal._unlockAllInput)
@@ -9134,10 +9420,11 @@ class EditPlaylistWindow(Window):
 
         if gToolbars:
             bs.widget(edit=b,rightWidget=bsInternal._getSpecialWidget('partyButton'))
-
+            
         bs.widget(edit=cancelButton,leftWidget=cancelButton,rightWidget=saveButton)
 
         t = bs.textWidget(parent=self._rootWidget,position=(-10,self._height-50),size=(self._width,25),
+                          # text=R.titleText,
                           text=bs.Lstr(resource=self._r+'.titleText'),
                           color=gTitleColor,scale=1.05,
                           hAlign="center",vAlign="center",maxWidth=270)
@@ -9145,19 +9432,21 @@ class EditPlaylistWindow(Window):
         v = self._height - 115
 
         self._scrollWidth = self._width-205
-
+        
         bs.textWidget(parent=self._rootWidget,
+                      # text=R.listNameText,
                       text=bs.Lstr(resource=self._r+'.listNameText'),
                       position=(196,v+31),maxWidth=150,
                       color=(0.8,0.8,0.8,0.5),size=(0,0),scale=0.75,hAlign='right',vAlign='center')
 
-
+        
         self._textField = bs.textWidget(parent=self._rootWidget,position=(210,v+7),size=(self._scrollWidth-53,43),
                                         text=self._editSession._name,hAlign="left",
                                         vAlign="center",
                                         maxChars=40,
                                         autoSelect=True,
                                         color=(0.9,0.9,0.9,1.0),
+                                        # description=R.listNameText,
                                         description=bs.Lstr(resource=self._r+'.listNameText'),
                                         editable=True,padding=4,
                                         onReturnPressCall=self._savePressWithSound)
@@ -9181,7 +9470,7 @@ class EditPlaylistWindow(Window):
 
         s = 1.03 if gSmallUI else 1.36 if gMedUI else 1.74
         v -= 63.0*s
-
+        
         addGameButton = bs.buttonWidget(parent=self._rootWidget,position=(h,v),size=(110,61.0*s),
                                         onActivateCall=self._add,
                                         onSelectCall=bs.Call(self._setUISelection,'addButton'),
@@ -9190,6 +9479,7 @@ class EditPlaylistWindow(Window):
                                         color=bColor,
                                         textColor=bTextColor,
                                         textScale=0.8,
+                                        # label=R.addGameText
                                         label=bs.Lstr(resource=self._r+'.addGameText'))
         #bs.widget(edit=cancelButton,downWidget=addGameButton)
         bs.widget(edit=addGameButton,upWidget=self._textField)
@@ -9203,6 +9493,7 @@ class EditPlaylistWindow(Window):
                                                             color=bColor,
                                                             textColor=bTextColor,
                                                             textScale=0.8,
+                                                            # label=R.editGameText
                                                             label=bs.Lstr(resource=self._r+'.editGameText'))
         v -= 63.0*s
 
@@ -9213,6 +9504,7 @@ class EditPlaylistWindow(Window):
                                                buttonType='square',
                                                color=bColor,
                                                textColor=bTextColor,
+                                               # label=R.removeGameText
                                                label=bs.Lstr(resource=self._r+'.removeGameText'))
         v -= 40
         h += 9
@@ -9242,7 +9534,7 @@ class EditPlaylistWindow(Window):
         bs.widget(edit=scrollWidget,leftWidget=addGameButton,rightWidget=scrollWidget)
         self._columnWidget = bs.columnWidget(parent=scrollWidget)
         bs.widget(edit=self._columnWidget,upWidget=self._textField)
-
+        
         for button in [addGameButton,editGameButton,removeGameButton]:
             bs.widget(edit=button,leftWidget=button,rightWidget=scrollWidget)
 
@@ -9281,7 +9573,7 @@ class EditPlaylistWindow(Window):
     # def _editWithSound(self):
         # bs.playSound(bs.getSound('swish'))
         # self._edit()
-
+        
     def _savePress(self):
         newName = bs.textWidget(query=self._textField)
         if newName != self._editSession._existingPlaylist and newName in bs.getConfig()[self._editSession._configName+' Playlists']:
@@ -9306,7 +9598,7 @@ class EditPlaylistWindow(Window):
                                         'playlistType':self._editSession._configName,
                                         'playlistName':self._editSession._existingPlaylist})
             #del bs.getConfig()[self._editSession._configName+' Playlists'][self._editSession._existingPlaylist]
-
+        
         #print 'ADDING PLAYLIST',repr(self._editSession._configName),newName,self._editSession._playlist
 
         bsInternal._addTransaction({'type':'ADD_PLAYLIST',
@@ -9316,7 +9608,7 @@ class EditPlaylistWindow(Window):
         bsInternal._runTransactions()
         # bs.getConfig()[self._editSession._configName+' Playlists'][newName] = self._editSession._playlist
         # bs.writeConfig()
-
+        
         bs.containerWidget(edit=self._rootWidget,transition='outRight')
         bs.playSound(bs.getSound('gunCocking'))
         uiGlobals['mainMenuWindow'] = PlaylistWindow(transition='inLeft',sessionType=self._editSession._sessionType,
@@ -9395,7 +9687,7 @@ def _setupPlaylistTypeVars(obj,sessionType):
         obj._configName = 'Team Tournament'
         obj._windowTitleName = bs.Lstr(resource='playModes.teamsText',fallback='teamsText')
         obj._sessionType = bs.TeamsSession
-
+        
     elif issubclass(sessionType,bs.FreeForAllSession):
 
         playModeName = bs.Lstr(resource='playModes.freeForAllText',fallback='freeForAllText')
@@ -9409,7 +9701,7 @@ def _setupPlaylistTypeVars(obj,sessionType):
 
     obj._defaultListName = bs.Lstr(resource='defaultGameListNameText',subs=[('${PLAYMODE}',playModeName)])
     obj._defaultNewListName = bs.Lstr(resource='defaultNewGameListNameText',subs=[('${PLAYMODE}',playModeName)])
-
+    
 
 
 class GameListEditSession(object):
@@ -9417,7 +9709,7 @@ class GameListEditSession(object):
     def __init__(self,sessionType,existingPlaylist=None,transition='inRight',playlist=None,playlistName=None):
 
         bsConfig = bs.getConfig()
-
+        
         # since we may be showing our map list momentarily,
         # lets go ahead and preload all map preview textures
         bsMap.preloadPreviewMedia()
@@ -9430,7 +9722,7 @@ class GameListEditSession(object):
         # make sure config exists
         if self._configNameFull not in bsConfig:
             bsConfig[self._configNameFull] = {}
-
+            
         # try: self._playlists = bsConfig[self._configName+' Playlists']
         # except Exception: self._playlists = bsConfig[self._configName+' Playlists'] = {}
 
@@ -9513,7 +9805,7 @@ def standardGameConfigUI(gameClass,sessionType,config,completionCall):
     prevWindow = uiGlobals['mainMenuWindow']
     uiGlobals['mainMenuWindow'] = GameSettingsSelectWindow(gameClass,sessionType,config,completionCall=completionCall).getRootWidget()
     bs.containerWidget(edit=prevWindow,transition='outLeft')
-
+        
 
 class PlaylistWindow(Window):
 
@@ -9526,7 +9818,7 @@ class PlaylistWindow(Window):
         else:
             self._transitionOut = 'outRight'
             scaleOrigin = None
-
+        
         global gMainWindow
 
         self._sessionType = sessionType
@@ -9541,7 +9833,7 @@ class PlaylistWindow(Window):
         spacing = 40
         buttonWidth = 350
         topExtra = 20 if gSmallUI else 0
-
+        
         self._rootWidget = bs.containerWidget(size=(self._width,self._height+topExtra),transition=transition,
                                               scaleOriginStackOffset=scaleOrigin,
                                               scale = 2.05 if gSmallUI else 1.5 if gMedUI else 1.0,
@@ -9559,7 +9851,7 @@ class PlaylistWindow(Window):
 
         if gDoAndroidNav:
             bs.buttonWidget(edit=b,buttonType='backSmall',size=(60,60),label=bs.getSpecialChar('back'))
-
+        
         v = self._height - 59
         h = 41
         hspacing = 15
@@ -9635,12 +9927,12 @@ class PlaylistWindow(Window):
         bs.widget(edit=backButton,rightWidget=scrollWidget)
         c = self._columnWidget = bs.columnWidget(parent=scrollWidget)
 
-
+        
         h = 145
         v = self._height - self._scrollHeight - 109
 
 
-
+        
         try: self._doRandomizeVal = bs.getConfig()[self._configName+' Playlist Randomize']
         except Exception: self._doRandomizeVal = 0
         # def _cbCallback(val):
@@ -9662,7 +9954,7 @@ class PlaylistWindow(Window):
         #                                                     autoSelect=True,text=R.showTutorialText,maxWidth=220,
         #                                                     textColor=(0.8,0.8,0.8),value=showTutorial,onValueChangeCall=_cbCallback)
 
-
+        
         for b in [newButton,deleteButton,editButton,duplicateButton]:
             bs.widget(edit=b,rightWidget=scrollWidget)
         #bs.widget(edit=scrollWidget,leftWidget=editButton,rightWidget=self._playButton)
@@ -9676,13 +9968,13 @@ class PlaylistWindow(Window):
         # bs.widget(edit=cb2,upWidget=duplicateButton)
 
         # bs.widget(edit=self._playButton,downWidget=scrollWidget)
-
+        
         # make sure config exists
         self._configNameFull = self._configName+' Playlists'
 
         if self._configNameFull not in bs.getConfig():
             bs.getConfig()[self._configNameFull] = {}
-
+        
         # try: self._playlists = bs.getConfig()[self._configName+' Playlists']
         # except Exception: bs.getConfig()[self._configName+' Playlists'] = self._playlists = {}
 
@@ -9751,7 +10043,7 @@ class PlaylistWindow(Window):
 
         # make sure everything is unicode now
         items = [(i[0].decode('utf-8'),i[1]) if type(i[0]) is not unicode else i for i in items]
-
+            
         items.sort(key=lambda x:x[0].lower())
 
         #items = [[self._defaultListName,None]] + items # default is always first
@@ -9806,7 +10098,7 @@ class PlaylistWindow(Window):
             bs.screenMessage(bs.Lstr(translate=('serverResponses','Max number of playlists reached.')),color=(1,0,0))
             bs.playSound(bs.getSound('error'))
             return
-
+        
         self._savePlaylistSelection() # in case they cancel so we can return to this state..
         GameListEditSession(sessionType=self._sessionType)
         bs.containerWidget(edit=self._rootWidget,transition='outLeft')
@@ -9834,7 +10126,7 @@ class PlaylistWindow(Window):
         # try: del bs.getConfig()[self._configName+' Playlists'][self._selectedPlaylist]
         # except Exception: pass
         #bs.writeConfig()
-
+        
         bs.playSound(bs.getSound('shieldDown'))
 
         # (we don't use len()-1 here because the default list adds one)
@@ -9849,20 +10141,20 @@ class PlaylistWindow(Window):
             bs.screenMessage(bs.Lstr(resource='notSignedInErrorText'),color=(1,0,0))
             bs.playSound(bs.getSound('error'))
             return
-
+        
         bsUI2.SharePlaylistImportWindow(originWidget=self._importButton,onSuccessCallback=bs.WeakCall(self._onPlaylistImportSuccess))
 
     def _onPlaylistImportSuccess(self):
         self._refresh()
-
-    def _onSharePlaylistResponse(self,name,response):
+    
+    def _onSharePlaylistResponse(self,response):
         import bsUI2
         if response is None:
             bs.screenMessage(bs.Lstr(resource='internal.unavailableNoConnectionText'),color=(1,0,0))
             bs.playSound(bs.getSound('error'))
             return
-        bsUI2.SharePlaylistResultsWindow(name,response)
-
+        bsUI2.SharePlaylistResultsWindow(response)
+        
     def _sharePlaylist(self):
         # gotta be signed in for this to work..
         if bsInternal._getAccountState() != 'SIGNED_IN':
@@ -9880,11 +10172,11 @@ class PlaylistWindow(Window):
                                     'expireTime':time.time()+5,
                                     'playlistType':self._configName,
                                     'playlistName':self._selectedPlaylist},
-                                   callback=bs.WeakCall(self._onSharePlaylistResponse,self._selectedPlaylist))
+                                   callback=bs.WeakCall(self._onSharePlaylistResponse))
         bsInternal._runTransactions()
         bs.screenMessage(bs.Lstr(resource='sharingText'))
 
-
+        
     def _deletePlaylist(self):
         if self._selectedPlaylist is None: return
         #if self._selectedPlaylist == self._defaultListName:
@@ -9893,7 +10185,7 @@ class PlaylistWindow(Window):
             bs.screenMessage(bs.Lstr(resource=self._r+'.cantDeleteDefaultText'))
         else:
             ConfirmWindow(bs.Lstr(resource=self._r+'.deleteConfirmText',subs=[('${LIST}',self._selectedPlaylist)]),self._doDeletePlaylist,450,150)
-
+    
     def _getPlaylistDisplayName(self,playlist):
         if playlist == '__default__':
             return self._defaultListName
@@ -9903,20 +10195,19 @@ class PlaylistWindow(Window):
     def _duplicatePlaylist(self):
 
         if self._selectedPlaylist is None: return
+        #if self._selectedPlaylist == self._defaultListName:
         if self._selectedPlaylist == '__default__':
             pl = self._getDefaultListCall()
         else:
-            pl = bs.getConfig()[self._configNameFull].get(self._selectedPlaylist)
-            if pl is None:
-                bs.playSound(bs.getSound('error'))
-                return
+            #pl = self._playlists[self._selectedPlaylist]
+            pl = bs.getConfig()[self._configNameFull][self._selectedPlaylist]
 
         # clamp at our max playlist number
         if len(bs.getConfig()[self._configNameFull]) > self._maxPlaylists:
             bs.screenMessage(bs.Lstr(translate=('serverResponses','Max number of playlists reached.')),color=(1,0,0))
             bs.playSound(bs.getSound('error'))
             return
-
+            
         copyText = bs.Lstr(resource='copyOfText').evaluate()
         copyWord = copyText.replace('${NAME}','').strip() # get just 'Copy' or whatnot
         # find a valid dup name that doesn't exist
@@ -9943,12 +10234,12 @@ class PlaylistWindow(Window):
         bsInternal._runTransactions()
         # self._playlists[testName] = copy.deepcopy(pl)
         # bs.writeConfig()
-
+        
         bs.playSound(bs.getSound('gunCocking'))
         self._refresh(selectPlaylist=testName)
 
 class PlayOptionsWindow(PopupWindow):
-
+    
     # def __del__(self):
     #     print '~PlayOptionsWindow()'
 
@@ -9958,7 +10249,7 @@ class PlayOptionsWindow(PopupWindow):
         self._r = 'gameListWindow'
         self._delegate = delegate
 
-
+        
         # store state for when we exit the next game..
         # if issubclass(sessionType,bs.TeamsSession):
         #     gMainWindow = "Team Game Select"
@@ -9968,12 +10259,12 @@ class PlayOptionsWindow(PopupWindow):
         _setupPlaylistTypeVars(self,sessionType)
 
         #print 'GOT SESSION TYPE',sessionType,'PLAYLIST',playlist,'configname',self._configName
-
+        
         self._transitioningOut = False
-
+        
         try: self._doRandomizeVal = bs.getConfig()[self._configName+' Playlist Randomize']
         except Exception: self._doRandomizeVal = 0
-
+        
         self._sessionType = sessionType
         self._playlist = playlist
 
@@ -10036,11 +10327,11 @@ class PlayOptionsWindow(PopupWindow):
         showShuffleCheckBox = True if gameCount > 1 else False
 
         if showShuffleCheckBox: self._height += 40
-
+        
         # creates our _rootWidget
         scale = 1.69 if gSmallUI else 1.1 if gMedUI else 0.85
         PopupWindow.__init__(self,position=scaleOrigin,size=(self._width,self._height),scale=scale)
-
+        
         # self._rootWidget = bs.containerWidget(size=(self._width,self._height),transition=transition,
         #                                       scale=1.69 if gSmallUI else 1.1 if gMedUI else 0.85,
         #                                       stackOffset=(0,0) if gSmallUI else (0,0),
@@ -10074,7 +10365,7 @@ class PlayOptionsWindow(PopupWindow):
                                       or ('isUnOwnedGame' in entry and entry['isUnOwnedGame'])) else True
 
                     if owned: self._haveAtLeastOneOwned = True
-
+                    
                     try:
                         # desc = bsUtils.resolveTypeName(entry['type']).getConfigDescriptionLocalized(entry)
                         desc = bsUtils.resolveTypeName(entry['type']).getConfigDisplayString(entry)
@@ -10085,7 +10376,7 @@ class PlayOptionsWindow(PopupWindow):
                         desc = bs.Lstr(value='(invalid)')
                         descColor = (1,0,0)
 
-
+                    
                     b = bs.buttonWidget(parent=self._rootWidget,size=(sc*240.0,sc*120.0),
                                     position=(h,v),
                                     texture=bs.getTexture(texName if owned else 'empty'),
@@ -10115,7 +10406,7 @@ class PlayOptionsWindow(PopupWindow):
                                        texture=bs.getTexture('lock'))
 
 
-
+        
         def _cbCallback(val):
             self._doRandomizeVal = val
             bs.getConfig()[self._configName+' Playlist Randomize'] = self._doRandomizeVal
@@ -10125,6 +10416,7 @@ class PlayOptionsWindow(PopupWindow):
             self._shuffleCheckBox = bs.checkBoxWidget(parent=self._rootWidget,position=(110,200),scale=1.0,size=(250,30),
                                                       #color=(0.5,0.5,0.7),
                                                       autoSelect=True,
+                                                      #text=R.shuffleGameOrderText,
                                                       text=bs.Lstr(resource=self._r+'.shuffleGameOrderText'),
                                                       maxWidth=300,
                                                       textColor=(0.8,0.8,0.8),value=self._doRandomizeVal,onValueChangeCall=_cbCallback)
@@ -10137,17 +10429,18 @@ class PlayOptionsWindow(PopupWindow):
         self._showTutorialCheckBox = cb = bs.checkBoxWidget(parent=self._rootWidget,position=(110,151),scale=1.0,size=(250,30),
                                                             #color=(0.5,0.5,0.7),
                                                             autoSelect=True,
+                                                            # text=R.showTutorialText,
                                                             text=bs.Lstr(resource=self._r+'.showTutorialText'),
                                                             maxWidth=300,
                                                             textColor=(0.8,0.8,0.8),value=showTutorial,onValueChangeCall=_cbCallback)
-
+        
         self._playButton = bs.buttonWidget(parent=self._rootWidget,position=(70,44),size=(200,45),scale=1.8,
                                            textResScale=1.5,
                                            onActivateCall=self._onPlayPress,autoSelect=True,
                                            label=bs.Lstr(resource='playText'))
 
         bs.widget(edit=self._playButton,upWidget=self._showTutorialCheckBox)
-
+        
         bs.containerWidget(edit=self._rootWidget,startButton=self._playButton,
                            cancelButton=self._cancelButton,selectedChild=self._playButton)
 
@@ -10155,18 +10448,18 @@ class PlayOptionsWindow(PopupWindow):
         self._updateTimer = bs.Timer(1000,bs.WeakCall(self._update),timeType='real',repeat=True)
         self._update()
 
-
+        
     def _doesTargetPlaylistExist(self):
         if self._playlist == '__default__': return True
         try: return (self._playlist in bs.getConfig()[self._configName+' Playlists'])
         except Exception: return False
-
+        
     def _update(self):
         # all we do here is make sure our targeted playlist still exists..
         # and close ourself if not..
         if not self._doesTargetPlaylistExist():
             self._transitionOut()
-
+        
     def _transitionOut(self,transition='outScale'):
         if not self._transitioningOut:
             self._transitioningOut = True
@@ -10175,10 +10468,10 @@ class PlayOptionsWindow(PopupWindow):
     def onPopupCancel(self):
         bs.playSound(bs.getSound('swish'))
         self._transitionOut()
-
+            
     def _onCancelPress(self):
         self._transitionOut()
-
+        
     def _onPlayPress(self):
 
         # disallow if our playlist has disappeared..
@@ -10189,7 +10482,7 @@ class PlayOptionsWindow(PopupWindow):
             bs.playSound(bs.getSound('error'))
             bs.screenMessage(bs.Lstr(resource='playlistNoValidGamesErrorText'),color=(1,0,0))
             return
-
+        
         bs.getConfig()[self._configName+' Playlist Selection'] = self._playlist
         bs.writeConfig()
         bsInternal._fadeScreen(False,time=250,endCall=self._runSelectedPlaylist)
@@ -10207,9 +10500,9 @@ class PlayOptionsWindow(PopupWindow):
             bs.printException("exception running session",self._sessionType)
             # drop back into a main menu session..
             bsInternal._newHostSession(bsMainMenu.MainMenuSession)
-
+        
 class TeamsWindow(Window):
-
+    
     # def __del__(self):
     #     print '~TeamsWindow()'
 
@@ -10224,7 +10517,7 @@ class TeamsWindow(Window):
         else:
             self._transitionOut = 'outRight'
             scaleOrigin = None
-
+        
         global gMainWindow
         # store state for when we exit the next game..
         if issubclass(sessionType,bs.TeamsSession):
@@ -10239,13 +10532,13 @@ class TeamsWindow(Window):
         self._sessionType = sessionType
 
         #print 'FOO IS', bsInternal._getAccountMiscReadVal('foo',123)
-
+        
         # on new installations, lets go ahead and create a few playlists besides the hard-coded default one:
         if not bsInternal._getAccountMiscVal('madeStandardPlaylists',False):
             bsInternal._addTransaction({'type':'ADD_PLAYLIST',
                                         'playlistType':'Free-for-All',
                                         'playlistName':bs.Lstr(resource='singleGamePlaylistNameText').evaluate().replace('${GAME}',bs.Lstr(translate=('gameNames','Death Match')).evaluate()),
-                                        'playlist':[{'settings':{'Epic Mode':False,'Kills to Win Per Player':10,'Respawn Times':1.0,'Time Limit':300,'map':'Doom Shroom'},
+                                        'playlist':[{'settings':{'Epic Mode':False,'Kills to Win Per Player':10,'Respawn Times':1.0,'Time Limit':300,'map':'Doom Shroom Large'},
                                                      'type':'bsDeathMatch.DeathMatchGame'},
                                                     {'settings':{'Epic Mode':False,'Kills to Win Per Player':10,'Respawn Times':1.0,'Time Limit':300,'map':'Crag Castle'},
                                                      'type':'bsDeathMatch.DeathMatchGame'}]})
@@ -10273,10 +10566,10 @@ class TeamsWindow(Window):
                                         'playlistName':bs.Lstr(translate=('playlistNames','Just Epic')).evaluate(),
                                         'playlist':[{'type': 'bsElimination.EliminationGame',
                                                      'settings': {'Time Limit': 120, 'map': 'Tip Top', 'Respawn Times': 1.0, 'Lives Per Player': 1, 'Epic Mode': 1}}]})
-
+            
             bsInternal._addTransaction({'type':'SET_MISC_VAL','name':'madeStandardPlaylists','value':True})
             bsInternal._runTransactions()
-
+        
         # get the current selection (if any)
         try: self._selectedPlaylist = bs.getConfig()[self._configName+' Playlist Selection']
         except Exception: self._selectedPlaylist = None
@@ -10313,7 +10606,7 @@ class TeamsWindow(Window):
         else:
             scrollOffs = 0
             #bs.buttonWidget(edit=self._backButton,selectable=False,enabled=False)
-
+            
         self._scrollWidth = self._width - 100
         self._scrollHeight = self._height - (146 if gSmallUI and gToolbars else 136)
 
@@ -10330,12 +10623,12 @@ class TeamsWindow(Window):
         # update now and once per second.. (this should do our initial refresh)
         self._updateTimer = bs.Timer(1000,bs.WeakCall(self._update),timeType='real',repeat=True)
         self._update()
-
-
+        
+        
     def _refresh(self):
 
         if not self._rootWidget.exists(): return
-
+        
         if self._subContainer is not None:
             self._saveState()
             self._subContainer.delete()
@@ -10343,20 +10636,20 @@ class TeamsWindow(Window):
         # make sure config exists
         if self._configNameFull not in bs.getConfig():
             bs.getConfig()[self._configNameFull] = {}
-
+        
         # make sure config exists
         # try: self._playlists = bs.getConfig()[self._configName+' Playlists']
         # except Exception: bs.getConfig()[self._configName+' Playlists'] = self._playlists = {}
-
+        
         #items = self._playlists.items()
         items = bs.getConfig()[self._configNameFull].items()
 
         # make sure everything is unicode
         items = [(i[0].decode('utf-8'),i[1]) if type(i[0]) is not unicode else i for i in items]
-
+            
         items.sort(key=lambda x:x[0].lower())
         items = [[u'__default__',None]] + items # default is always first
-
+        
         count = len(items)
         columns = 3
         rows = int(math.ceil(float(count)/columns))
@@ -10370,16 +10663,16 @@ class TeamsWindow(Window):
         self._subHeight = 40+rows*(buttonHeight+2*buttonBufferV) + 90
         self._subContainer = bs.containerWidget(parent=self._scrollWidget,size=(self._subWidth,self._subHeight),
                                                 background=False)
-
+        
         children = self._subContainer.getChildren()
         for c in children: c.delete()
-
+        
         bs.textWidget(parent=self._subContainer,
                       text=bs.Lstr(resource='playlistsText'),
                       position=(40,self._subHeight - 26),
                       size=(0,0),scale=1.0,maxWidth=400,color=gTitleColor,
                       hAlign='left',vAlign='center')
-
+        
         index = 0
         maskTexture=bs.getTexture('characterIconMask')
         tintColor=(1,1,1)
@@ -10394,7 +10687,7 @@ class TeamsWindow(Window):
         hOffs = 225 if count == 1 else 115 if count == 2 else 0
         hOffsBottom = 0 if (count > 1 and count%3 == 1) else 230
         hOffsBottom = 0
-
+        
         for y in range(rows):
             for x in range(columns):
                 name = items[index][0]
@@ -10419,14 +10712,14 @@ class TeamsWindow(Window):
                 bs.buttonWidget(edit=b,onActivateCall=bs.Call(self._onPlaylistPress,b,name),
                                 onSelectCall=bs.Call(self._onPlaylistSelect,name))
                 bs.widget(edit=b,showBufferTop=50,showBufferBottom=50)
-
+                
                 if self._selectedPlaylist == name:
                     bs.containerWidget(edit=self._subContainer,selectedChild=b,visibleChild=b)
 
                 if self._backButton is not None:
                     if y == 0: bs.widget(edit=b,upWidget=self._backButton)
                     if x == 0: bs.widget(edit=b,leftWidget=self._backButton)
-
+                
                 if name == '__default__': printName = self._defaultListName
                 else: printName = name
                 bs.textWidget(parent=self._subContainer,text=printName,position=(pos[0]+buttonWidth*0.5,pos[1]+buttonHeight*0.79),
@@ -10493,7 +10786,7 @@ class TeamsWindow(Window):
 
                                 owned = False if (('isUnOwnedMap' in entry and entry['isUnOwnedMap'])
                                                   or ('isUnOwnedGame' in entry and entry['isUnOwnedGame'])) else True
-
+                                
                                 texName = mapTextures[texIndex]
                                 h = pos[0]+hOffsImg + sc * 250 * c
                                 v = pos[1]+vOffsImg - sc * 130 * r
@@ -10510,21 +10803,21 @@ class TeamsWindow(Window):
                                                    position=(h+sc*75,v+sc*10),
                                                    texture=bs.getTexture('lock'),
                                                    drawController=b)
-
+                                
                         v -= sc*130.0
                         #h += 12
                         #sc -= 0.03
 
                 except Exception:
                     bs.printException("error listing playlist maps")
-
+                    
                 if len(mapImages) == 0:
                     bs.textWidget(parent=self._subContainer,text='???',scale=1.5,size=(0,0),color=(1,1,1,0.5),
                                   hAlign='center',vAlign='center',
                                   drawController=b,position=(pos[0]+buttonWidth*0.5,pos[1]+buttonHeight*0.5))
-
+                    
                 index += 1
-
+                
                 if index >= count: break
             if index >= count: break
         self._customizeButton = b = bs.buttonWidget(parent=self._subContainer,
@@ -10556,23 +10849,23 @@ class TeamsWindow(Window):
         if c != self._lastConfig:
             self._lastConfig = copy.deepcopy(c)
             self._refresh()
-
-
+        
+        
     def _onPlaylistPress(self,button,playlistName):
         # (make sure the target playlist still exists)
         try: exists = (playlistName == '__default__' or playlistName in bs.getConfig()[self._configNameFull])
         except Exception: exists = False
         if not exists: return
-
+        
         self._saveState()
         PlayOptionsWindow(sessionType=self._sessionType,scaleOrigin=button.getScreenSpaceCenter(),
                           playlist=playlistName,delegate=self)
-
+        
     def _onCustomizePress(self):
         self._saveState()
         bs.containerWidget(edit=self._rootWidget,transition='outLeft')
         uiGlobals['mainMenuWindow'] = PlaylistWindow(originWidget=self._customizeButton,sessionType=self._sessionType).getRootWidget()
-
+        
     def _onBackPress(self):
 
         # store our selected playlist if that's changed..
@@ -10599,7 +10892,7 @@ class TeamsWindow(Window):
             gWindowStates[self.__class__.__name__] = selName
         except Exception:
             bs.printException('error saving state for',self.__class__)
-
+    
     def _restoreState(self):
         try:
             try: selName = gWindowStates[self.__class__.__name__]
@@ -10613,7 +10906,7 @@ class TeamsWindow(Window):
             bs.containerWidget(edit=self._rootWidget,selectedChild=sel)
         except Exception:
             bs.printException('error restoring state for',self.__class__)
-
+        
 class PlayWindow(Window):
 
     def __init__(self,transition='inRight',originWidget=None):
@@ -10647,10 +10940,11 @@ class PlayWindow(Window):
                                                             label=bs.Lstr(resource='backText'),
                                                             buttonType='back')
 
-
+        
         t = bs.textWidget(parent=self._rootWidget,
                           position=(width*0.5,height-(101 if newStyle else 61)),
                           size=(0,0),
+                          #text=R.titleText,
                           text=bs.Lstr(resource=self._r+'.titleText'),
                           scale=1.7,
                           resScale=2.0,
@@ -10664,7 +10958,7 @@ class PlayWindow(Window):
         if gToolbars and gSmallUI:
             bs.textWidget(edit=t,text='')
             # bs.buttonWidget(edit=backButton,
-
+        
         v = height - (110 if newStyle else 60)
         v -= 100
         c = (0.6,0.7,0.6,1.0)
@@ -10689,7 +10983,7 @@ class PlayWindow(Window):
             bs.widget(edit=b,leftWidget=bsInternal._getSpecialWidget('backButton'))
             bs.widget(edit=b,upWidget=bsInternal._getSpecialWidget('accountButton'))
             bs.widget(edit=b,downWidget=bsInternal._getSpecialWidget('settingsButton'))
-
+            
         self._drawDude(0,b,hoffs,v,sc,position=(140,30),color=(0.72,0.4,1.0))
         self._drawDude(1,b,hoffs,v,sc,position=(185,53),color=(0.71,0.5,1.0))
         self._drawDude(2,b,hoffs,v,sc,position=(220,27),color=(0.67,0.44,1.0))
@@ -10704,6 +10998,7 @@ class PlayWindow(Window):
                       color=(0.7,0.9,0.7,1.0),scale=sc*2.3)
 
         bs.textWidget(parent=self._rootWidget,drawController=b,position=(hoffs+sc*(-10),v+(sc*54)),size=(sc*buttonWidth,sc*30),
+                      #text=R.oneToFourPlayersText,
                       text=bs.Lstr(resource=self._r+'.oneToFourPlayersText'),
                       hAlign='center',vAlign='center',
                       scale=0.83 * sc,flatness=1.0,
@@ -10713,7 +11008,7 @@ class PlayWindow(Window):
         sc = 0.5 if newStyle else 0.68
         hoffs += 440 if newStyle else 260
         v += 180 if newStyle else 0
-
+        
         self._teamsButton = b = bs.buttonWidget(parent=self._rootWidget,position=(hoffs,v+(sc*15 if newStyle else 0)),size=(sc*buttonWidth,sc*(300 if newStyle else 360)),
                                                 extraTouchBorderScale=0.1,
                                                 autoSelect=True,label="", buttonType='square', textScale=1.13, onActivateCall=self._teamTourney)
@@ -10741,6 +11036,7 @@ class PlayWindow(Window):
                       hAlign='center',vAlign='center',
                       color=(0.7,0.9,0.7,1.0),scale=sc*2.3)
         bs.textWidget(parent=self._rootWidget,drawController=b,position=(hoffs+sc*(-10),v+(sc*54)),size=(sc*buttonWidth,sc*30),
+                      #text=R.twoToEightPlayersText,
                       text=bs.Lstr(resource=self._r+'.twoToEightPlayersText'),
                       hAlign='center',vAlign='center',
                       resScale=1.5,
@@ -10770,6 +11066,7 @@ class PlayWindow(Window):
                       hAlign='center',vAlign='center',
                       color=(0.7,0.9,0.7,1.0),scale=sc*1.9)
         bs.textWidget(parent=self._rootWidget,drawController=b,position=(hoffs+sc*(-10),v+(sc*54)),size=(sc*buttonWidth,sc*30),
+                      # text=R.twoToEightPlayersText,
                       text=bs.Lstr(resource=self._r+'.twoToEightPlayersText'),
                       hAlign='center',vAlign='center',
                       scale=0.9 * sc,flatness=1.0,
@@ -10791,13 +11088,13 @@ class PlayWindow(Window):
         #     elif gGameTypeSelection == 'Free-for-All Games': selected = self._freeForAllButton
         #     elif gGameTypeSelection == 'Co-op Games': selected = self._coopButton
         #     else: raise Exception("unknown selection type: "+gGameTypeSelection)
-        # except Exception as e:
+        # except Exception,e:
         #     print 'Err in PlayWindow select restore:',e
 
         # if selected is not None:
         #     bs.containerWidget(edit=self._rootWidget,selectedChild=selected)
         self._restoreState()
-
+        
         # bs.textWidget(parent=self._rootWidget,position=(width*0.5,40),size=(200,50),editable=True,
         #               text='foobar',hAlign='right',vAlign='center',maxWidth=50)
         # bs.textWidget(parent=self._rootWidget,position=(width*0.5,40),size=(200,50),editable=True,
@@ -10877,7 +11174,7 @@ class PlayWindow(Window):
             bs.containerWidget(edit=self._rootWidget,selectedChild=sel)
         except Exception:
             bs.printException('error restoring state for',self.__class__)
-
+        
 class LockedErrorWindow(Window):
 
     def __init__(self,name,depName):
@@ -10913,12 +11210,12 @@ class AchievementsWindow(PopupWindow):
         # self._onCloseCall = onCloseCall
         if scale is None: scale = 2.3 if gSmallUI else 1.65 if gMedUI else 1.23
         self._transitioningOut = False
-
+        
         self._width = 450
         self._height = 300 if gSmallUI else 370 if gMedUI else 450
 
         bgColor = (0.5,0.4,0.6)
-
+        
         # creates our _rootWidget
         PopupWindow.__init__(self,position=position,size=(self._width,self._height),
                              scale=scale,bgColor=bgColor)
@@ -10932,7 +11229,7 @@ class AchievementsWindow(PopupWindow):
 
         achievements = bsAchievement.gAchievements
         numComplete = len([a for a in achievements if a.isComplete()])
-
+        
         txtFinal = bs.Lstr(resource='accountSettingsWindow.achievementProgressText',subs=[('${COUNT}',str(numComplete)),('${TOTAL}',str(len(achievements)))])
         self._titleText = bs.textWidget(parent=self._rootWidget,position=(self._width*0.5,self._height-20),size=(0,0),hAlign='center',vAlign='center',
                                         scale=0.6,text=txtFinal,
@@ -10940,8 +11237,8 @@ class AchievementsWindow(PopupWindow):
 
         self._scrollWidget = bs.scrollWidget(parent=self._rootWidget,size=(self._width-60,self._height-70),position=(30,30),captureArrows=True,simpleCullingV=10)
         bs.widget(edit=self._scrollWidget,autoSelect=True)
-
-
+                
+        
         bs.containerWidget(edit=self._rootWidget,cancelButton=self._cancelButton)
 
         incr = 36
@@ -10950,7 +11247,7 @@ class AchievementsWindow(PopupWindow):
 
         eqRsrc = 'coopSelectWindow.powerRankingPointsEqualsText'
         ptsRsrc = 'coopSelectWindow.powerRankingPointsText'
-
+        
         self._subContainer = bs.containerWidget(parent=self._scrollWidget,size=(subWidth,subHeight),background=False)
 
         totalPts = 0
@@ -10995,7 +11292,7 @@ class AchievementsWindow(PopupWindow):
                           text=ach.getDescriptionFullComplete() if complete else ach.getDescriptionFull(),
                           size=(0,0),
                           hAlign='left',vAlign='center')
-
+            
             pts = ach.getPowerRankingValue()
             bs.textWidget(parent=self._subContainer,
                           position=(subWidth*0.92,subHeight-20-incr*i),
@@ -11009,7 +11306,7 @@ class AchievementsWindow(PopupWindow):
             if complete:
                 totalPts += pts
 
-
+                
         bs.textWidget(parent=self._subContainer,
                       position=(subWidth*1.0,subHeight-20-incr*len(achievements)),
                       maxWidth=subWidth*0.5,
@@ -11019,12 +11316,12 @@ class AchievementsWindow(PopupWindow):
                                                            ('${B}',bs.Lstr(resource=eqRsrc,subs=[('${NUMBER}',str(totalPts))]))]),
                       size=(0,0),
                       hAlign='right',vAlign='center')
-
-
+            
+        
 
     def _onCancelPress(self):
         self._transitionOut()
-
+        
     def _transitionOut(self):
         if not self._transitioningOut:
             self._transitioningOut = True
@@ -11042,17 +11339,17 @@ class TrophiesWindow(PopupWindow):
     def __init__(self,position,data,scale=None):
 
         self._data = data
-
+        
         # self._onCloseCall = onCloseCall
         if scale is None: scale = 2.3 if gSmallUI else 1.65 if gMedUI else 1.23
         self._transitioningOut = False
-
+        
         self._width = 300
         #self._height = 300 if gSmallUI else 370 if gMedUI else 450
         self._height = 300
 
         bgColor = (0.5,0.4,0.6)
-
+        
         # creates our _rootWidget
         PopupWindow.__init__(self,position=position,size=(self._width,self._height),
                              scale=scale,bgColor=bgColor)
@@ -11086,7 +11383,7 @@ class TrophiesWindow(PopupWindow):
         subHeight = 40+len(trophyTypes)*incr
 
         eqText = bsUtils._getResource('coopSelectWindow.powerRankingPointsEqualsText')
-
+        
         self._subContainer = bs.containerWidget(parent=self._scrollWidget,size=(subWidth,subHeight),background=False)
 
         totalPts = 0
@@ -11096,7 +11393,7 @@ class TrophiesWindow(PopupWindow):
         numText = bsUtils._getResource('numberText')
 
         #print 'data is',self._data
-
+        
         for i,trophyType in enumerate(trophyTypes):
             tCount = self._data['t'+trophyType[0]]
             tMult = self._data['t'+trophyType[0]+'m']
@@ -11138,7 +11435,7 @@ class TrophiesWindow(PopupWindow):
                           size=(0,0),
                           hAlign='center',vAlign='center')
             totalPts += pts
-
+            
         # for i,ach in enumerate(achievements):
         #     complete = ach.isComplete()
         #     bs.textWidget(parent=self._subContainer,
@@ -11180,7 +11477,7 @@ class TrophiesWindow(PopupWindow):
         #                   text=ach.getDescriptionFullComplete() if complete else ach.getDescriptionFullLocalized(),
         #                   size=(0,0),
         #                   hAlign='left',vAlign='center')
-
+            
         #     pts = ach.getPowerRankingValue()
         #     bs.textWidget(parent=self._subContainer,
         #                   position=(subWidth*0.92,subHeight-20-incr*i),
@@ -11193,7 +11490,7 @@ class TrophiesWindow(PopupWindow):
         #     if complete:
         #         totalPts += pts
 
-
+                
         bs.textWidget(parent=self._subContainer,
                       position=(subWidth*1.0,subHeight-20-incr*len(trophyTypes)),
                       maxWidth=subWidth*0.5,
@@ -11202,12 +11499,12 @@ class TrophiesWindow(PopupWindow):
                       text=bsUtils._getResource('coopSelectWindow.totalText')+' '+eqText.replace('${NUMBER}',str(totalPts)),
                       size=(0,0),
                       hAlign='right',vAlign='center')
-
-
+            
+        
 
     def _onCancelPress(self):
         self._transitionOut()
-
+        
     def _transitionOut(self):
         if not self._transitioningOut:
             self._transitioningOut = True
@@ -11220,17 +11517,17 @@ class TrophiesWindow(PopupWindow):
         bs.playSound(bs.getSound('swish'))
         self._transitionOut()
 
-
+        
 class PowerRankingWindow(Window):
-
+    
     # def __del__(self):
     #     print '~PowerRankingWindow()'
-
+        
     def __init__(self,transition='inRight',modal=False,originWidget=None):
         #print 'PowerRankingWindow()'
 
         bsInternal._setAnalyticsScreen('League Window')
-
+        
         self._powerRankingInfo = None
         self._modal = modal
 
@@ -11242,7 +11539,7 @@ class PowerRankingWindow(Window):
         else:
             self._transitionOut = 'outRight'
             scaleOrigin = None
-
+        
         self._width = 1120
         self._height = 657 if gSmallUI else 710 if gMedUI else 800
         self._r = 'coopSelectWindow'
@@ -11253,12 +11550,12 @@ class PowerRankingWindow(Window):
 
         self._isCurrentSeason = False
         self._canDoMoreButton = True
-
+        
         self._rootWidget = bs.containerWidget(size=(self._width,self._height+topExtra),
                                               stackOffset=(0,-15) if gSmallUI else (0,10) if gMedUI else (0,0),transition=transition,
                                               scaleOriginStackOffset=scaleOrigin,
                                               scale = 1.2 if gSmallUI else 0.93 if gMedUI else 0.8)
-
+        
         self._backButton = b = bs.buttonWidget(parent=self._rootWidget,position=(75,self._height-87-(4 if gSmallUI else 0)),size=(120,60),scale=1.2,
                                                autoSelect=True,
                                                label=bs.Lstr(resource='doneText' if self._modal else 'backText'),
@@ -11273,7 +11570,7 @@ class PowerRankingWindow(Window):
         if gDoAndroidNav:
             bs.buttonWidget(edit=b,buttonType='backSmall',position=(75,self._height-87-(2 if gSmallUI else 0)),size=(60,55),label=bs.getSpecialChar('back'))
             # bs.textWidget(edit=self._titleText,hAlign='left',position=(165,self._height - 56))
-
+        
         self._scrollWidth = self._width-130
         self._scrollHeight = self._height-160
         self._scrollWidget = bs.scrollWidget(parent=self._rootWidget,highlight=False,position=(65,70),size=(self._scrollWidth,self._scrollHeight),centerSmallContent=True)
@@ -11283,7 +11580,7 @@ class PowerRankingWindow(Window):
 
         self._lastPowerRankingQueryTime = None
         self._doingPowerRankingQuery = False
-
+        
         self._subContainer = None
         self._subContainerWidth = 800
         self._subContainerHeight = 483
@@ -11292,7 +11589,7 @@ class PowerRankingWindow(Window):
         self._seasonPopupMenu = None
         self._requestedSeason = None
         self._season = None
-
+        
         # take note of our account state; we'll refresh later if this changes
         self._accountState = bsInternal._getAccountState()
 
@@ -11306,7 +11603,7 @@ class PowerRankingWindow(Window):
 
         self._updateTimer = bs.Timer(1000,bs.WeakCall(self._update),timeType='real',repeat=True)
         self._update(show = True if info is None else False)
-
+        
     def _onAchievementsPress(self):
         # only allow this for all-time or the current season
         # (we currently don't keep specific achievement data for old seasons)
@@ -11328,7 +11625,7 @@ class PowerRankingWindow(Window):
                     subs=[('${PERCENT}',str(bsInternal._getAccountMiscReadVal('proPowerRankingBoost',10))),
                           ('${PRO}',bs.Lstr(resource='store.bombSquadProNameText',subs=[('${APP_NAME}',bs.Lstr(resource='titleText'))]))])
         ConfirmWindow(t,cancelButton=False,width=460,height=130,originWidget=self._proMultButton)
-
+        
     def _onTrophiesPress(self):
         #info = _getCachedPowerRankingInfo()
         info = self._powerRankingInfo
@@ -11336,7 +11633,7 @@ class PowerRankingWindow(Window):
             TrophiesWindow(position=self._powerRankingTrophiesButton.getScreenSpaceCenter(),data=info)
         else:
             bs.playSound(bs.getSound('error'))
-
+        
     def _onPowerRankingQueryResponse(self,data):
         self._doingPowerRankingQuery = False
         # important: *only* cache this if we requested the current season..
@@ -11345,14 +11642,14 @@ class PowerRankingWindow(Window):
         # always store a copy locally though (even for other seasons)
         self._powerRankingInfo = copy.deepcopy(data)
         self._updateForPowerRankingInfo(data)
-
-
+            
+        
     def _saveState(self):
         pass
-
+    
     def _restoreState(self):
         pass
-
+    
     def _update(self, show=False):
 
         #print 'updating',bs.getRealTime()
@@ -11364,7 +11661,7 @@ class PowerRankingWindow(Window):
             self._accountState = accountState
             self._saveState()
             self._refresh()
-
+            
             # and power ranking too...
             if not self._doingPowerRankingQuery: self._lastPowerRankingQueryTime = None
 
@@ -11383,16 +11680,16 @@ class PowerRankingWindow(Window):
                     bs.textWidget(edit=self._powerRankingRankText,text='')
                     bs.textWidget(edit=self._seasonEndsText,text='')
                     bs.textWidget(edit=self._trophyCountsResetText,text='')
-            except Exception as e:
+            except Exception,e:
                 print 'EXC showing pr update msg',e
-
+                
             self._lastPowerRankingQueryTime = curTime
             self._doingPowerRankingQuery = True
             bsInternal._powerRankingQuery(season=self._requestedSeason,callback=bs.WeakCall(self._onPowerRankingQueryResponse))
-
-
+            
+            
     def _refresh(self):
-
+        
         # (re)create the sub-container if need be..
         if self._subContainer is not None: self._subContainer.delete()
         self._subContainer = c = bs.containerWidget(parent=self._scrollWidget,size=(self._subContainerWidth,self._subContainerHeight),background=False)
@@ -11423,25 +11720,25 @@ class PowerRankingWindow(Window):
         countMaxWidth = 40
         hOffsIcons = -29
         iconScale = 1.4
-
+        
         numText = bs.Lstr(resource='numberText').evaluate()
 
-
+        
         v2 -= 70
 
         bs.textWidget(parent=wParent,position=(h2-60,v2+106),size=(0,0),flatness=1.0,shadow=0.0,
                                                text=bs.Lstr(resource='coopSelectWindow.pointsText'),hAlign='left',vAlign='center',scale=0.8,color=(1,1,1,0.3),maxWidth=200)
-
+        
         self._powerRankingAchievementsButton = bs.buttonWidget(parent=wParent,position=(h2-60,v2+10),size=(200,80),icon=bs.getTexture('achievementsIcon'),
                                                                autoSelect=True,
                                                                onActivateCall=bs.WeakCall(self._onAchievementsPress),
                                                                upWidget=self._backButton,leftWidget=self._backButton,
                                                                color=(0.5,0.5,0.6),textColor=(0.7,0.7,0.8),
                                                                label='')
-
+        
         self._powerRankingAchievementTotalText = bs.textWidget(parent=wParent,position=(h2+hOffsTally,v2+45),size=(0,0),flatness=1.0,shadow=0.0,
                                                                text='-',hAlign='left',vAlign='center',scale=0.8,color=tallyColor,maxWidth=tallyMaxWidth)
-
+        
         v2 -= 80
 
         self._powerRankingTrophiesButton = bs.buttonWidget(parent=wParent,position=(h2-60,v2+10),size=(200,80),icon=bs.getTexture('medalSilver'),
@@ -11452,35 +11749,35 @@ class PowerRankingWindow(Window):
                                                            label='')
         self._powerRankingTrophiesTotalText = bs.textWidget(parent=wParent,position=(h2+hOffsTally,v2+45),size=(0,0),flatness=1.0,shadow=0.0,
                                                             text='-',hAlign='left',vAlign='center',scale=0.8,color=tallyColor,maxWidth=tallyMaxWidth)
-
+        
         v2 -= 100
 
         bs.textWidget(parent=wParent,position=(h2-60,v2+86),size=(0,0),flatness=1.0,shadow=0.0,
                                                text=bs.Lstr(resource='coopSelectWindow.multipliersText'),hAlign='left',vAlign='center',scale=0.8,color=(1,1,1,0.3),maxWidth=200)
-
+        
         self._activityMultButton = bs.buttonWidget(parent=wParent,position=(h2-60,v2+10),size=(200,60),icon=bs.getTexture('heart'),iconColor=(0.5,0,0.5),
                                                    label=bs.Lstr(resource='coopSelectWindow.activityText'),
                                                    autoSelect=True,
                                                    onActivateCall=bs.WeakCall(self._onActivityMultPress),
                                                    leftWidget=self._backButton,
                                                    color=(0.5,0.5,0.6),textColor=(0.7,0.7,0.8))
-
+        
         self._activityMultText = bs.textWidget(parent=wParent,position=(h2+hOffsTally,v2+40),size=(0,0),flatness=1.0,shadow=0.0,
                                                text='-',hAlign='left',vAlign='center',scale=0.8,color=tallyColor,maxWidth=tallyMaxWidth)
         v2 -= 65
 
-
+        
         self._proMultButton = bs.buttonWidget(parent=wParent,position=(h2-60,v2+10),size=(200,60),icon=bs.getTexture('logo'),iconColor=(0.3,0,0.3),
                                                    label=bs.Lstr(resource='store.bombSquadProNameText',subs=[('${APP_NAME}',bs.Lstr(resource='titleText'))]),
                                                    autoSelect=True,
                                                    onActivateCall=bs.WeakCall(self._onProMultPress),
                                                    leftWidget=self._backButton,
                                                    color=(0.5,0.5,0.6),textColor=(0.7,0.7,0.8))
-
+        
         self._proMultText = bs.textWidget(parent=wParent,position=(h2+hOffsTally,v2+40),size=(0,0),flatness=1.0,shadow=0.0,
                                                text='-',hAlign='left',vAlign='center',scale=0.8,color=tallyColor,maxWidth=tallyMaxWidth)
         v2 -= 30
-
+        
         v2 -= spc
         bs.textWidget(parent=wParent,position=(h2+hOffsTally-10-40,v2+35),size=(0,0),flatness=1.0,shadow=0.0,
                       text=bs.Lstr(resource='finalScoreText'),hAlign='right',vAlign='center',scale=0.9,color=worthColor,maxWidth=150)
@@ -11489,7 +11786,7 @@ class PowerRankingWindow(Window):
 
         self._seasonShowText = bs.textWidget(parent=wParent,position=(390-15,v-20),size=(0,0),color=(0.6,0.6,0.7),maxWidth=200,
                                               text=bs.Lstr(resource='showText'),hAlign='right',vAlign='center',scale=0.8,shadow=0,flatness=1.0)
-
+        
         self._leagueTitleText = bs.textWidget(parent=wParent,position=(470,v-97),size=(0,0),color=(0.6,0.6,0.7),maxWidth=230,
                                               text='',hAlign='center',vAlign='center',scale=0.9,shadow=0,flatness=1.0)
 
@@ -11503,13 +11800,13 @@ class PowerRankingWindow(Window):
         self._leagueNumberBasePos = (470,v-140)
         self._leagueNumberText = bs.textWidget(parent=wParent,position=(470,v-140),size=(0,0),color=(1,1,1),maxWidth=100,
                                                text='',hAlign='left',vAlign='center',scale=0.8,shadow=1.0,flatness=1.0)
-
+        
         self._yourPowerRankingText = bs.textWidget(parent=wParent,position=(470,v-142-70),size=(0,0),color=(0.6,0.6,0.7),maxWidth=230,
                                                    text='',hAlign='center',vAlign='center',scale=0.9,shadow=0,flatness=1.0)
 
         self._toRankedText = bs.textWidget(parent=wParent,position=(470,v-250-70),size=(0,0),color=(0.6,0.6,0.7),maxWidth=230,
                                            text='',hAlign='center',vAlign='center',scale=0.8,shadow=0,flatness=1.0)
-
+        
         self._powerRankingRankText = bs.textWidget(parent=wParent,position=(473,v-210-70),size=(0,0),big=False,
                                                    text='-',hAlign='center',vAlign='center',scale=1.0)
 
@@ -11517,12 +11814,12 @@ class PowerRankingWindow(Window):
                                          text='',hAlign='center',vAlign='center',scale=0.9,shadow=0,flatness=1.0)
         self._trophyCountsResetText = bs.textWidget(parent=wParent,position=(470,v-410),size=(0,0),color=(0.5,0.5,0.5),maxWidth=230,
                                                     text=('Trophy counts will reset next season.'),hAlign='center',vAlign='center',scale=0.8,shadow=0,flatness=1.0)
-
+        
         # for w in self._powerRankingScoreWidgets: w.delete()
         self._powerRankingScoreWidgets = []
 
         self._powerRankingScoreV = v - 56
-
+        
         h = 707
         v -= 451
 
@@ -11531,7 +11828,7 @@ class PowerRankingWindow(Window):
                                               size=(230,60),autoSelect=True,
                                               onActivateCall=bs.WeakCall(self._onMorePress))
         #bs.widget(edit=self._seeMoreButton,showBufferBottom=100,upWidget=self._proMultButton)
-
+        
         # bs.widget(edit=self._seeMoreButton,showBufferBottom=100,upWidget=self._seasonPopupMenu.getButtonWidget())
         # bs.widget(edit=self._seasonPopupMenu.getButtonWidget(),upWidget=self._backButton)
         # bs.widget(edit=self._backButton,downWidget=self._powerRankingAchievementsButton,rightWidget=self._seasonPopupMenu.getButtonWidget())
@@ -11545,13 +11842,13 @@ class PowerRankingWindow(Window):
         if self._leagueURLArg != '': leagueStr = '&league='+self._leagueURLArg
         else: leagueStr = ''
         bs.openURL(bsInternal._getServerAddress()+'/highscores?list=powerRankings&v=2'+leagueStr+seasonStr,aa='player')
-
+        
     def _updateForPowerRankingInfo(self,data):
 
         if not self._rootWidget.exists(): return
-
+        
         inTop = True if (data is not None and data['rank'] is not None) else False
-
+        
         eqText = self._R.powerRankingPointsEqualsText
         ptsText = self._R.powerRankingPointsText
         numText = bs.Lstr(resource='numberText').evaluate()
@@ -11586,7 +11883,7 @@ class PowerRankingWindow(Window):
         #print 'UPDATING FOR SEASON',(data['s'] if data is not None else None)
         self._season = data['s'] if data is not None else None
         #print 'UPDATING FOR SEASON',self._season
-
+        
         v = self._subContainerHeight - 20
         popupWasSelected = False
         if self._seasonPopupMenu is not None:
@@ -11626,9 +11923,9 @@ class PowerRankingWindow(Window):
             bs.widget(edit=self._backButton,downWidget=self._powerRankingAchievementsButton,rightWidget=self._seasonPopupMenu.getButtonWidget())
 
         #print 'IS CURRENT?',isCurrentSeason
-
+            
         bs.textWidget(edit=self._leagueTitleText,text='' if self._season == 'a' else bs.Lstr(resource='league.leagueText'))
-
+        
         if data is None:
             lName = ''
             lNum = ''
@@ -11658,21 +11955,21 @@ class PowerRankingWindow(Window):
             elif daysToEnd == 0 and minutesToEnd >= 60: toEndString = bs.Lstr(resource='league.seasonEndsHoursText',subs=[('${NUMBER}',str(minutesToEnd/60))])
             elif daysToEnd == 0 and minutesToEnd >= 0: toEndString = bs.Lstr(resource='league.seasonEndsMinutesText',subs=[('${NUMBER}',str(minutesToEnd))])
             else: toEndString = bs.Lstr(resource='league.seasonEndedDaysAgoText',subs=[('${NUMBER}',str(-(daysToEnd+1)))])
-
+            
         bs.textWidget(edit=self._seasonEndsText,text=toEndString)
         bs.textWidget(edit=self._trophyCountsResetText,text=bs.Lstr(resource='league.trophyCountsResetText') if self._isCurrentSeason and showSeasonEnd else '')
-
+        
         bs.textWidget(edit=self._leagueText,text=lName,color=lColor)
         lTextWidth = min(self._leagueTextMaxWidth,bsInternal._getStringWidth(lName,suppressWarning=True)*self._leagueTextScale)
         bs.textWidget(edit=self._leagueNumberText,text=lNum,color=lColor,
                       position=(self._leagueNumberBasePos[0]+lTextWidth*0.5+8,self._leagueNumberBasePos[1]+10))
-
+        
         bs.textWidget(edit=self._toRankedText,
                       text=bs.Lstr(resource='coopSelectWindow.toRankedText').evaluate()+''+extraText if doPercent else '')
 
         bs.textWidget(edit=self._yourPowerRankingText,
                       text=bs.Lstr(resource='rankText',fallback='coopSelectWindow.yourPowerRankingText') if (not doPercent) else '')
-
+        
         bs.textWidget(edit=self._powerRankingRankText,
                       position=(473,v-70-(170 if doPercent else 220)),
                       text=statusText,big=True if (inTop or doPercent) else False,
@@ -11700,15 +11997,15 @@ class PowerRankingWindow(Window):
             if ach.isComplete(): totalAchValue += ach.getPowerRankingValue()
         if self._season != 'a' and not self._isCurrentSeason:
             if data is not None and 'at' in data: totalAchValue = data['at']
-
+            
         bs.textWidget(edit=self._powerRankingAchievementTotalText,text='-' if data is None else ('+ '+ptsText.replace('${NUMBER}',str(totalAchValue))))
 
         totalTrophiesCount = _getPowerRankingPoints(data,'trophyCount')
         totalTrophiesValue = _getPowerRankingPoints(data,'trophies')
         bs.buttonWidget(edit=self._powerRankingTrophiesButton,label=('' if data is None else (str(totalTrophiesCount)+' '))+bs.Lstr(resource='trophiesText').evaluate())
         bs.textWidget(edit=self._powerRankingTrophiesTotalText,text='-' if data is None else ('+ '+ptsText.replace('${NUMBER}',str(totalTrophiesValue))))
-
-
+        
+        
         bs.textWidget(edit=self._powerRankingTotalText,text='-' if data is None else eqText.replace('${NUMBER}',str(_getPowerRankingPoints(data))))
         for w in self._powerRankingScoreWidgets: w.delete()
         self._powerRankingScoreWidgets = []
@@ -11718,7 +12015,7 @@ class PowerRankingWindow(Window):
         tallyColor = (0.5,0.6,0.8)
         wParent = self._subContainer
         v2 = self._powerRankingScoreV
-
+        
         for s in scores:
             h2 = 680
             isUs = s[3]
@@ -11739,28 +12036,28 @@ class PowerRankingWindow(Window):
             bs.textWidget(edit=t,onActivateCall=bs.Call(self._showAccountInfo,s[4],t))
             bs.widget(edit=t,leftWidget=self._seasonPopupMenu.getButtonWidget())
             v2 -= 28
-
+        
     def _showAccountInfo(self,accountID,textWidget):
         bs.playSound(bs.getSound('swish'))
         AccountInfoWindow(accountID=accountID,
                           position=textWidget.getScreenSpaceCenter())
-
-
+        
+        
     def _onSeasonChange(self,value):
         #print 'SEASON CHANGED TO',value
         self._requestedSeason = value
         self._lastPowerRankingQueryTime = None # make sure we update asap
         self._update(show=True)
-
+        
     def _saveState(self):
         pass
-
+    
     def _back(self):
         self._saveState()
         bs.containerWidget(edit=self._rootWidget,transition=self._transitionOut)
         if not self._modal:
             uiGlobals['mainMenuWindow'] = CoopWindow(transition='inLeft').getRootWidget()
-
+        
 class CoopWindow(Window):
 
     def _updateCornerButtonPositions(self):
@@ -11773,7 +12070,7 @@ class CoopWindow(Window):
     def __init__(self,transition='inRight',originWidget=None):
 
         bsInternal._setAnalyticsScreen('Coop Window')
-
+        
         # if they provided an origin-widget, scale up from that
         if originWidget is not None:
             self._transitionOut = 'outScale'
@@ -11782,14 +12079,13 @@ class CoopWindow(Window):
         else:
             self._transitionOut = 'outRight'
             scaleOrigin = None
-
+        
         # try to recreate the same number of buttons we had last time so our re-selection code works
-        try: self._tournamentButtonCount = bs.getConfig()['Tournament Rows']
-        except Exception: self._tournamentButtonCount = 0
+        self._tournamentButtonCount = 0
 
         #self._enableChallenges = True
         self._enableChallenges = False
-
+        
         # same for challenges..
         try: self._challengeButtonCount = bs.getConfig()['Challenge Button Count']
         except Exception: self._challengeButtonCount = 0
@@ -11802,9 +12098,9 @@ class CoopWindow(Window):
         topExtra = 20 if gSmallUI else 0
 
         self._tourneyDataUpToDate = False
-
+        
         self._campaignDifficulty = bsInternal._getAccountMiscVal('campaignDifficulty','easy')
-
+        
         bs.gCreateGameType = None
         self._rootWidget = bs.containerWidget(size=(self._width,self._height+topExtra),
                                               toolbarVisibility='MENU_FULL',
@@ -11841,13 +12137,13 @@ class CoopWindow(Window):
         # move our corner buttons dynamically to keep them out of the way of the party icon :-(
         self._updateCornerButtonPositions()
         self._updateCornerButtonPositionsTimer = bs.Timer(1000,bs.WeakCall(self._updateCornerButtonPositions),repeat=True,timeType='real')
-
+        
         self._lastTournamentQueryTime = None
         self._lastTournamentQueryResponseTime = None
         self._doingTournamentQuery = False
 
         bsConfig = bs.getConfig()
-
+        
         try: self._selectedCampaignLevel = bsConfig['Selected Coop Campaign Level']
         except Exception: self._selectedCampaignLevel = None
 
@@ -11856,7 +12152,7 @@ class CoopWindow(Window):
 
         try: self._selectedChallengeLevel = bsConfig['Selected Coop Challenge Level']
         except Exception: self._selectedChallengeLevel = None
-
+        
         self._doSelectionCallbacks = False # dont want initial construction affecting our last-selected
         v = self._height - 95
         t = campaignText = bs.textWidget(parent=self._rootWidget,position=(self._width*0.5,v+40 - (0 if gSmallUI else 0)),size=(0,0),
@@ -11867,7 +12163,7 @@ class CoopWindow(Window):
 
         if gToolbars and gSmallUI:
             bs.textWidget(edit=t,text='')
-
+        
         if gDoAndroidNav:
             if self._backButton is not None:
                 bs.buttonWidget(edit=self._backButton,buttonType='backSmall',size=(60,50),position=(75,self._height-87-(4 if gSmallUI else 0)+6),label=bs.getSpecialChar('back'))
@@ -11876,7 +12172,7 @@ class CoopWindow(Window):
 
         try: self._selectedRow = bsConfig['Selected Coop Row']
         except Exception: self._selectedRow = None
-
+        
         self._starTex = bs.getTexture('star')
         self._lsbt = bs.getModel('levelSelectButtonTransparent')
         self._lsbo = bs.getModel('levelSelectButtonOpaque')
@@ -11898,14 +12194,14 @@ class CoopWindow(Window):
         self._accountStateNum = bsInternal._getAccountStateNum()
         # same for fg/bg state..
         self._fgState = bsUtils.gAppFGState
-
+        
         self._refresh()
         self._restoreState()
 
         # even though we might display cached tournament data immediately, we don't consider it valid until we've pinged
         # the server for an update
         self._tourneyDataUpToDate = False
-
+        
         # if we've got a cached tournament list for our account and info for each one of those tournaments,
         # go ahead and display it as a starting point...
         if (gAccountTournamentList is not None and gAccountTournamentList[0] == bsInternal._getAccountStateNum()
@@ -11913,21 +12209,21 @@ class CoopWindow(Window):
             and all([tID in gTournamentInfo for tID in gAccountTournamentList[1]])):
             tourneyData = [gTournamentInfo[tID] for tID in gAccountTournamentList[1]]
             self._updateForData(tourneyData,gAccountChallengeList['challenges'])
-
+            
         # this will pull new data periodically, update timers, etc..
         self._updateTimer = bs.Timer(1000,bs.WeakCall(self._update),timeType='real',repeat=True)
         self._update()
-
-
+        
+        
     def _update(self):
-
+        
         curTime = bs.getRealTime()
 
         # if its been a while since we got a tournament update, consider the data invalid
         # (prevents us from joining tournaments if our internet connection goes down for a while)
         if self._lastTournamentQueryResponseTime is None or bs.getRealTime() - self._lastTournamentQueryResponseTime > 1000*60*2:
             self._tourneyDataUpToDate = False
-
+            
         # if our account state has changed, do a full request
         accountStateNum = bsInternal._getAccountStateNum()
         if accountStateNum != self._accountStateNum:
@@ -11941,7 +12237,7 @@ class CoopWindow(Window):
         # (they will be refreshed below asap)
         if self._fgState != bsUtils.gAppFGState:
             self._tourneyDataUpToDate = False
-
+            
         # send off a new tournament query if its been long enough or whatnot..
         if not self._doingTournamentQuery and (self._lastTournamentQueryTime is None
                                                or curTime-self._lastTournamentQueryTime > 30000
@@ -11963,31 +12259,26 @@ class CoopWindow(Window):
             if tb.get('allowAds',False) and bsInternal._hasVideoAds():
                 bs.imageWidget(edit=tb['entryFeeAdImage'],opacity=1.0 if adsEnabled else 0.25)
                 bs.textWidget(edit=tb['entryFeeTextRemaining'],color=(0.6,0.6,0.6,1 if adsEnabled else 0.2))
+                
+        
 
-
-
-
+                
     def _updateForData(self,data,challengeData):
 
         # if the number of tournaments or challenges in the data differs from our current arrangement, refresh with
         # the new number
-        if ((data is None and (self._tournamentButtonCount != 0 or self._challengeButtonCount != 0))
-            or (data is not None and ((len(data) != self._tournamentButtonCount) or len(challengeData) != self._challengeButtonCount))):
-            self._tournamentButtonCount = len(data) if data is not None else 0
-            self._challengeButtonCount = len(challengeData) if challengeData is not None else 0
-            bs.getConfig()['Tournament Rows'] = self._tournamentButtonCount
-            bs.getConfig()['Challenge Button Count'] = self._challengeButtonCount
-            self._refresh()
+        self._tournamentButtonCount = 0
+        self._challengeButtonCount = 0
 
         # push new data to our challenge buttons
         if self._enableChallenges:
             for i,cb in enumerate(self._challengeButtons):
                 try: cb.updateForData(None if challengeData is None else challengeData[i])
-                except Exception as e: print 'EXC updating challenge button',e
-
+                except Exception,e: print 'EXC updating challenge button',e
+                
         # update all of our tourney buttons based on whats in data..
         for i,tb in enumerate(self._tournamentButtons):
-
+            
             try: entry = data[i]
             except Exception: entry = None
             prizeYOffs = 0 if entry is None else 34 if 'prizeRange3' in entry else 20 if 'prizeRange2' in entry else 12
@@ -12007,7 +12298,7 @@ class CoopWindow(Window):
             ticketChar = bs.getSpecialChar('ticketBacking')
             prizeValueScaleLarge = 1.0
             prizeValueScaleSmall = 1.0
-
+            
             bs.textWidget(edit=tb['prizeValue1Text'],
                           text='-' if pv1 == '' else pv1,
                           scale=prizeValueScaleLarge if ticketChar not in pv1 else prizeValueScaleSmall,
@@ -12039,14 +12330,14 @@ class CoopWindow(Window):
                 leaderScore = bsUtils.getTimeString(score[0]*10,centi=True) if entry['scoreType'] == 'time' else str(score[0])
             else:
                 tb['leader'] = None
-
+                
             bs.textWidget(edit=tb['currentLeaderNameText'],text=leaderName)
             self._tournamentLeaderScoreType = None if entry is None else entry['scoreType']
             bs.textWidget(edit=tb['currentLeaderScoreText'],text=leaderScore)
             bs.buttonWidget(edit=tb['moreScoresButton'],label='-' if entry is None else bs.Lstr(resource=self._r+'.seeMoreText'))
             outOfTimeText = '-' if entry is None or 'totalTime' not in entry else bs.Lstr(resource=self._r+'.ofTotalTimeText',subs=[('${TOTAL}',bsUtils.getTimeString(entry['totalTime']*1000,centi=False))])
             bs.textWidget(edit=tb['timeRemainingOutOfText'],text=outOfTimeText)
-
+            
             tb['timeRemaining'] = 0 if entry is None else entry['timeRemaining']
             tb['hasTimeRemaining'] = False if entry is None else True
             tb['tournamentID'] = None if entry is None else entry['tournamentID']
@@ -12084,12 +12375,12 @@ class CoopWindow(Window):
             tb['allowAds'] = allowAds = entry['allowAds']
 
             finalFee = None if feeVar is None else bsInternal._getAccountMiscReadVal(feeVar,'?')
-
+            
             finalFeeStr = '' if feeVar is None else bs.Lstr(resource='getTicketsWindow.freeText') if finalFee == 0 else (bs.getSpecialChar('ticketBacking')+str(finalFee))
 
             adTriesRemaining = gTournamentInfo[tb['tournamentID']]['adTriesRemaining']
             freeTriesRemaining = gTournamentInfo[tb['tournamentID']]['freeTriesRemaining']
-
+            
             # now, if this fee allows ads and we support video ads, show the 'or ad' version
             if allowAds and bsInternal._hasVideoAds():
                 adsEnabled = bsInternal._haveIncentivizedAd()
@@ -12112,7 +12403,7 @@ class CoopWindow(Window):
                 bs.textWidget(edit=tb['entryFeeTextRemaining'],
                               position=(tb['buttonX']+360,tb['buttonY']+tb['buttonScaleY']-100),
                               text='' if (freeTriesRemaining in [None,0] or finalFee != 0) else (''+str(freeTriesRemaining)),color=(0.6,0.6,0.6,1))
-
+        
     def _onTournamentQueryResponse(self,data):
 
         if data is not None:
@@ -12121,7 +12412,7 @@ class CoopWindow(Window):
             self._lastTournamentQueryResponseTime = bs.getRealTime()
         else:
             challengeData = tournamentData = None
-
+            
         # keep our cached tourney info up to date
         if data is not None:
             self._tourneyDataUpToDate = True
@@ -12140,7 +12431,7 @@ class CoopWindow(Window):
                     c[key] += t
             gAccountChallengeList = {'accountState':bsInternal._getAccountStateNum(),
                                      'challenges':challengeData}
-
+            
         self._doingTournamentQuery = False
 
         self._updateForData(tournamentData, challengeData)
@@ -12153,22 +12444,22 @@ class CoopWindow(Window):
                 print 'ERROR: invalid campaign difficulty:',difficulty
                 difficulty = 'easy'
             self._campaignDifficulty = difficulty
-
+            
             bsInternal._addTransaction({'type':'SET_MISC_VAL','name':'campaignDifficulty','value':difficulty})
             self._refreshCampaignRow()
         else:
             bs.playSound(bs.getSound('click01'))
-
+        
     def _refreshCampaignRow(self):
 
         parentWidget = self._campaignSubContainer
-
+        
         # clear out anything in the parent widget already..
         for c in parentWidget.getChildren(): c.delete()
 
         if self._enableChallenges: nextWidgetDown = self._challengesInfoButton
         else: nextWidgetDown = self._tournamentInfoButton
-
+            
         h = 0
         hBase = 6
         v2 = -2
@@ -12198,7 +12489,7 @@ class CoopWindow(Window):
             bs.containerWidget(edit=parentWidget,selectedChild=self._hardButton,visibleChild=self._hardButton)
 
         bs.widget(edit=self._hardButton,downWidget=nextWidgetDown)
-
+            
         h = hBase
 
         hSpacing = 200
@@ -12206,7 +12497,7 @@ class CoopWindow(Window):
 
         if self._campaignDifficulty == 'easy': campaignName = 'Easy'
         else: campaignName = 'Default'
-
+        
         items = [campaignName+':Onslaught Training',
                  campaignName+':Rookie Onslaught',
                  campaignName+':Rookie Football',
@@ -12216,12 +12507,12 @@ class CoopWindow(Window):
                  campaignName+':Uber Onslaught',
                  campaignName+':Uber Football',
                  campaignName+':Uber Runaround']
-
+        
         items += [campaignName+':The Last Stand']
 
         if self._selectedCampaignLevel is None:
             self._selectedCampaignLevel = items[0]
-
+            
         h = 150
         for i in items:
             isLastSel = (i==self._selectedCampaignLevel)
@@ -12246,16 +12537,16 @@ class CoopWindow(Window):
 
         self._campaignPercentText = bs.textWidget(edit=self._campaignPercentText,
                                                   text=bs.Lstr(value='${C} (${P})',subs=[('${C}',bs.Lstr(resource=self._r+'.campaignText')),('${P}',pStr)]))
-
+            
 
     def _onChallengesInfoPress(self):
         txt = bs.Lstr(resource=self._r+'.challengesInfoText')
         ConfirmWindow(txt, cancelButton=False, width=550, height=260, originWidget=self._challengesInfoButton)
-
+        
     def _onTournamentInfoPress(self):
         txt = bs.Lstr(resource=self._r+'.tournamentInfoText')
         ConfirmWindow(txt, cancelButton=False, width=550, height=260, originWidget=self._tournamentInfoButton)
-
+        
     def _refresh(self):
 
         # (re)create the sub-container if need be..
@@ -12263,7 +12554,7 @@ class CoopWindow(Window):
 
         tourneyRowHeight = 200
         self._subContainerHeight = 620+self._tournamentButtonCount*tourneyRowHeight + (250 if (self._challengeButtonCount > 0 and self._enableChallenges) else 120 if self._enableChallenges else 0)# - (250 if not self._enableChallenges else 0)
-
+        
         self._subContainer = c = bs.containerWidget(parent=self._scrollWidget,size=(self._subContainerWidth,self._subContainerHeight),background=False)
 
         # so we can still select root level widgets with controllers
@@ -12272,11 +12563,11 @@ class CoopWindow(Window):
         bs.containerWidget(edit=self._rootWidget,selectedChild=self._scrollWidget)
         if self._backButton is not None:
             bs.containerWidget(edit=self._rootWidget,cancelButton=self._backButton)
-
+            
 
         wParent = self._subContainer
         hBase = 6
-
+        
         v = self._subContainerHeight - 73
         vSpacing = 190
 
@@ -12338,9 +12629,9 @@ class CoopWindow(Window):
                     isLastSel = (num == self._selectedChallengeLevel)
                     self._challengeButtons.append(self._ChallengeButton(self, sc2, num, h, v2, isLastSel, 'challenges'))
                     h += hSpacing
-
+        
         # Tournaments
-
+            
         self._tournamentButtons = []
 
         v -= 53
@@ -12369,9 +12660,9 @@ class CoopWindow(Window):
                           text=unavailableText,hAlign="left",vAlign='center',color=gTitleColor,scale=0.9)
             v -= 40
         v -= 198
-
+        
         if self._tournamentButtonCount > 0:
-
+            
             for i in range(self._tournamentButtonCount):
                 tournamentHScroll = hScroll = bs.hScrollWidget(parent=wParent,size=(self._scrollWidth-10,205),position=(-5,v),
                                                                highlight=False,borderOpacity=0.0,color=(0.45,0.4,0.5),
@@ -12403,6 +12694,8 @@ class CoopWindow(Window):
             'Challenges:Meteor Shower',
             'Challenges:Target Practice B',
             'Challenges:Target Practice',
+            'Challenges:Nightmare',
+            'Challenges:Marathon',
                  #'Challenges:Lake Frigid Race',
                  # 'Challenges:Uber Runaround',
                  # 'Challenges:Runaround',
@@ -12412,21 +12705,14 @@ class CoopWindow(Window):
                  #'Challenges:Testing',
                  #'User:Ninja Fight',
         ]
-
-        #Bacon Changed Started
-        # Original:
         # show easter-egg-hunt either if its easter or we own it
-        # if bsInternal._getAccountMiscReadVal('easter',False) or bsInternal._getPurchased('games.easter_egg_hunt'):
-        #     items = ['Challenges:Easter Egg Hunt',
-        #              'Challenges:Pro Easter Egg Hunt'] + items
-        # Origianl
-        items = ['Challenges:Easter Egg Hunt',
+        if bsInternal._getAccountMiscReadVal('easter',False) or bsInternal._getPurchased('games.easter_egg_hunt'):
+            items = ['Challenges:Easter Egg Hunt',
                      'Challenges:Pro Easter Egg Hunt'] + items
-        #Bacon Changed End
-
+        
         # add all custom user levels here..
         items += ['User:'+l.getName() for l in bsCoopGame.getCampaign('User').getLevels()]
-
+        
         self._customHScroll = customHScroll = hScroll = bs.hScrollWidget(parent=wParent,size=(self._scrollWidth-10,205),position=(-5,v),highlight=False,
                                                    borderOpacity=0.0,color=(0.45,0.4,0.5),onSelectCall=bs.Call(self._onRowSelected,'custom'))
         bs.widget(edit=hScroll,showBufferTop=rowVShowBuffer,showBufferBottom=1.5*rowVShowBuffer,autoSelect=True)
@@ -12444,10 +12730,10 @@ class CoopWindow(Window):
             self._customButtons.append(self._GameButton(self, sc2, i, h, v2, isLastSel, 'custom'))
             h += hSpacing
 
-
+                
         # we cant fill in our campaign row until tourney buttons are in place.. (for wiring up)
         self._refreshCampaignRow()
-
+        
         for i in range(len(self._tournamentButtons)):
             bs.widget(edit=self._tournamentButtons[i]['button'],upWidget=self._tournamentInfoButton if i == 0 else self._tournamentButtons[i-1]['button'],
                       downWidget=self._tournamentButtons[(i+1)]['button'] if i+1 < len(self._tournamentButtons) else customHScroll)
@@ -12474,7 +12760,7 @@ class CoopWindow(Window):
             bs.buttonWidget(edit=self._backButton,onActivateCall=self._back)
         else:
             bs.containerWidget(edit=self._rootWidget,onCancelCall=self._back)
-
+            
         # theres probably several 'onSelected' callbacks pushed onto the
         # event queue.. we need to push ours too so we're enabled *after* them
         bs.pushCall(self._enableSelectableCallback)
@@ -12483,13 +12769,13 @@ class CoopWindow(Window):
         if self._doSelectionCallbacks:
             if self._selectedRow != row:
                 self._selectedRow = row
-
+    
     def _enableSelectableCallback(self):
         self._doSelectionCallbacks = True
 
     class _GameButton(object):
 
-
+            
         def __init__(self, window, parent, game, x, y, select, row):
 
             self._game = game
@@ -12622,15 +12908,15 @@ class CoopWindow(Window):
 
             game = self._game
             campaignName,levelName = game.split(':')
-
+            
             # update locked state
             unlocked = True
-
+            
             # hack - The Last Stand doesn't actually exist in the easy tourney..
             # we just want it for display purposes.. map it to the hard-mode version.
             if game == 'Easy:The Last Stand':
                 campaignName = 'Default'
-
+                
             campaign = bsCoopGame.getCampaign(campaignName)
 
             levels = campaign.getLevels()
@@ -12651,19 +12937,15 @@ class CoopWindow(Window):
 
             # if random.random() < 0.5: unlocked = True
             # else: unlocked = False
-
+            
             # hard-code games we havn't unlocked..
-            if ((game in ('Challenges:Infinite Runaround','Challenges:Infinite Onslaught') and not bsUtils._havePro())
-                or (game in ('Challenges:Meteor Shower',) and not bsInternal._getPurchased('games.meteor_shower'))
+            if ((game in ('Challenges:Meteor Shower',) and not bsInternal._getPurchased('games.meteor_shower'))
                 or (game in ('Challenges:Target Practice','Challenges:Target Practice B') and not bsInternal._getPurchased('games.target_practice'))
                 or (game in ('Challenges:Ninja Fight',) and not bsInternal._getPurchased('games.ninja_fight'))
                 or (game in ('Challenges:Pro Ninja Fight',) and not bsInternal._getPurchased('games.ninja_fight'))
-                or (game in ('Challenges:Easter Egg Hunt','Challenges:Pro Easter Egg Hunt') and not bsInternal._getPurchased('games.easter_egg_hunt'))):
+                or (game in ('Challenges:Easter Egg Hunt','Challenges:Pro Easter Egg Hunt') and not bsInternal._getPurchased('games.easter_egg_hunt'))
+                or (game in ('Challenges:Nightmare','Challenges:Marathon') and not bsAchievement.getAchievement('Uber Runaround Victory').isComplete())):
                 unlocked = False
-
-            #Bacon Changed Start
-            unlocked = True
-            #Bacon Changed End
 
             # lets tint levels a slightly different color when easy mode is selected..
             unlockedColor = (0.85,0.95,0.5) if game.startswith('Easy:') else (0.5,0.7,0.2)
@@ -12682,7 +12964,7 @@ class CoopWindow(Window):
 
     class _ChallengeButton(object):
 
-
+            
         def __init__(self, window, parent, index, x, y, select, row):
 
             # game = "Challenges:Ninja Fight"
@@ -12708,14 +12990,14 @@ class CoopWindow(Window):
             self._gameNameTranslated = ""
 
             self._index = index # temp..
-
+            
             self._window = weakref.ref(window)
-
+            
             self._button = b = bs.buttonWidget(parent=parent,position=(x+23,y+4),size=(sx,sy),label='',
                                                buttonType='square',autoSelect=True,
                                                onActivateCall=bs.WeakCall(self.onPress),
                                                onSelectCall=bs.Call(window._selChange,row,index))
-
+            
             bs.widget(edit=b,showBufferBottom=50,showBufferTop=50,showBufferLeft=400,showBufferRight=200)
             if select:
                 bs.containerWidget(edit=parent,selectedChild=b,visibleChild=b)
@@ -12735,7 +13017,7 @@ class CoopWindow(Window):
                                              vAlign='center',
                                              maxWidth=sx*0.76,
                                              scale=0.85)
-
+            
             self._levelTextPos = (x+20+sx*0.5,y+sy-53)
             self._levelTextMaxWidth = sx*0.76
             self._levelTextScale = 0.7
@@ -12787,8 +13069,8 @@ class CoopWindow(Window):
                                            flatness=1.0,
                                            shadow=1.0,
                                            scale=0.67)
-
-
+            
+            
             self._timeRemainingText = bs.textWidget(parent=parent,drawController=b,
                                                     position=(x+20+sx*0.5,y+sy-126+6),
                                                     size=(0,0),hAlign='center',
@@ -12798,7 +13080,7 @@ class CoopWindow(Window):
                                                     flatness=1.0,
                                                     shadow=1.0,
                                                     scale=0.75)
-
+            
             # give a quasi-random update increment to spread the load..
             # (but always making sure we update at least once per second for our timer)
             self._updateTimer = bs.Timer(950+random.randrange(50), bs.WeakCall(self._update),repeat=True,timeType='real')
@@ -12826,14 +13108,14 @@ class CoopWindow(Window):
 
             self._gameType = data['type']
             self._challengeID = data['challengeID']
-
+            
             self._waitStart = data['waitStart']
             self._waitEnd = data['waitEnd']
             self._waitType = data['waitType']
             self._start = data['start']
             self._end = data['end']
             self._levelChange = data['levelChange']
-
+            
             nameTranslated = data['type']
             bs.textWidget(edit=self._nameWidget, text=nameTranslated)
             levelStr = bs.Lstr(resource='levelText',subs=[('${NUMBER}',str(data['level']))])
@@ -12852,16 +13134,16 @@ class CoopWindow(Window):
             else:
                 bs.textWidget(edit=self._nextText,
                               text=bs.Lstr(resource='coopSelectWindow.nextChallengeText'))
-
+                
             #     bs.imageWidget(edit=self._previewImage,texture=bs.getTexture('black'))
             #     bs.textWidget(edit=self._levelText, text='')
             #     bs.textWidget(edit=self._levelChangeText,text='')
-
+                
             bs.imageWidget(edit=self._previewImage,texture=bs.getTexture('bridgitPreview'))
-
+                
             # this will update opacities/etc..
             self._update()
-
+            
         def onPress(self):
             if self._hasValidData():
                 import bsUI2
@@ -12870,18 +13152,18 @@ class CoopWindow(Window):
             else:
                 bs.screenMessage(bs.Lstr(resource='tournamentCheckingStateText'),color=(1,1,0))
                 bs.playSound(bs.getSound('error'))
-
+                
 
         def _hasValidData(self):
             """ return True if our data is considered up-to-date (so we can launch games, etc) """
             w = self._window()
             if w is None: return False
             else: return w._tourneyDataUpToDate
-
+        
         def _update(self):
 
             t = time.time()
-
+            
             if self._waitStart == self._waitEnd:
                 tRatio = 0.0
                 tStr = bsUtils.getTimeString(0)
@@ -12917,7 +13199,7 @@ class CoopWindow(Window):
                 else:
                     levelTextColor = (0.9,0.9,0.2)
                     totalTimeRemainingColor = (0.5,0.85,0.5)
-
+                        
                 bs.textWidget(edit=self._levelText,color=levelTextColor)
                 bs.textWidget(edit=self._totalTimeRemainingText,
                               color=totalTimeRemainingColor,
@@ -12938,8 +13220,8 @@ class CoopWindow(Window):
                 bs.imageWidget(edit=self._meterTop,opacity=1.0,radialAmount=tRatio)
                 bs.textWidget(edit=self._timeRemainingText, text=tStr if hasValidData else '')
                 bs.textWidget(edit=self._nextText, color=(0.8,0.7,1))
-
-
+                
+            
     def _tournamentButton(self,parent,x,y,select):
         sx = 300
         sy = 195.0
@@ -12950,7 +13232,7 @@ class CoopWindow(Window):
                 'timeRemaining':0,
                 'hasTimeRemaining':False,
                 'leader':None}
-
+        
         data['button'] = b = bs.buttonWidget(parent=parent,position=(x+23,y+4),size=(sx,sy),label='',
                                                                       buttonType='square',autoSelect=True,
                                                                       #onSelectCall=bs.Call(self._selChange,row,None),
@@ -12958,7 +13240,7 @@ class CoopWindow(Window):
         bs.widget(edit=b,showBufferBottom=50,showBufferTop=50,showBufferLeft=400,showBufferRight=200)
         if select: bs.containerWidget(edit=parent,selectedChild=b,visibleChild=b)
         imageWidth = sx*0.85*0.75
-
+        
         data['image'] = bs.imageWidget(parent=parent,drawController=b,position=(x+21+sx*0.5-imageWidth*0.5,y+sy-150),
                                        size=(imageWidth,imageWidth*0.5),modelTransparent=self._lsbt,modelOpaque=self._lsbo,
                                        texture=bs.getTexture('black'),opacity=0.2,maskTexture=bs.getTexture('mapPreviewMask'))
@@ -12966,7 +13248,7 @@ class CoopWindow(Window):
         data['lockImage'] = bs.imageWidget(parent=parent,drawController=b,position=(x+21+sx*0.5-imageWidth*0.25,y+sy-150),
                                            size=(imageWidth*0.5,imageWidth*0.5),
                                            texture=bs.getTexture('lock'),opacity=0.0)
-
+        
         data['buttonText'] = bs.textWidget(parent=parent,drawController=b,position=(x+20+sx*0.5,y+sy-35),
                                            size=(0,0),hAlign='center',text='-',vAlign='center',maxWidth=sx*0.76,
                                            scale=0.85,color=(0.8,1.0,0.8,1.0))
@@ -12996,10 +13278,10 @@ class CoopWindow(Window):
                                                position=(x+360-20,y+sy-140),opacity=0.0,
                                                texture=bs.getTexture('tv'))
 
-
+        
         xOffs += 50
 
-
+        
         bs.textWidget(parent=parent,drawController=b,position=(x+447+xOffs,y+sy-20),
                       size=(0,0),hAlign='center',
                       text=bs.Lstr(resource=self._r+'.prizesText'),
@@ -13013,7 +13295,7 @@ class CoopWindow(Window):
         xo2 = 0
 
         prizeValueScale = 1.5
-
+        
         data['prizeRange1Text'] = bs.textWidget(parent=parent,drawController=b,position=(x+355+xo2+xOffs,y+sy-93),
                                                 size=(0,0),hAlign='right',vAlign='center',maxWidth=50,text='-',
                                                 scale=0.8,color=headerColor,flatness=1.0)
@@ -13034,7 +13316,7 @@ class CoopWindow(Window):
         data['prizeValue3Text'] = bs.textWidget(parent=parent,drawController=b,position=(x+380+xo2+xOffs,y+sy-93),
                                                 size=(0,0),hAlign='left',text='',vAlign='center',maxWidth=100,
                                                 scale=prizeValueScale,color=valueColor,flatness=1.0)
-
+        
         bs.textWidget(parent=parent,drawController=b,position=(x+620+xOffs,y+sy-20),
                       size=(0,0),hAlign='center',
                       text=bs.Lstr(resource=self._r+'.currentBestText'),
@@ -13062,7 +13344,7 @@ class CoopWindow(Window):
                                                    textScale=0.6,
                                                    onActivateCall=lambda: self._showScores(tournamentButton=data))
         bs.widget(edit=data['currentLeaderNameText'],downWidget=data['moreScoresButton'])
-
+        
         bs.textWidget(parent=parent,drawController=b,position=(x+820+xOffs,y+sy-20),
                       size=(0,0),hAlign='center',
                       text=bs.Lstr(resource=self._r+'.timeRemainingText'),
@@ -13083,7 +13365,7 @@ class CoopWindow(Window):
         self._saveState()
         bs.containerWidget(edit=self._rootWidget,transition='outLeft')
         uiGlobals['mainMenuWindow'] = PowerRankingWindow(originWidget=self._powerRankingButtonInstance.getButtonWidget()).getRootWidget()
-
+    
     def _switchToStore(self,showTab='extras'):
         if bsInternal._getAccountState() != 'SIGNED_IN':
             showSignInPrompt()
@@ -13091,7 +13373,7 @@ class CoopWindow(Window):
         self._saveState()
         bs.containerWidget(edit=self._rootWidget,transition='outLeft')
         uiGlobals['mainMenuWindow'] = StoreWindow(originWidget=self._storeButtonInstance.getButtonWidget(),showTab=showTab,backLocation='CoopWindow').getRootWidget()
-
+        
 
     def _showLeader(self,tournamentButton):
         tournamentID = tournamentButton['tournamentID']
@@ -13103,7 +13385,7 @@ class CoopWindow(Window):
         AccountInfoWindow(accountID=tournamentButton['leader'][2][0].get('a',None),
                           profileID=tournamentButton['leader'][2][0].get('p',None),
                           position=tournamentButton['currentLeaderNameText'].getScreenSpaceCenter())
-
+        
     def _showScores(self,tournamentButton):
         tournamentID = tournamentButton['tournamentID']
         if tournamentID is None:
@@ -13112,11 +13394,11 @@ class CoopWindow(Window):
 
         TournamentScoresWindow(tournamentID=tournamentID,
                                position=tournamentButton['moreScoresButton'].getScreenSpaceCenter())
-
+        
     def _run(self,game,tournamentButton=None):
 
         args = {}
-
+        
         # do a bit of pre-flight for tournament options:
         if tournamentButton is not None:
 
@@ -13128,7 +13410,7 @@ class CoopWindow(Window):
                 bs.screenMessage(bs.Lstr(resource='tournamentCheckingStateText'),color=(1,1,0))
                 bs.playSound(bs.getSound('error'))
                 return
-
+                
             if tournamentButton['tournamentID'] is None:
                 bs.screenMessage(bs.Lstr(resource='internal.unavailableNoConnectionText'),color=(1,0,0))
                 bs.playSound(bs.getSound('error'))
@@ -13138,7 +13420,7 @@ class CoopWindow(Window):
                 bs.screenMessage(bs.Lstr(resource='league.tournamentLeagueText',subs=[('${NAME}',bs.Lstr(translate=('leagueNames',tournamentButton['requiredLeague'])))]),color=(1,0,0))
                 bs.playSound(bs.getSound('error'))
                 return
-
+                
             if tournamentButton['timeRemaining'] <= 0:
                 bs.screenMessage(bs.Lstr(resource='tournamentEndedText'),color=(1,0,0))
                 bs.playSound(bs.getSound('error'))
@@ -13146,12 +13428,12 @@ class CoopWindow(Window):
 
             # game is whatever the tournament tells us it is
             game = gTournamentInfo[tournamentButton['tournamentID']]['game']
-
+            
         if tournamentButton is None and game == 'Easy:The Last Stand':
             ConfirmWindow(bs.Lstr(resource='difficultyHardUnlockOnlyText',fallback='difficultyHardOnlyText'),
                           cancelButton=False,width=460,height=130)
             return
-
+        
         # infinite onslaught/runaround require pro; bring up a store link if need be.
         if tournamentButton is None and game in ('Challenges:Infinite Runaround','Challenges:Infinite Onslaught') and not bsUtils._havePro():
             if bsInternal._getAccountState() != 'SIGNED_IN':
@@ -13166,16 +13448,16 @@ class CoopWindow(Window):
         elif game in ['Challenges:Pro Ninja Fight']: requiredPurchase = 'games.ninja_fight'
         elif game in ['Challenges:Easter Egg Hunt','Challenges:Pro Easter Egg Hunt']: requiredPurchase = 'games.easter_egg_hunt'
         else: requiredPurchase = None
-
+        
         if tournamentButton is None and requiredPurchase is not None and not bsInternal._getPurchased(requiredPurchase):
             if bsInternal._getAccountState() != 'SIGNED_IN':
                 showSignInPrompt()
             else:
                 PurchaseWindow(items=[requiredPurchase])
             return
-
+        
         self._saveState()
-
+        
         # for tournaments, we pop up the entry window
         if tournamentButton is not None:
             TournamentEntryWindow(tournamentID=tournamentButton['tournamentID'],
@@ -13189,7 +13471,7 @@ class CoopWindow(Window):
         # if something is selected, store it
 
         self._saveState()
-
+        
         bs.containerWidget(edit=self._rootWidget,transition=self._transitionOut)
         uiGlobals['mainMenuWindow'] = PlayWindow(transition='inLeft').getRootWidget()
 
@@ -13205,7 +13487,7 @@ class CoopWindow(Window):
             bs.containerWidget(edit=self._rootWidget,selectedChild=sel)
         except Exception:
             bs.printException('error restoring state for',self.__class__)
-
+        
     def _saveState(self):
         cfg = bs.getConfig()
 
@@ -13219,13 +13501,13 @@ class CoopWindow(Window):
             gWindowStates[self.__class__.__name__] = {'selName':selName}
         except Exception:
             bs.printException('error saving state for',self.__class__)
-
+        
         cfg['Selected Coop Row'] = self._selectedRow
         cfg['Selected Coop Custom Level'] = self._selectedCustomLevel
         cfg['Selected Coop Challenge Level'] = self._selectedChallengeLevel
         cfg['Selected Coop Campaign Level'] = self._selectedCampaignLevel
         bs.writeConfig()
-
+            
     def _selChange(self,row,game):
         if self._doSelectionCallbacks:
             if row == 'custom': self._selectedCustomLevel = game
@@ -13286,7 +13568,7 @@ class MainMenuWindow(Window):
         self._inGame = not isinstance(bsInternal._getForegroundHostSession(),bsMainMenu.MainMenuSession)
         if not self._inGame:
             bsInternal._setAnalyticsScreen('Main Menu')
-
+            
             # the first time the non-in-game menu pops up, we might wanna show a 'get-remote-app' dialog in front of it
             if gFirstMainMenu:
                 gFirstMainMenu = False
@@ -13309,13 +13591,13 @@ class MainMenuWindow(Window):
                         bs.realTimer(2500,_checkShowBSRemoteWindow)
                 except Exception as e:
                     print 'EXC bsRemoteShow',e
-
+                            
 
         # make a vanilla container; we'll modify it to our needs in refresh
         self._rootWidget = bs.containerWidget(transition=transition, toolbarVisibility='MENU_FULL_ROOT')
 
         self._storeCharTex = self._getStoreCharTex()
-
+        
         self._refresh()
         self._restoreState()
 
@@ -13326,19 +13608,19 @@ class MainMenuWindow(Window):
         self._refreshTimer = bs.Timer(1000,bs.WeakCall(self._checkRefresh),repeat=True,timeType='real')
 
     def _getStoreCharTex(self):
-        return 'storeCharacterXmas' if bsInternal._getAccountMiscReadVal('xmas',False) else 'storeCharacterEaster' if bsInternal._getAccountMiscReadVal('easter',False) else 'storeCharacter'
-
+        return 'storeCharacter'
+    
     def _checkRefresh(self):
 
         if not self._rootWidget.exists(): return
-
+        
         # dont refresh for the first few seconds the game is up so we don't interrupt the transition in
         global gMainMenuWindowRefreshCheckCount
         gMainMenuWindowRefreshCheckCount += 1
         if gMainMenuWindowRefreshCheckCount < 3: return
 
         storeCharTex = self._getStoreCharTex()
-
+        
         accountStateNum = bsInternal._getAccountStateNum()
         if accountStateNum != self._accountStateNum or storeCharTex != self._storeCharTex:
             self._storeCharTex = storeCharTex
@@ -13351,20 +13633,20 @@ class MainMenuWindow(Window):
 
     def getPlayButton(self):
         return self._startButton
-
+    
     def _refresh(self):
 
         # clear everything that was there..
         children = self._rootWidget.getChildren()
         for c in children: c.delete()
-
+        
         # alter some default behavior when going through the main menu..
         if not self._inGame:
             bsUtils.gRunningKioskModeGame = False
-
+        
         #useAutoSelect = False if self._inGame else True
         useAutoSelect = True
-
+        
         buttonHeight = 45
         buttonWidth = 200
         padding = 10
@@ -13381,16 +13663,16 @@ class MainMenuWindow(Window):
         self._haveStoreButton = True if not self._inGame else False
 
         self._haveSettingsButton = True if (not self._inGame or not env.get('toolbarTest',True)) else False
-
+        
         self._inputDevice = inputDevice = bsInternal._getUIInputDevice()
         self._inputPlayer = inputDevice.getPlayer() if inputDevice is not None else None
         if self._inputPlayer is not None and not self._inputPlayer.exists(): self._inputPlayer = None
         self._connectedToRemotePlayer = inputDevice.isConnectedToRemotePlayer() if inputDevice is not None else False
 
-
+        
         positions = []
         pIndex = 0
-
+        
         if self._inGame:
 
             customMenuEntries = []
@@ -13504,15 +13786,15 @@ class MainMenuWindow(Window):
                                                        label=bs.Lstr(resource=self._r+'.demoMenuText'),
                                                        transitionDelay=demoMenuDelay,onActivateCall=self._demoMenuPress)
             else: self._demoMenuButton = None
+                            
 
-
-
+            
             # if bsInternal._isOuyaBuild():
             #     self._demoVersionUpdateTimer = bs.Timer(1000,bs.WeakCall(self._updateDemoButton),repeat=True,timeType='real')
 
 
             foo = -1 if gSmallUI else 1 if gMedUI else 3
-
+            
             h,v,scale = positions[pIndex]
             v = v + foo
             gatherDelay = 0 if tDelayPlay == 0 else max(0,tDelayPlay+100)
@@ -13542,7 +13824,7 @@ class MainMenuWindow(Window):
                            transitionDelay=gatherDelay,
                            position=(thisH-0.5*iconSize,v+0.31*thisBHeight),
                            texture=bs.getTexture('usersButton'))
-
+            
             # play button
             h,v,scale = positions[pIndex]
             pIndex += 1
@@ -13586,7 +13868,7 @@ class MainMenuWindow(Window):
                            transitionDelay=watchDelay,
                            position=(thisH-0.5*iconSize,v+0.33*thisBHeight),
                            texture=bs.getTexture('tv'))
-
+            
             if not self._inGame and enableAccountButton:
                 thisBWidth = buttonWidth
                 h,v,scale = positions[pIndex]
@@ -13607,16 +13889,17 @@ class MainMenuWindow(Window):
                     iw = bs.imageWidget(parent=self._rootWidget,position=(h - iconSize*0.5+35,v+buttonHeight*scale-iconSize*0.24+1.5),transitionDelay=tDelay,
                                         size=(iconSize,iconSize),
                                         texture=bs.getTexture('egg2'),tiltScale=0.0)
-
+                                                                
                 tDelay += tDelayInc
             else: self._gcButton = None
-
+            
             # how-to-play button
             h,v,scale = positions[pIndex]
             pIndex += 1
             self._howToPlayButton = howToPlayButton = b = bs.buttonWidget(parent=self._rootWidget,position=(h - buttonWidth*0.5*scale,v),
                                                                           scale=scale,autoSelect=useAutoSelect,
                                                                           size=(buttonWidth,buttonHeight),
+                                                                          #label = R.howToPlayText,
                                                                           label=bs.Lstr(resource=self._r+'.howToPlayText'),
                                                                           transitionDelay=tDelay,
                                                                           onActivateCall=self._howToPlay)
@@ -13627,12 +13910,13 @@ class MainMenuWindow(Window):
                 iw = bs.imageWidget(parent=self._rootWidget,position=(h - iconSize*0.5+30,v+buttonHeight*scale-iconSize*0.24+1.5),transitionDelay=tDelay,
                                     size=(iconSize,iconSize),
                                     texture=bs.getTexture('egg4'),tiltScale=0.0)
-
+            
 
             # credits button
             tDelay += tDelayInc
             h,v,scale = positions[pIndex]
             pIndex += 1
+            # creditsText = R.creditsText
             self._creditsButton = creditsButton = b = bs.buttonWidget(parent=self._rootWidget,position=(h - buttonWidth*0.5*scale,v),
                                                                       size=(buttonWidth,buttonHeight),autoSelect=useAutoSelect,
                                                                       #label = creditsText,
@@ -13645,7 +13929,7 @@ class MainMenuWindow(Window):
         # in-game
         else:
             self._startButton = None
-
+            
             pause()
             #print 'WARNING: need to fix pausing2'
             #if bs.getSharedObject('globals').allowPausing and transition == 'inRight': bs.playSound(bs.getSound('refWhistle'))
@@ -13667,6 +13951,7 @@ class MainMenuWindow(Window):
             pIndex += 1
 
             b = bs.buttonWidget(parent=self._rootWidget, position=(h - buttonWidth/2,v), size=(buttonWidth,buttonHeight),scale=scale,
+                                #label=R.resumeText,
                                 label=bs.Lstr(resource=self._r+'.resumeText'),
                                 autoSelect=useAutoSelect,
                                 onActivateCall=self._resume)
@@ -13683,7 +13968,7 @@ class MainMenuWindow(Window):
 
                 if resume: call = bs.Call(self._resumeAndCall,entry['call'])
                 else: call = bs.Call(entry['call'],bs.WeakCall(self._resume))
-
+                
                 b = bs.buttonWidget(parent=self._rootWidget, position=(h - buttonWidth/2,v), size=(buttonWidth,buttonHeight),scale=scale,
                                     onActivateCall=call,label=entry['label'],autoSelect=useAutoSelect)
 
@@ -13700,12 +13985,13 @@ class MainMenuWindow(Window):
                     t = bs.Lstr(value=playerName)
                     # t = playerName
                 bs.textWidget(parent=self._rootWidget,position=(h,v+buttonHeight*(0.64 if playerName != '' else 0.5)),size=(0,0),
+                              #text=R.leaveGameText,
                               text=bs.Lstr(resource=self._r+'.leaveGameText'),
                               scale=(0.83 if playerName != '' else 1.0),
                               color=(0.75,1.0,0.7),hAlign='center',vAlign='center',drawController=b,maxWidth=buttonWidth*0.9)
                 bs.textWidget(parent=self._rootWidget,position=(h,v+buttonHeight*0.27),size=(0,0),text=t,
                               color=(0.75,1.0,0.7),hAlign='center',vAlign='center',drawController=b,scale=0.45,maxWidth=buttonWidth*0.9)
-
+                
             # for ui in customMenuEntries2:
             #     h,v,scale = positions[pIndex]
             #     pIndex += 1
@@ -13718,6 +14004,7 @@ class MainMenuWindow(Window):
             pIndex += 1
             self._settingsButton = settingsButton = b = bs.buttonWidget(parent=self._rootWidget,position=(h - buttonWidth*0.5*scale,v),size=(buttonWidth,buttonHeight),scale=scale,
                                                                         autoSelect=useAutoSelect,
+                                                                        #label=R.settingsText,
                                                                         label=bs.Lstr(resource=self._r+'.settingsText'),
                                                                         transitionDelay=tDelay,onActivateCall=self._settings)
 
@@ -13727,7 +14014,7 @@ class MainMenuWindow(Window):
             iw = bs.imageWidget(parent=self._rootWidget,position=(h - iconSize*0.5-15,v+buttonHeight*scale-iconSize*0.24+1.5),transitionDelay=tDelay,
                                 size=(iconSize,iconSize),
                                 texture=bs.getTexture('egg3'),tiltScale=0.0)
-
+        
         tDelay += tDelayInc
 
         if self._inGame:
@@ -13749,9 +14036,10 @@ class MainMenuWindow(Window):
             else:
                 b = bs.buttonWidget(parent=self._rootWidget,position=(h - buttonWidth*0.5*scale,v),scale=scale,
                                     size=(buttonWidth,buttonHeight),autoSelect=useAutoSelect,
+                                    # label = R.leavePartyText,
                                     label = bs.Lstr(resource=self._r+'.leavePartyText'),
                                     onActivateCall=self._confirmLeaveParty)
-
+                
 
 
         if self._haveStoreButton:
@@ -13777,6 +14065,7 @@ class MainMenuWindow(Window):
             h,v,scale = positions[pIndex]
             pIndex += 1
             self._quitButton = quitButton = b = bs.buttonWidget(parent=self._rootWidget,autoSelect=useAutoSelect,position=(h - buttonWidth*0.5*scale,v),size=(buttonWidth,buttonHeight),scale=scale,
+                                                                #label = R.quitText if 'Mac' in bs.getEnvironment()['userAgentString'] else R.exitGameText,
                                                                 label = bs.Lstr(resource=self._r+('.quitText' if 'Mac' in bs.getEnvironment()['userAgentString'] else '.exitGameText')),
                                                                 onActivateCall=self._quit,transitionDelay=tDelay)
 
@@ -13786,8 +14075,8 @@ class MainMenuWindow(Window):
                 iw = bs.imageWidget(parent=self._rootWidget,position=(h - iconSize*0.5+25,v+buttonHeight*scale-iconSize*0.24+1.5),transitionDelay=tDelay,
                                     size=(iconSize,iconSize),
                                     texture=bs.getTexture('egg1'),tiltScale=0.0)
-
-
+            
+            
             #if bsInternal._isOuyaBuild() or _bs._isRunningOnFireTV():
             bs.containerWidget(edit=self._rootWidget,cancelButton=quitButton)
             tDelay += tDelayInc
@@ -13800,12 +14089,12 @@ class MainMenuWindow(Window):
 
     def _quit(self):
         QuitWindow(originWidget=self._quitButton)
-
+        
     def _demoMenuPress(self):
         self._saveState()
         bs.containerWidget(edit=self._rootWidget,transition='outRight')
         uiGlobals['mainMenuWindow'] = KioskWindow(transition='inLeft').getRootWidget()
-
+        
     def _showAccountWindow(self):
         self._saveState()
         bs.containerWidget(edit=self._rootWidget,transition='outLeft')
@@ -13824,7 +14113,7 @@ class MainMenuWindow(Window):
         # if bsInternal._getForegroundHostSession() == None:
         #     bs.screenMessage("FIXME - need to replace this with 'disconnect' button or whatnot..")
         #     return
-
+        
         # select cancel by default; this occasionally gets called by accident in a fit of button mashing
         # and this will help reduce damage
         ConfirmWindow(bs.Lstr(resource=self._r+'.exitToMenuText'),self._endGame,cancelIsSelected=True)
@@ -13833,20 +14122,20 @@ class MainMenuWindow(Window):
         # select cancel by default; this occasionally gets called by accident in a fit of button mashing
         # and this will help reduce damage
         ConfirmWindow(bs.Lstr(resource=self._r+'.exitToMenuText'),self._endGame,cancelIsSelected=True)
-
+        
     def _confirmLeaveParty(self):
-
+        
         # select cancel by default; this occasionally gets called by accident in a fit of button mashing
         # and this will help reduce damage
         ConfirmWindow(bs.Lstr(resource=self._r+'.leavePartyConfirmText'),self._leaveParty,cancelIsSelected=True)
 
     def _leaveParty(self):
         bsInternal._disconnectFromHost()
-
+        
     def _endGame(self):
 
         if not self._rootWidget.exists(): return
-
+        
         bsUtils.stopStressTest() # stops any in-progress stress-testing
         bs.containerWidget(edit=self._rootWidget,transition='outLeft')
 
@@ -13916,7 +14205,7 @@ class MainMenuWindow(Window):
         else:
             print 'unknown widget in main menu store selection:'
             _gMainMenuSelection = 'Start'
-
+        
     def _restoreState(self):
         # dont do this for the in-game menu..
         if self._inGame: return
@@ -13934,7 +14223,7 @@ class MainMenuWindow(Window):
         elif selName == 'DemoMenu': sel = self._demoMenuButton
         else: sel = self._startButton
         if sel is not None: bs.containerWidget(edit=self._rootWidget,selectedChild=sel)
-
+        
 
     def _gatherPress(self):
 
@@ -13944,11 +14233,11 @@ class MainMenuWindow(Window):
             bs.screenMessage(bs.Lstr(resource='packageModsEnabledErrorText'))
             bs.playSound(bs.getSound('error'))
             return
-
+        
         self._saveState()
         bs.containerWidget(edit=self._rootWidget,transition='outLeft')
         uiGlobals['mainMenuWindow'] = GatherWindow(originWidget=self._gatherButton).getRootWidget()
-
+        
     def _watchPress(self):
         self._saveState()
         bs.containerWidget(edit=self._rootWidget,transition='outLeft')
@@ -13960,7 +14249,7 @@ class MainMenuWindow(Window):
         #     bs.screenMessage("This will let you watch and share replays (coming soon)..",color=(1,0,0))
         #     return
         # else:
-
+        
         # global gMainWindow
         # gMainWindow = None
         # try:
@@ -13970,7 +14259,7 @@ class MainMenuWindow(Window):
         #     bs.printException("exception running replay session")
         #     # drop back into a main menu session..
         #     bsInternal._newHostSession(bsMainMenu.MainMenuSession)
-
+        
     def _playPress(self):
         self._saveState()
         global gShouldAskToMakeProfile
@@ -13988,7 +14277,7 @@ class MainMenuWindow(Window):
 
         if self._rootWidget.exists():
             bs.containerWidget(edit=self._rootWidget, transition='outRight')
-
+            
         uiGlobals['mainMenuWindow'] = None
 
         # if there's callbacks waiting for this window to go away, call them
@@ -14045,11 +14334,11 @@ class SpecialOfferWindow(Window):
             realPrice = None
             zombie = False
         if realPrice is None: realPrice = '?'
-
+            
         # if we wanted a real price but didn't find one, go zombie..
         if zombie:
             return
-
+    
         # this can pop up suddenly, so lets block input for 1 second...
         bsInternal._lockAllInput()
         bs.realTimer(1000,bsInternal._unlockAllInput)
@@ -14058,7 +14347,7 @@ class SpecialOfferWindow(Window):
         bs.realTimer(300,lambda: bs.playSound(bs.getSound('ooh')))
 
         self._offer = copy.deepcopy(offer)
-
+        
         self._width = width = 580
         self._height = height = 520
 
@@ -14067,7 +14356,7 @@ class SpecialOfferWindow(Window):
                                               stackOffset=(0,-15) if gSmallUI else (0,0))
 
         self._isBundleSale = False
-
+        
         try:
             if offer['item'] == 'pro':
                 originalPriceStr = bsInternal._getPrice('pro')
@@ -14094,14 +14383,14 @@ class SpecialOfferWindow(Window):
             saleText = bs.Lstr(resource='store.saleBundleText',fallback='store.saleText').evaluate()
         else:
             saleText = bs.Lstr(resource='store.saleExclaimText',fallback='store.saleText').evaluate()
-
-
+        
+        
         self._titleText = bs.textWidget(parent=self._rootWidget,position=(self._width*0.5,self._height-40),
                       size=(0,0),text=saleText+((' '+bs.Lstr(resource='store.oneTimeOnlyText').evaluate()) if self._offer['oneTimeOnly'] else '') + percentOffText,
                       hAlign='center',vAlign='center',maxWidth=self._width*0.9-220,
                       scale=1.4,
                       color=(0.3,1,0.3))
-
+        
         self._flashOn = False
         self._flashingTimer = bs.Timer(50,bs.WeakCall(self._flashCycle),repeat=True,timeType='real')
         bs.realTimer(600,bs.WeakCall(self._stopFlashing))
@@ -14138,8 +14427,8 @@ class SpecialOfferWindow(Window):
             bs.imageWidget(edit=display['priceSlashWidget'],opacity=1.0)
             bs.textWidget(edit=display['priceWidgetLeft'],text=originalPriceStr)
             bs.textWidget(edit=display['priceWidgetRight'],text=newPriceStr)
-
-
+            
+            
         # add ticket button only if this is ticket-purchasable
         if offer['price'] is not None and type(offer['price']) is int:
             self._getTicketsButton = b = bs.buttonWidget(parent=self._rootWidget,position=(self._width-125,self._height-68),
@@ -14156,7 +14445,7 @@ class SpecialOfferWindow(Window):
             self._updateTicketsText()
 
         self._updateTimer = bs.Timer(1000,bs.WeakCall(self._update),timeType='real',repeat=True)
-
+        
         self._cancelButton = b = bs.buttonWidget(parent=self._rootWidget,
                                                  position=(50,40) if self._isBundleSale else (self._width*0.5-75,40),
                                                  size=(150,60),scale=1.0,
@@ -14170,7 +14459,7 @@ class SpecialOfferWindow(Window):
                                                        onActivateCall=self._purchase,
                                                        autoSelect=True,
                                                        label=bs.Lstr(resource='store.purchaseText'))
-
+            
         bs.containerWidget(edit=self._rootWidget,
                            cancelButton=self._cancelButton,
                            startButton=self._purchaseButton if self._isBundleSale else None,
@@ -14186,22 +14475,22 @@ class SpecialOfferWindow(Window):
         self._flashOn = not self._flashOn
         bs.textWidget(edit=self._titleText,
                       color=(0.3,1,0.3) if self._flashOn else (1,0.5,0))
-
+        
     def _update(self):
 
         canDie = False
-
+        
         # we go away if we see that our target item is owned..
         if self._offer['item'] == 'pro':
             if bsUtils._havePro():
                 canDie = True
         else:
             if bsInternal._getPurchased(self._offer['item']): canDie = True
-
+            
         if canDie:
             bs.containerWidget(edit=self._rootWidget,transition='outLeft')
-
-
+                
+        
     def _updateTicketsText(self):
         if not self._rootWidget.exists(): return
         if bsInternal._getAccountState() == 'SIGNED_IN':
@@ -14215,10 +14504,10 @@ class SpecialOfferWindow(Window):
             showSignInPrompt()
             return
         window = GetTicketsWindow(modal=True).getRootWidget()
-
-
+        
+    
     def _purchase(self):
-
+        
         if self._offer['item'] == 'pro':
             bsInternal._purchase('pro_sale')
             #bs.containerWidget(edit=self._rootWidget,transition='outLeft')
@@ -14238,19 +14527,19 @@ class SpecialOfferWindow(Window):
             ConfirmWindow(bs.Lstr(resource='store.purchaseConfirmText',subs=[('${ITEM}',_getStoreItemNameTranslated(self._offer['item']))]),
                           width=400,height=120,
                           action=doIt,okText=bs.Lstr(resource='store.purchaseText',fallback='okText'))
-
+        
     def _cancel(self):
         bs.containerWidget(edit=self._rootWidget,transition='outRight')
-
+        
 
 class PurchaseWindow(Window):
 
     def __init__(self,items,transition='inRight'):
 
         if len(items) != 1: raise Exception('expected exactly 1 item')
-
+        
         self._items = list(items)
-
+        
         self._width = width = 580
         self._height = height = 520
 
@@ -14259,16 +14548,16 @@ class PurchaseWindow(Window):
                                               scale=1.2 if gSmallUI else 1.1 if gMedUI else 1.0,
                                               stackOffset=(0,-15) if gSmallUI else (0,0))
 
-
+        
         self._isDouble = False
-
+        
         self._titleText = bs.textWidget(parent=self._rootWidget,position=(self._width*0.5,self._height-40),
                                         size=(0,0),
                                         text=bs.Lstr(resource='unlockThisText', fallback='unlockThisInTheStoreText'),
                                         hAlign='center',vAlign='center',maxWidth=self._width*0.9-120,
                                         scale=1.4,
                                         color=(1,0.8,0.3,1))
-
+        
         size = _getStoreItemDisplaySize(items[0])
         display = {}
         _instantiateStoreItemDisplay(items[0],display,
@@ -14312,7 +14601,7 @@ class PurchaseWindow(Window):
                                             #color=(1,0.5,0))
 
         self._updateTimer = bs.Timer(1000,bs.WeakCall(self._update),timeType='real',repeat=True)
-
+        
         self._cancelButton = b = bs.buttonWidget(parent=self._rootWidget,
                                                  position=(50,40),
                                                  size=(150,60),scale=1.0,
@@ -14325,7 +14614,7 @@ class PurchaseWindow(Window):
                                                    onActivateCall=self._purchase,
                                                    autoSelect=True,
                                                    label=bs.Lstr(resource='store.purchaseText'))
-
+            
         bs.containerWidget(edit=self._rootWidget,
                            cancelButton=self._cancelButton,
                            startButton=self._purchaseButton,
@@ -14334,17 +14623,17 @@ class PurchaseWindow(Window):
     def _update(self):
 
         canDie = False
-
+        
         # we go away if we see that our target item is owned..
         if self._items == ['pro']:
             if bsUtils._havePro():
                 canDie = True
         else:
             if bsInternal._getPurchased(self._items[0]): canDie = True
-
+            
         if canDie:
             bs.containerWidget(edit=self._rootWidget,transition='outLeft')
-
+                
     def _purchase(self):
 
         if self._items == ['pro']:
@@ -14360,11 +14649,11 @@ class PurchaseWindow(Window):
                 bsInternal._inGamePurchase(self._items[0],self._price)
             bs.playSound(bs.getSound('swish'))
             doIt()
-
+        
     def _cancel(self):
         bs.containerWidget(edit=self._rootWidget,transition='outRight')
-
-
+        
+        
 gSpecialOffer = None
 def _showOffer():
     try:
@@ -14384,12 +14673,12 @@ def _showOffer():
                         except Exception:
                             bs.printException('Error running special offer')
                     SpecialOfferWindow(gSpecialOffer)
-
+                    
             gSpecialOffer = None
             return True
     except Exception:
         bs.printException('Error showing offer')
-
+        
     return False
 
 def askForRating():
@@ -14496,7 +14785,7 @@ def runPostLaunchStuff():
 
     for key in ('lc14','lc14c','lc14146','lc14173'):
         bsConfig.setdefault(key,launchCount)
-
+        
     # debugging - make note if we're using the local test server so we dont accidentally
     # leave it on in a release
     serverAddr = bsInternal._getServerAddress()
@@ -14555,10 +14844,10 @@ def runPostLaunchStuff():
         elif bsConfig.get('Auto Account State') == 'Local':
             bsInternal._signIn('Local')
     bs.realTimer(1,doAutoSignIn)
-
+        
     bsUtils._gRanPostLaunchStuff = True
 
-
+    
 def checkGamePadConfigs():
     " can be called during idle time to ask the user to configure any unconfigured joysticks "
 
@@ -14566,7 +14855,7 @@ def checkGamePadConfigs():
 
     # go through the list until we find one we ask about or we have to stop asking
     while len(gUntestedGamePads) > 0 and gCanAskToConfigGamePads:
-
+        
         gamepad = gUntestedGamePads.pop()
 
         # ok lets just ask for a button assignment for this joystick.. if we dont get anything
@@ -14584,14 +14873,14 @@ def checkGamePadConfigs():
             name = gamepad.getName().lower()
             if any((s in name for s in ['mouse','keyboard','athome_remote','cec_input','alitv gamepad'])):
                 ask = False
-
-        except Exception as e:
+                
+        except Exception,e:
             print 'EXC checking gp name',e
             ask = False
 
         # FIXME - if ask is false we should maybe still ask the server for the config
         if not known and ask:
-
+            
             def askToConfig():
                 try: name = gamepad.getName()
                 except Exception:
@@ -14602,7 +14891,7 @@ def checkGamePadConfigs():
                 # at inopportune times or get hidden behind the main menu or whatnot
                 # ..maybe can revisit later.
                 return
-
+            
                 # only proceed if we can get its name
                 if name is not None:
                     bs.playSound(bs.getSound('swish'))
@@ -14665,7 +14954,7 @@ def checkGamePadConfigs():
                 except Exception: name = None
 
                 haveConfig = False
-
+                
                 # if data and 'config' in data and data['config'] is not None and name is not None:
                 if data:
                     if data.get('config') is not None and name is not None:
@@ -14683,7 +14972,7 @@ def checkGamePadConfigs():
                         configChecks = bs.getConfig().setdefault('Controller Config Checks',{})
                         configChecks[name] = {}
                         bs.writeConfig()
-
+                        
                 # finally if we still have no config, possibly ask the user..
                 if not haveConfig:
                     askToConfig()
@@ -14721,7 +15010,7 @@ def _onConfigurableGamePadConnected(inputDevice):
 
 class KioskWindow(Window):
     def __init__(self,transition='inRight'):
-
+        
         self._width = 720
         self._height = 340
         self._rootWidget = bs.containerWidget(size=(self._width,self._height),transition=transition,
@@ -14732,13 +15021,13 @@ class KioskWindow(Window):
 
         # alter some default behavior when going through this menu..
         bsUtils.gRunningKioskModeGame = True
-
+        
         # lets reset all random player names every time we hit the main menu
         bsInternal._resetRandomPlayerNames()
 
         # and achievements.. (at least locally)
         bs.getConfig()['Achievements'] = {}
-
+        
         global gDidMenuIntro
         tDelayBase = 0
         tDelayScale = 0
@@ -14758,7 +15047,7 @@ class KioskWindow(Window):
         labelHeight = 130+yExtra
         imgWidth = 180
         imgV = 158+yExtra
-
+        
         tDelay = tDelayBase+tDelayScale*1300
         bs.textWidget(parent=self._rootWidget,size=(0,0),position=(self._width*0.5,self._height+yExtra-44),
                       transitionDelay=tDelay,
@@ -14818,7 +15107,7 @@ class KioskWindow(Window):
             tDelayBase = 1500
             tDelayScale = 1.0
             gDidMenuIntro = True
-
+        
         yExtra = -115
         bWidth = 250
         bHeight = 200
@@ -14827,7 +15116,7 @@ class KioskWindow(Window):
         labelHeight = 130+yExtra
         imgWidth = 180
         imgV = 158+yExtra
-
+        
         tDelay = tDelayBase+tDelayScale*1300
         bs.textWidget(parent=self._rootWidget,size=(0,0),position=(self._width*0.5,self._height+yExtra-44),
                       transitionDelay=tDelay,
@@ -14849,7 +15138,7 @@ class KioskWindow(Window):
                            modelOpaque=modelOpaque,
                            modelTransparent=modelTransparent,
                            maskTexture=maskTex)
-
+        
         h = self._width*0.5
         tDelay = tDelayBase+tDelayScale*650
         self._b5 = b = bs.buttonWidget(parent=self._rootWidget,autoSelect=True,size=(bWidth,bHeight),
@@ -14914,7 +15203,7 @@ class KioskWindow(Window):
         elif sel == self._b7: selName = 'b7'
         else: selName = 'b1'
         gWindowStates[self.__class__.__name__] = selName
-
+        
     def _doGame(self,mode):
         self._saveState()
         if mode in ['epic','ctf','hockey']:
@@ -14970,7 +15259,7 @@ class KioskWindow(Window):
                 bsInternal._fadeScreen(False,time=250,endCall=bs.Call(bs.pushCall,bs.Call(bsInternal._newHostSession,bs.TeamsSession)))
             bs.containerWidget(edit=self._rootWidget,transition='outLeft')
             return
-
+        
         game = ('Default:Onslaught Training' if mode == 'easy'
                 else 'Default:Rookie Football' if mode == 'medium'
                 else 'Default:Uber Onslaught')
@@ -14978,7 +15267,7 @@ class KioskWindow(Window):
         bs.writeConfig()
         if bsUtils._handleRunChallengeGame(game,force=True):
             bs.containerWidget(edit=self._rootWidget,transition='outLeft')
-
+        
     def _doFullMenu(self):
         self._saveState()
         bs.containerWidget(edit=self._rootWidget,transition='outLeft')
@@ -15085,12 +15374,12 @@ class ShowURLWindow(Window):
                                 onActivateCall=self._done)
             # we have no 'cancel' button but still want to be able to hit back/escape/etc to leave..
             bs.containerWidget(edit=self._rootWidget,selectedChild=b,startButton=b,onCancelCall=b.activate)
-
+        
     def _done(self):
         bs.containerWidget(edit=self._rootWidget,transition='outLeft')
 
 class GetTicketsWindow(Window):
-
+        
     def __init__(self, transition='inRight', fromModalStore=False, modal=False, originWidget=None, storeBackLocation=None):
 
         bsInternal._setAnalyticsScreen('Get Tickets Window')
@@ -15099,7 +15388,7 @@ class GetTicketsWindow(Window):
         self._storeBackLocation = storeBackLocation # ew.
 
         self._adButtonGreyed = False
-
+        
         # if they provided an origin-widget, scale up from that
         if originWidget is not None:
             self._transitionOut = 'outScale'
@@ -15108,7 +15397,7 @@ class GetTicketsWindow(Window):
         else:
             self._transitionOut = 'outRight'
             scaleOrigin = None
-
+            
         self._width = 800
         self._height = 480
 
@@ -15117,7 +15406,7 @@ class GetTicketsWindow(Window):
         self._r = 'getTicketsWindow'
 
         topExtra = 20 if gSmallUI else 0
-
+        
         self._rootWidget = bs.containerWidget(size=(self._width,self._height+topExtra),transition=transition,
                                               scaleOriginStackOffset=scaleOrigin,
                                               color=(0.4,0.37,0.55),
@@ -15140,14 +15429,14 @@ class GetTicketsWindow(Window):
         if gDoAndroidNav and not modal:
             bs.buttonWidget(edit=b,buttonType='backSmall',size=(60,60),label=bs.getSpecialChar('back'))
             # bs.textWidget(edit=t,hAlign='left',position=(135,self._height-49))
-
+        
         bSize = (220.0,180.0)
         bSize2 = (220,180)
         v = self._height - bSize[1] - 80
         spacing = 1
 
         self._adButton = None
-
+        
         def _addButton(item,position,size,label,price=None,texName=None,texOpacity=1.0,texScale=1.0,enabled=True,textScale=1.0):
             b = bs.buttonWidget(parent=self._rootWidget,position=position,buttonType='square',size=size,label='',autoSelect=True,
                                 color=None if enabled else (0.5,0.5,0.5),onActivateCall=(bs.Call(self._purchase,item) if enabled else self._disabledPress))
@@ -15187,7 +15476,7 @@ class GetTicketsWindow(Window):
         c5Txt = bs.Lstr(resource=r,subs=[('${COUNT}',str(bsInternal._getAccountMiscReadVal('tickets5Amount',15000)))])
 
         h = 110
-
+        
         # enable buttons if we have prices..
         tickets1Price = bsInternal._getPrice('tickets1')
         tickets2Price = bsInternal._getPrice('tickets2')
@@ -15212,7 +15501,7 @@ class GetTicketsWindow(Window):
         self._enableAdButton = bsInternal._hasVideoAds()
         h = self._width*0.5+110
         v = self._height - bSize[1] - 115
-
+        
         if self._enableAdButton:
             hOffs = 35
             bSize3 = (150,120)
@@ -15252,14 +15541,14 @@ class GetTicketsWindow(Window):
                           drawController=cdb,rotate=15,shadow=1.0,
                           maxWidth=150,hAlign='center',vAlign='center',scale=1.0)
             tcYOffs = 0
-
+            
         h = self._width-185
         v = self._height - 95+tcYOffs
 
-
+        
         t1 = bs.Lstr(resource=self._r+'.youHaveText').evaluate().split('${COUNT}')[0].strip()
         t2 = bs.Lstr(resource=self._r+'.youHaveText').evaluate().split('${COUNT}')[-1].strip()
-
+        
         bs.textWidget(parent=self._rootWidget,text=t1,position=(h,v),size=(0,0),color=(0.5,0.5,0.6),
                       maxWidth=200,hAlign='center',vAlign='center',scale=0.8)
         v -= 30
@@ -15278,19 +15567,19 @@ class GetTicketsWindow(Window):
         self._update()
         self._updateTimer = bs.Timer(1000,bs.WeakCall(self._update),timeType='real',repeat=True)
         self._smoothIncreaseSpeed = 1.0
-
+        
     def __del__(self):
         if self._tickingNode is not None:
             self._tickingNode.delete()
             self._tickingNode = None
-
+        
     def _smoothUpdate(self):
         if not self._ticketCountText.exists():
             self._smoothUpdateTimer = None
             return
-
+        
         finished = False
-
+        
         # if we're going down, do it immediately
         if int(self._smoothTicketCount) >= self._ticketCount:
             self._smoothTicketCount = float(self._ticketCount)
@@ -15304,7 +15593,7 @@ class GetTicketsWindow(Window):
             elif self._tickingNode is None:
                 with bs.Context('UI'):
                     self._tickingNode = bs.newNode('sound',attrs={'sound':bs.getSound('scoreIncrease'),'positional':False})
-
+            
         bs.textWidget(edit=self._ticketCountText,text=str(int(self._smoothTicketCount)))
 
         # if we've reached the target, kill the timer/sound/etc
@@ -15314,15 +15603,15 @@ class GetTicketsWindow(Window):
                 self._tickingNode.delete()
                 self._tickingNode = None
                 bs.playSound(bs.getSound('cashRegister2'))
-
+        
     def _update(self):
         import datetime
-
+        
         # if we somehow get signed out, just die..
         if bsInternal._getAccountState() != 'SIGNED_IN':
             self._back()
             return
-
+        
         self._ticketCount = bsInternal._getAccountTicketCount()
 
         # update our incentivized ad button depending on whether ads are available
@@ -15331,7 +15620,7 @@ class GetTicketsWindow(Window):
             if nextRewardAdTime is not None:
                 nextRewardAdTime = datetime.datetime.utcfromtimestamp(nextRewardAdTime)
             now = datetime.datetime.utcnow()
-
+                
             if bsInternal._haveIncentivizedAd() and (nextRewardAdTime is None or nextRewardAdTime <= now):
                 self._adButtonGreyed = False
                 bs.buttonWidget(edit=self._adButton, color=(0.65,0.5,0.7))
@@ -15350,17 +15639,17 @@ class GetTicketsWindow(Window):
                 else:
                     s = ''
                 bs.textWidget(edit=self._adTimeText, text=s)
-
+                
         # if this is our first update, assign immediately; otherwise kick off a smooth transition if the value has changed
         if self._smoothTicketCount is None:
             self._smoothTicketCount = float(self._ticketCount)
             self._smoothUpdate() # will set the text widget
-
+            
         elif self._ticketCount != self._smoothTicketCount and self._smoothUpdateTimer is None:
             self._smoothUpdateTimer = bs.Timer(50,bs.WeakCall(self._smoothUpdate),repeat=True,timeType='real')
             diff = abs(float(self._ticketCount)-self._smoothTicketCount)
             self._smoothIncreaseSpeed = diff/100.0 if diff >= 5000 else diff/50.0 if diff >= 1500 else diff/30.0 if diff >= 500 else diff/15.0
-
+            
     def _disabledPress(self):
 
         # if we're on a platform without purchases, inform the user they
@@ -15384,7 +15673,7 @@ class GetTicketsWindow(Window):
         env = bs.getEnvironment()
         bsUtils.serverGet('bsAccountPurchaseCheck',{'item':item,'platform':env['platform'],'subplatform':env['subplatform'],'version':env['version'],'buildNumber':env['buildNumber']},
                           callback=bs.WeakCall(self._purchaseCheckResult,item))
-
+        
     def _purchaseCheckResult(self,item,result):
         if result is None:
             bs.playSound(bs.getSound('error'))
@@ -15415,7 +15704,7 @@ class GetTicketsWindow(Window):
                 bsUtils._showAd('tickets')
         else:
             bsInternal._purchase(item)
-
+        
     def _back(self):
         if self._transitioningOut: return
         bs.containerWidget(edit=self._rootWidget,transition=self._transitionOut)
@@ -15426,18 +15715,18 @@ class GetTicketsWindow(Window):
         self._transitioningOut = True
 
 def _createTabButtons(parentWidget,tabs,pos,size,onSelectCall=None,returnExtraInfo=False):
-
+    
     tabPosV = pos[1]
     tabButtons = {}
     tabButtonsIndexed = []
     tabButtonWidth = float(size[0])/len(tabs)
-
+    
     # add a bit more visual spacing as our buttons get narrower
     tabSpacing = (250.0-tabButtonWidth)*0.06
 
     positions = []
     sizes = []
-
+    
     h = pos[0]
     for i,tab in enumerate(tabs):
         def _tickAndCall(call):
@@ -15467,7 +15756,7 @@ class TestWindow(Window):
     def __init__(self,transition='inRight'):
         self._width = 500
         self._height = 350
-
+        
         self._rootWidget = bs.containerWidget(size=(self._width,self._height),transition=transition,
                                               scale=1.8 if gSmallUI else 1.6 if gMedUI else 1.4)
 
@@ -15496,18 +15785,18 @@ class TestWindow(Window):
                                 buttonType='square',onActivateCall=bs.Call(bs.screenMessage,"CLICK!"))
             bs.widget(edit=b,showBufferLeft=50,showBufferRight=50,downWidget=b1,upWidget=self._backButton)
             x += dx
-
+        
     def _back(self):
         bs.containerWidget(edit=self._rootWidget,transition='outRight')
         uiGlobals['mainMenuWindow'] = MainMenuWindow(transition='inLeft').getRootWidget()
-
-
+        
+        
 class WatchWindow(Window):
 
     def __init__(self,transition='inRight',originWidget=None):
 
         bsInternal._setAnalyticsScreen('Watch Window')
-
+        
         if originWidget is not None:
             self._transitionOut = 'outScale'
             scaleOrigin = originWidget.getScreenSpaceCenter()
@@ -15515,12 +15804,12 @@ class WatchWindow(Window):
         else:
             self._transitionOut = 'outRight'
             scaleOrigin = None
-
+        
         global gMainWindow
         gMainWindow = "Watch"
-
+        
         self._r = 'watchWindow'
-
+        
         self._width = 1040
         self._height = 578 if gSmallUI else 670 if gMedUI else 800
         self._currentTab = None
@@ -15543,18 +15832,18 @@ class WatchWindow(Window):
             if gDoAndroidNav:
                 bs.buttonWidget(edit=b,buttonType='backSmall',size=(60,60),label=bs.getSpecialChar('back'))
                 # bs.textWidget(edit=t,hAlign='left',position=(155,self._height - 40))
-
+        
         t = bs.textWidget(parent=self._rootWidget,position=(self._width*0.5,self._height-38),size=(0,0),
                           color=gTitleColor,scale=1.5,hAlign="center",vAlign="center",
                           text=bs.Lstr(resource=self._r+'.titleText'),
                           maxWidth=400)
 
-
+        
         tabsDef = [['myReplays',bs.Lstr(resource=self._r+'.myReplaysText')]]
 
         scrollBufferH = 130
         tabBufferH = 750
-
+        
         self._tabButtons = _createTabButtons(self._rootWidget,tabsDef,pos=(tabBufferH*0.5,self._height - 130),
                                              size=(self._width-tabBufferH,50),onSelectCall=self._setTab)
 
@@ -15563,7 +15852,7 @@ class WatchWindow(Window):
             if gSmallUI:
                 bb = bsInternal._getSpecialWidget('backButton')
                 bs.widget(edit=self._tabButtons[tabsDef[0][0]],upWidget=bb,leftWidget=bb)
-
+            
         self._scrollWidth = self._width-scrollBufferH
         self._scrollHeight = self._height-180
 
@@ -15577,7 +15866,7 @@ class WatchWindow(Window):
         self._tabContainer = None
 
         self._restoreState()
-
+        
     def _setTab(self,tab):
 
         if self._currentTab == tab: return
@@ -15586,10 +15875,10 @@ class WatchWindow(Window):
         # we wanna preserve our current tab between runs
         bs.getConfig()['Watch Tab'] = tab
         bs.writeConfig()
-
+        
         # update tab colors based on which is selected
         _updateTabButtonColors(self._tabButtons,tab)
-
+        
         if self._tabContainer is not None and self._tabContainer.exists():
             self._tabContainer.delete()
         scrollLeft = (self._width-self._scrollWidth)*0.5
@@ -15597,7 +15886,7 @@ class WatchWindow(Window):
 
         # a place where tabs can store data to get cleared when switching to a different tab
         self._tabData = {}
-
+        
         def _simpleMessage(message,stringHeight):
             msgScale = 1.1
             cWidth = self._scrollWidth
@@ -15606,12 +15895,12 @@ class WatchWindow(Window):
                                                         position=(scrollLeft,scrollBottom+(self._scrollHeight-cHeight)*0.5),
                                                         size=(cWidth,cHeight),background=False,selectable=False)
             bs.widget(edit=c,upWidget=self._tabButtons[tab])
-
+            
             t = bs.textWidget(parent=c,position=(cWidth*0.5,cHeight*0.5),color=(0.6,1.0,0.6),scale=msgScale,
                               size=(0,0),maxWidth=cWidth*0.9,maxHeight=cHeight*0.9,
                               hAlign='center',vAlign='center',
                               text=message)
-
+        
         if tab == 'myReplays':
             cWidth = self._scrollWidth
             cHeight = self._scrollHeight-20
@@ -15632,7 +15921,7 @@ class WatchWindow(Window):
             bWidth = 140 if gSmallUI else 178
             bHeight = 107 if gSmallUI else 142 if gMedUI else 190
             bSpaceExtra = 0 if gSmallUI else -2 if gMedUI else -5
-
+            
             bColor = (0.6,0.53,0.63)
             bTextColor = (0.75,0.7,0.8)
             bv = cHeight-(48 if gSmallUI else 45 if gMedUI else 40)-bHeight
@@ -15659,12 +15948,12 @@ class WatchWindow(Window):
                                  onActivateCall=self._onMyReplayDeletePress,textScale=ts,
                                  label=bs.Lstr(resource=self._r+'.deleteReplayButtonText'),
                                  autoSelect=True)
-
+            
             v -= subScrollHeight+23
             self._scrollWidget = sw = bs.scrollWidget(parent=c,position=(sh,v),size=(subScrollWidth,subScrollHeight))
             bs.containerWidget(edit=c,selectedChild=sw)
             self._columnWidget = bs.columnWidget(parent=sw,leftBorder=10)
-
+            
             bs.widget(edit=sw,autoSelect=True,leftWidget=b1,upWidget=self._tabButtons[tab])
             bs.widget(edit=self._tabButtons[tab],downWidget=sw)
 
@@ -15757,10 +16046,10 @@ class WatchWindow(Window):
             bs.printException("error renaming replay '"+replay+"' to '"+newName+"'")
             bs.playSound(bs.getSound('error'))
             bs.screenMessage(bs.Lstr(resource=self._r+'.replayRenameErrorText'),color=(1,0,0))
-
+            
         bs.containerWidget(edit=self._myReplaysRenameWindow,transition='outScale')
-
-
+            
+        
     def _onMyReplayDeletePress(self):
         if self._myReplaySelected is None:
             self._noReplaySelectedError()
@@ -15773,7 +16062,7 @@ class WatchWindow(Window):
             replay = replay[:-4]
         if replay == '__lastReplay': return bs.Lstr(resource='replayNameDefaultText').evaluate()
         return replay
-
+    
     def _deleteReplay(self,replay):
         try:
             bsInternal._incrementAnalyticsCount('Replay delete')
@@ -15785,7 +16074,7 @@ class WatchWindow(Window):
             bs.printException("exception deleting replay '"+replay+"'")
             bs.playSound(bs.getSound('error'))
             bs.screenMessage(bs.Lstr(resource=self._r+'.replayDeleteErrorText'),color=(1,0,0))
-
+        
     def _onMyReplaySelect(self,replay):
         self._myReplaySelected = bs.uni(replay)
 
@@ -15799,7 +16088,7 @@ class WatchWindow(Window):
         except Exception:
             bs.printException("error listing replays dir")
             names = []
-
+        
         for i,name in enumerate(names):
             t = bs.textWidget(parent=self._columnWidget,size=(self._myReplaysScrollWidth/tScale,30),selectable=True,
                               color=(1.0,1,0.4) if name == '__lastReplay.brp' else (1,1,1),alwaysHighlight=True,
@@ -15809,7 +16098,7 @@ class WatchWindow(Window):
                               maxWidth=(self._myReplaysScrollWidth/tScale)*0.93)
             if i == 0:
                 bs.widget(edit=t,upWidget=self._tabButtons['myReplays'])
-
+    
     def _saveState(self):
         try:
             sel = self._rootWidget.getSelectedChild()
@@ -15839,7 +16128,7 @@ class WatchWindow(Window):
             bs.containerWidget(edit=self._rootWidget,selectedChild=sel)
         except Exception:
             bs.printException('error restoring state for',self.__class__)
-
+            
     def _back(self):
         self._saveState()
         bs.containerWidget(edit=self._rootWidget,transition=self._transitionOut)
@@ -15856,7 +16145,7 @@ class GatherWindow(Window):
     def __init__(self,transition='inRight',originWidget=None):
 
         bsInternal._setAnalyticsScreen('Gather Window')
-
+        
         if originWidget is not None:
             self._transitionOut = 'outScale'
             scaleOrigin = originWidget.getScreenSpaceCenter()
@@ -15864,14 +16153,14 @@ class GatherWindow(Window):
         else:
             self._transitionOut = 'outRight'
             scaleOrigin = None
-
+        
         global gMainWindow
         gMainWindow = "Gather"
-
+        
         bsInternal._setPartyIconAlwaysVisible(True)
 
         self._publicParties = {}
-
+        
         self._width = 1040
         self._height = 582 if gSmallUI else 680 if gMedUI else 800
         self._currentTab = None
@@ -15896,28 +16185,28 @@ class GatherWindow(Window):
                 bs.buttonWidget(edit=b,buttonType='backSmall',position=(70,self._height-78),size=(60,60),label=bs.getSpecialChar('back'))
                 # bs.textWidget(edit=t,hAlign='left',position=(155,self._height - 44))
 
-
+        
         t = bs.textWidget(parent=self._rootWidget,position=(self._width*0.5,self._height-42),size=(0,0),
                           color=gTitleColor,scale=1.5,hAlign="center",vAlign="center",
                           text=bs.Lstr(resource=self._r+'.titleText'),
                           maxWidth=550)
 
-
+        
         platform = bs.getEnvironment()['platform']
         subplatform = bs.getEnvironment()['subplatform']
-
+        
         tabsDef = [['about',bs.Lstr(resource=self._r+'.aboutText')]]
         if True and bsInternal._getAccountMiscReadVal('enablePublicParties',True):
             tabsDef.append(['internet',bs.Lstr(resource=self._r+'.internetText')])
         if platform == 'android' and subplatform == 'google':
             tabsDef.append(['googlePlus',bs.Lstr(resource=self._r+'.googlePlayText')])
         tabsDef.append(['localNetwork',bs.Lstr(resource=self._r+'.localNetworkText')])
-
+        
         tabsDef.append(['manual',bs.Lstr(resource=self._r+'.manualText')])
 
         scrollBufferH = 130
         tabBufferH = 250
-
+        
         self._tabButtons = _createTabButtons(self._rootWidget,tabsDef,pos=(tabBufferH*0.5,self._height - 130),
                                              size=(self._width-tabBufferH,50),onSelectCall=self._setTab)
 
@@ -15925,7 +16214,7 @@ class GatherWindow(Window):
             bs.widget(edit=self._tabButtons[tabsDef[-1][0]],rightWidget=bsInternal._getSpecialWidget('partyButton'))
             if gSmallUI:
                 bs.widget(edit=self._tabButtons[tabsDef[0][0]],leftWidget=bsInternal._getSpecialWidget('backButton'))
-
+            
         self._scrollWidth = self._width-scrollBufferH
         self._scrollHeight = self._height-180
 
@@ -15953,7 +16242,7 @@ class GatherWindow(Window):
             showSignInPrompt('Google Play')
         else:
             bsInternal._showInvitesUI()
-
+    
     def _onGooglePlayInvitePress(self):
 
         if bsInternal._getAccountState() != 'SIGNED_IN' or bsInternal._getAccountType() != 'Google Play':
@@ -15974,7 +16263,7 @@ class GatherWindow(Window):
             showSignInPrompt()
             return
         doAppInvitesPress()
-
+        
     def _setTab(self,tab):
 
         if self._currentTab == tab: return
@@ -15983,7 +16272,7 @@ class GatherWindow(Window):
         # we wanna preserve our current tab between runs
         bs.getConfig()['Gather Tab'] = tab
         bs.writeConfig()
-
+        
         # update tab colors based on which is selected
         _updateTabButtonColors(self._tabButtons,tab)
 
@@ -15995,7 +16284,7 @@ class GatherWindow(Window):
 
         # a place where tabs can store data to get cleared when switching to a different tab
         self._tabData = {}
-
+        
         # so we can still select root level widgets with direction buttons
         def _simpleMessage(tab,message,stringHeight,includeInvite=False):
             msgScale = 1.1
@@ -16007,7 +16296,7 @@ class GatherWindow(Window):
                                                         position=(scrollLeft,scrollBottom+(self._scrollHeight-cHeight)*0.5),
                                                         size=(cWidth,cHeight),background=False,selectable=True if includeInvite else False)
             bs.widget(edit=c,upWidget=self._tabButtons[tab])
-
+            
             t = bs.textWidget(parent=c,position=(cWidth*0.5,cHeight*(0.58 if includeInvite else 0.5)),
                               color=(0.6,1.0,0.6),scale=msgScale,
                               size=(0,0),maxWidth=cWidth*0.9,maxHeight=cHeight*(0.7 if includeInvite else 0.9),
@@ -16038,9 +16327,9 @@ class GatherWindow(Window):
             # one head in a VR-headset ;-)
             if not bs.getEnvironment()['vrMode']:
                 msg = bs.Lstr(value='${A}\n\n${B}',subs=[('${A}',msg),('${B}',bs.Lstr(resource=self._r+'.aboutDescriptionLocalMultiplayerExtraText'))])
-
+                
             _simpleMessage(tab,msg,400,includeInvite=True)
-
+            
         elif tab == 'googlePlus':
             cWidth = self._scrollWidth
             cHeight = 380
@@ -16122,17 +16411,14 @@ class GatherWindow(Window):
                         pass
 
             AddrFetchThread(bs.WeakCall(self._internetFetchLocalAddrCB)).start()
-
+            
             self._setInternetTab(self._internetTab)
             self._tabData = {}
 
             self._tabData['updateTimer'] = bs.Timer(1000,bs.WeakCall(self._updateInternetTab),repeat=True,timeType='real')
-            # also update it immediately so we don't have to wait for the initial query..
-            self._updateInternetTab()
-
-
+            
             # bs.widget(edit=sw,autoSelect=True,upWidget=self._tabButtons[tab])
-
+            
         elif tab == 'localNetwork':
             cWidth = self._scrollWidth
             cHeight = self._scrollHeight-20
@@ -16152,7 +16438,7 @@ class GatherWindow(Window):
                     # go ahead and run a few *almost* immediately so we dont have to wait a second
                     self.update()
                     bs.realTimer(250,bs.WeakCall(self.update))
-
+                    
                 def __del__(self):
                     bsInternal._endHostScanning()
 
@@ -16160,9 +16446,9 @@ class GatherWindow(Window):
                     self._lastSelectedHost = host
 
                 def _onActivate(self,host):
-                    # bs.screenMessage("WOULD CONNECT TO '"+host['address']+"'")
                     bsInternal._connectToParty(host['address'])
-
+                    #bs.screenMessage("WOULD CONNECT TO '"+host['address']+"'")
+                        
                 def update(self):
                     tScale = 1.6
                     for c in self._columnWidget.getChildren(): c.delete()
@@ -16179,7 +16465,7 @@ class GatherWindow(Window):
                         if host == lastSelectedHost:
                             bs.containerWidget(edit=self._columnWidget,selectedChild=t,visibleChild=t)
                         if i == 0: bs.widget(edit=t,upWidget=self._tabButton)
-
+            
             self._tabContainer = c = bs.containerWidget(parent=self._rootWidget,
                                                         position=(scrollLeft,scrollBottom+(self._scrollHeight-cHeight)*0.5),
                                                         size=(cWidth,cHeight),background=False,selectionLoopToParent=True)
@@ -16193,8 +16479,8 @@ class GatherWindow(Window):
             sw = bs.scrollWidget(parent=c,position=((self._scrollWidth-subScrollWidth)*0.5,v),size=(subScrollWidth,subScrollHeight))
 
             self._tabData = NetScanner(sw,self._tabButtons[tab],width=subScrollWidth)
-
-
+            
+            
             bs.widget(edit=sw,autoSelect=True,upWidget=self._tabButtons[tab])
             # t = bs.textWidget(parent=c,position=(cWidth*0.5,v+subScrollHeight*0.5),color=(1,1,1),scale=0.9,
             #                   size=(0,0),maxWidth=cWidth*0.9,
@@ -16236,7 +16522,7 @@ class GatherWindow(Window):
                                 label=bs.Lstr(resource=self._r+'.bluetoothJoinText'))
             bs.widget(edit=b,upWidget=self._tabButtons[tab])
             bs.widget(edit=self._tabButtons[tab],downWidget=b)
-
+            
         elif tab == 'wifiDirect':
             cWidth = self._scrollWidth
             cHeight = self._scrollHeight-20
@@ -16255,14 +16541,14 @@ class GatherWindow(Window):
             b = bs.buttonWidget(parent=c,position=(cWidth*0.5-175,v),size=(350,65),label=bs.Lstr(resource=self._r+'.wifiDirectOpenWiFiSettingsText'),
                             autoSelect=True,onActivateCall=bsInternal._androidShowWifiSettings)
             v -= 82
-
+            
             bs.widget(edit=b,upWidget=self._tabButtons[tab])
 
             t = bs.textWidget(parent=c,position=(cWidth*0.5,v),color=(0.6,1.0,0.6),scale=0.9,
                               size=(0,0),maxWidth=cWidth*0.95,maxHeight=150,
                               hAlign='center',vAlign='center',
                               text=bs.Lstr(resource=self._r+'.wifiDirectDescriptionBottomText',subs=[('${APP_NAME}',bs.Lstr(resource='titleText'))]))
-
+            
 
         elif tab == 'manual':
             cWidth = self._scrollWidth
@@ -16303,7 +16589,7 @@ class GatherWindow(Window):
                                vAlign='center',scale=1.0, size=(170,60))
 
             v -= 110
-
+            
             def _connect(textWidget,portTextWidget):
                 addr = bs.textWidget(query=textWidget)
                 try:
@@ -16312,7 +16598,7 @@ class GatherWindow(Window):
                 except Exception:
                     bs.screenMessage(bs.Lstr(resource='internal.invalidPortErrorText'),color=(1,0,0))
                     return
-
+                
                 class HostAddrFetchThread(threading.Thread):
                     def __init__(self,name,call):
                         threading.Thread.__init__(self)
@@ -16330,11 +16616,12 @@ class GatherWindow(Window):
                     if addr is None:
                         bs.screenMessage(bs.Lstr(resource='internal.unableToResolveHostText'),color=(1,0,0))
                     else:
+                        # print 'WOULD DO IT WITH',type(addr),addr
                         bs.getConfig()['Last Manual Party Connect Address'] = addr # store for later
                         bs.writeConfig()
-                        bsInternal._connectToParty(addr, port=port)
+                        bsInternal._connectToParty(addr,port=port)
                 HostAddrFetchThread(addr,doIt).start()
-
+                
             b = bs.buttonWidget(parent=c,size=(300,70),
                                 label=bs.Lstr(resource=self._r+'.manualConnectText'),
                                 position=(cWidth*0.5-150,v),autoSelect=True,
@@ -16343,7 +16630,7 @@ class GatherWindow(Window):
             bs.textWidget(edit=t,onReturnPressCall=b.activate)
             bs.textWidget(edit=t2,onReturnPressCall=b.activate)
             v -= 45
-
+            
             ts = 0.85
             tspc = 25
 
@@ -16356,7 +16643,7 @@ class GatherWindow(Window):
             env = bs.getEnvironment()
             # doInternetCheck = False if env['platform'] == 'android' and env['subplatform'] == 'alibaba' else True
             doInternetCheck = True
-
+            
             def doIt(v,c):
                 if not c.exists(): return
 
@@ -16381,19 +16668,21 @@ class GatherWindow(Window):
                             import socket
                             val = ([(s.connect(('8.8.8.8', 80)), s.getsockname()[0], s.close()) for s in [socket.socket(socket.AF_INET, socket.SOCK_DGRAM)]][0][1])
                             bs.callInGameThread(bs.Call(_safeSetText,self._textWidget,val))
-                        except Exception as e:
+                        except Exception,e:
                             errStr = str(e)
                             if 'Network is unreachable' in errStr:
                                 bs.callInGameThread(bs.Call(_safeSetText,self._textWidget,
+                                                            # self._window._R.noConnectionText,
                                                             bs.Lstr(resource=self._window._r+'.noConnectionText'),
                                                             False))
                             else:
                                 bs.callInGameThread(bs.Call(_safeSetText,self._textWidget,
+                                                            # self._window._R.addressFetchErrorText,
                                                             bs.Lstr(resource=self._window._r+'.addressFetchErrorText'),
                                                             False))
                                 bs.callInGameThread(bs.Call(bs.printError,'error in AddrFetchThread: '+str(e)))
                 AddrFetchThread(self,t).start()
-
+                
                 v -= tspc
                 t = bs.textWidget(parent=c,position=(cWidth*0.5-10,v),color=(0.6,1.0,0.6),scale=ts,
                                   size=(0,0),maxWidth=cWidth*0.45,flatness=1.0,
@@ -16428,7 +16717,7 @@ class GatherWindow(Window):
 
                 if checkButton.exists():
                     checkButton.delete()
-
+                
             if doInternetCheck:
                 checkButton = b = bs.textWidget(parent=c, size=(250,60),
                                                 text=bs.Lstr(resource=self._r+'.showMyAddressText'),
@@ -16441,7 +16730,7 @@ class GatherWindow(Window):
 
     def _internetFetchLocalAddrCB(self, val):
         self._internetLocalAddress = str(val)
-
+        
     def _setInternetTab(self, value, playSound=False):
         if playSound: bs.playSound(bs.getSound('click01'))
 
@@ -16449,7 +16738,7 @@ class GatherWindow(Window):
         # (prevents selecting something way down the list if we switched away and came back)
         if self._internetTab != value:
             self._publicPartyListSelection = None
-
+        
         self._internetTab = value
         # activeColor = (0.4,1.0,0.4)
         activeColor = (0.6,1.0,0.6)
@@ -16493,7 +16782,7 @@ class GatherWindow(Window):
                                                              parent=self._tabContainer,size=(0,0),position=(825,v-8),maxWidth=60,
                                                              scale=0.6,color=(0.5,0.5,0.5),flatness=1.0,shadow=0.0,hAlign='center',vAlign='center')
             v -= subScrollHeight+23
-
+            
             self._internetHostScrollWidget = sw = bs.scrollWidget(parent=self._tabContainer,
                                                                   position=((self._scrollWidth-subScrollWidth)*0.5,v),
                                                                   size=(subScrollWidth,subScrollHeight))
@@ -16506,9 +16795,9 @@ class GatherWindow(Window):
                                                          size=(0,0), scale=0.9,
                                                          flatness=1.0,shadow=0.0,hAlign='center',vAlign='top', maxWidth=cWidth,
                                                          color=(0.6,0.6,0.6), position=(cWidth*0.5,cHeight*0.5))
-
+            
             tScale = 1.6
-
+            
         if value == 'host':
             v -= 30
             partyNameText = bs.Lstr(resource='gatherWindow.partyNameText',fallback='editGameListWindow.nameText')
@@ -16556,7 +16845,7 @@ class GatherWindow(Window):
                                                                       size=(0,0), scale=0.7,
                                                                       flatness=1.0,shadow=0.0,hAlign='center',vAlign='center', maxWidth=cWidth * 0.9,
                                                                       color=gInfoTextColor, position=(cWidth*0.5,v))
-
+            
             # if public sharing is already on, launch a status-check immediately
             if bsInternal._getPublicPartyEnabled():
                 self._doInternetStatusCheck()
@@ -16570,7 +16859,7 @@ class GatherWindow(Window):
                                                 size=(120,120),
                                                 opacity=0.0 if not self._isInternetLocked() else 0.5,
                                                 texture=bs.getTexture('lock'))
-
+        
     def _isInternetLocked(self):
         if bsInternal._getAccountMiscReadVal('ilck',False):
             return False if bsUtils._havePro() else True
@@ -16584,18 +16873,17 @@ class GatherWindow(Window):
         if val < 1: val = 1
         bsInternal._setPublicPartyMaxSize(val)
         bs.textWidget(edit=self._internetHostMaxPartySizeValue,text=str(val))
-
+        
     def _onMaxPublicPartySizePlusPress(self):
         val = bsInternal._getPublicPartyMaxSize()
         val += 1
         bsInternal._setPublicPartyMaxSize(val)
         bs.textWidget(edit=self._internetHostMaxPartySizeValue,text=str(val))
-
+    
     def _onPublicPartyQueryResult(self, result):
 
-        # print 'GOT PUBLIC PARTY RESULT'
         with bs.Context('UI'):
-
+            
             # any time we get any result at all, kill our loading status
             statusText = getattr(self,'_internetJoinStatusText',None)
             if statusText is not None and statusText.exists():
@@ -16612,7 +16900,6 @@ class GatherWindow(Window):
             for party in self._publicParties.values():
                 party['claimed'] = False
 
-            # print 'GOT PARTIES',[p['n'] for p in partiesIn]
             for partyIn in partiesIn:
                 # party is indexed by (ADDR)_(PORT)
                 partyKey = partyIn['a']+'_'+str(partyIn['p'])
@@ -16622,15 +16909,13 @@ class GatherWindow(Window):
                     index = getattr(self,'_nextPublicPartyEntryIndex',0)
                     self._nextPublicPartyEntryIndex = index + 1
                     party = self._publicParties[partyKey] = {
-                        'address':partyIn.get('a'),
-                        # 'queue':partyIn.get('q'),
+                        'address':partyIn['a'],
                         'nextPingTime':bs.getRealTime()+partyIn['pd'],
                         'ping':None,
                         'index':index,
                     }
                 # now, new or not, update its values
-                party['queue'] = partyIn.get('q')
-                party['port'] = partyIn.get('p')
+                party['port'] = partyIn['p']
                 party['name'] = partyIn['n']
                 party['size'] = partyIn['s']
                 party['language'] = partyIn['l']
@@ -16650,28 +16935,28 @@ class GatherWindow(Window):
         if columnWidget is None or not columnWidget.exists(): return
 
         ourLanguage = bs.getLanguage()
-
+        
         with bs.Context('UI'):
-
+            
             # now kill and recreate all widgets
             for widget in columnWidget.getChildren():
                 widget.delete()
-
-            # sort - show queue-enabled ones first and sort by lowest ping
-            orderedParties = sorted(self._publicParties.values(),
-                                    key=lambda party:(party['queue'] is None, # show non-queud last
-                                                      party['ping'] if party['ping'] is not None else 999999,
-                                                      party['index'],
-                                                      party))
+            
+            # now build a list of parties, sort by index, and recreate their widgets
+            orderedParties = [(party['ping'] if party['ping'] is not None else 999999,
+                               party['index'],party) for party in self._publicParties.values()]
+            # orderedParties = [(0 if party['language'] == ourLanguage and party['ping'] is not None else 1,
+            #                    party['ping'] if party['ping'] is not None else 999999,
+            #                    party['index'],party) for party in self._publicParties.values()]
+            orderedParties.sort()
             existingSelection = getattr(self,'_publicPartyListSelection',None)
             first = True
-            for party in orderedParties:
+            for dummy2, index, party in orderedParties:
                 subScrollWidth = 830
                 party['rootWidget'] = c = bs.containerWidget(parent=columnWidget,
                                                              size=(subScrollWidth * 0.9,40), rootSelectable=True,
                                                              onSelectCall=bs.WeakCall(self._setPublicPartySelection,party['address']),
-                                                             # onActivateCall=bs.WeakCall(self._onPublicPartyActivate,party['address'],party['port']),
-                                                             onActivateCall=bs.WeakCall(self._onPublicPartyActivate,party),
+                                                             onActivateCall=bs.WeakCall(self._onPublicPartyActivate,party['address'],party['port']),
                                                              background=False, clickActivate=True)
                 if first:
                     bs.widget(edit=c,upWidget=self._internetJoinText)
@@ -16680,6 +16965,7 @@ class GatherWindow(Window):
                     # reselect previous (if present) but don't scroll to it; that gives us too much unintentional jumping
                     # if we're scrolling around looking at other stuff during a refresh
                     bs.containerWidget(edit=columnWidget,selectedChild=c)
+                    #bs.containerWidget(edit=columnWidget,selectedChild=c,visibleChild=c)
 
                 party['nameWidget'] = bs.textWidget(text=party['name'],
                                                     parent=c,drawController=c,size=(0,0),position=(14,20),maxWidth=subScrollWidth*0.63,
@@ -16698,38 +16984,25 @@ class GatherWindow(Window):
                     pingGood = bsInternal._getAccountMiscReadVal('pingGood',100)
                     pingMed = bsInternal._getAccountMiscReadVal('pingMed',500)
                     bs.textWidget(edit=party['pingWidget'],text=str(party['ping']),color=(0,1,0) if party['ping'] <= pingGood else (1,1,0) if party['ping'] <= pingMed else (1,0,0))
-
-    # def _onPublicPartyActivate(self,address,port):
-    def _onPublicPartyActivate(self, party):
-
-        if party['queue'] is not None:
-            import bsUI2
-            bs.playSound(bs.getSound('swish'))
-            bsUI2.PartyQueueWindow(party['queue'],party['address'],party['port'])
-        else:
-            address = party['address']
-            port = party['port']
-            if self._isInternetLocked():
-                if bsInternal._getAccountState() != 'SIGNED_IN': showSignInPrompt()
-                else: PurchaseWindow(items=['pro'])
-                return
-            # rate limit this a bit
-            now = time.time()
-            lastConnectTime = getattr(self,'_lastPublicPartyConnectAttemptTime',None)
-            if lastConnectTime is None or now - lastConnectTime > 2.0:
-                bsInternal._connectToParty(address,port=port)
-                self._lastPublicPartyConnectAttemptTime = now
-
-    def _setPublicPartySelection(self,address):
-        self._publicPartyListSelection = address
-
-    def _updateInternetTab(self):
-        import bsUI2
-
-        # special case - if a party-queue window is up, don't do any of this (keeps things smoother)
-        if bsUI2.gHavePartyQueueWindow:
+        
+    def _onPublicPartyActivate(self,address,port):
+        
+        if self._isInternetLocked():
+            if bsInternal._getAccountState() != 'SIGNED_IN': showSignInPrompt()
+            else: PurchaseWindow(items=['pro'])
             return
 
+        # rate limit this a bit
+        now = time.time()
+        lastConnectTime = getattr(self,'_lastPublicPartyConnectAttemptTime',None)
+        if lastConnectTime is None or now - lastConnectTime > 2.0:
+            bsInternal._connectToParty(address,port=port)
+            self._lastPublicPartyConnectAttemptTime = now
+        
+    def _setPublicPartySelection(self,address):
+        self._publicPartyListSelection = address
+        
+    def _updateInternetTab(self):
         # if we've got a party-name text widget, keep its value plugged into our public host name...
         text = getattr(self, '_internetHostNameText', None)
         if text is not None and text.exists():
@@ -16744,22 +17017,19 @@ class GatherWindow(Window):
                 bs.imageWidget(edit=icon,opacity=0.5)
             else:
                 bs.imageWidget(edit=icon,opacity=0.0)
-
+            
         if self._internetTab == 'join':
             now = bs.getRealTime()
             if now - getattr(self,'_internetJoinLastRefreshTime',-99999) > bsInternal._getAccountMiscReadVal('pubPartyRefreshMS',10000):
                 self._internetJoinLastRefreshTime = now
                 env = bs.getEnvironment()
                 bsInternal._addTransaction({'type':'PUBLIC_PARTY_QUERY','proto':env['protocolVersion'],'lang':bs.getLanguage()},callback=bs.WeakCall(self._onPublicPartyQueryResult))
-                bsInternal._runTransactions()
 
             # go through our existing public party entries firing off pings for any
             # that have timed out
             for party in self._publicParties.values():
                 if party['nextPingTime'] <= now:
-                    # make sure not to multi-ping if we're way behind somehow..
-                    while party['nextPingTime'] <= now:
-                        party['nextPingTime'] += party['pingInterval']
+                    party['nextPingTime'] += party['pingInterval']
 
                     class PingThread(threading.Thread):
                         def __init__(self,address,port,call):
@@ -16776,7 +17046,7 @@ class GatherWindow(Window):
                                 s.connect((self._address, self._port))
 
                                 accessible = False
-                                startTime = time.time()
+                                startTime = time.time() 
                                 # send a simple ping and wait for a response;
                                 # if we get it, they're accessible...
 
@@ -16798,7 +17068,7 @@ class GatherWindow(Window):
                                 if not gPingErrorReported:
                                     gPingErrorReported = True
                                     # print 'error on public party ping for "'+self._address+'":',e
-
+                                    
                     PingThread(party['address'],party['port'],bs.WeakCall(self._pingCB)).start()
 
     def _pingCB(self,address,port,result):
@@ -16810,13 +17080,13 @@ class GatherWindow(Window):
                 pass # this can happen if we switch away and then back to the client tab while pings are in flight
             elif party['pingWidget'].exists():
                 self._rebuildPublicPartyList()
-
+        
     def _doInternetStatusCheck(self):
         bs.textWidget(edit=self._internetHostStatusText,color=(1,1,0),
                       text=bs.Lstr(resource=self._r+'.partyStatusCheckingText'))
         bsUtils.serverGet('bsAccessCheck',{},callback=bs.WeakCall(self._onPublicPartyAccessibleResponse))
 
-
+        
     def _onStartInternetAdvertisingPress(self):
         if bsInternal._getAccountState() != 'SIGNED_IN':
             showSignInPrompt()
@@ -16828,7 +17098,7 @@ class GatherWindow(Window):
             if bsInternal._getAccountState() != 'SIGNED_IN': showSignInPrompt()
             else: PurchaseWindow(items=['pro'])
             return
-
+        
         name = bs.textWidget(query=self._internetHostNameText)
         if name == '':
             bs.screenMessage(bs.Lstr(resource='internal.invalidNameErrorText'),color=(1,0,0))
@@ -16872,8 +17142,8 @@ class GatherWindow(Window):
                     bs.textWidget(edit=text,
                                   text=bs.Lstr(resource=self._r+'.partyStatusJoinableText'),
                                   color=(0,1,0))
-
-
+                
+        
     def _onStopInternetAdvertisingPress(self):
         bsInternal._setPublicPartyEnabled(False);
         bs.playSound(bs.getSound('shieldDown'))
@@ -16886,7 +17156,7 @@ class GatherWindow(Window):
         bs.buttonWidget(edit=self._internetHostToggleButton,
                         label=bs.Lstr(resource='gatherWindow.makePartyPublicText',fallback='gatherWindow.startAdvertisingText'),
                         onActivateCall=self._onStartInternetAdvertisingPress)
-
+        
     def _accessCheckUpdate(self,tAddr,tAccessible,tAccessibleExtra):
         # if we don't have an outstanding query, start one..
         if not self._doingAccessCheck and self._accessCheckCount < 100:
@@ -16896,7 +17166,7 @@ class GatherWindow(Window):
             self._tAccessible = tAccessible
             self._tAccessibleExtra = tAccessibleExtra
             bsUtils.serverGet('bsAccessCheck',{},callback=bs.WeakCall(self._onAccessibleResponse))
-
+        
     def _onAccessibleResponse(self,data):
         tAddr = self._tAddr
         tAccessible = self._tAccessible
@@ -16927,8 +17197,8 @@ class GatherWindow(Window):
                 if tAccessibleExtra.exists(): bs.textWidget(edit=tAccessibleExtra,
                                                             text=bs.Lstr(resource=self._r+'.manualRouterForwardingText',subs=[('${PORT}',str(bsInternal._getGamePort()))]),
                                                             color=colorBad)
-
-
+        
+            
     def _saveState(self):
         try:
             sel = self._rootWidget.getSelectedChild()
@@ -16959,18 +17229,18 @@ class GatherWindow(Window):
             bs.containerWidget(edit=self._rootWidget,selectedChild=sel)
         except Exception:
             bs.printException('error restoring state for',self.__class__)
-
+            
     def _back(self):
         self._saveState()
         bs.containerWidget(edit=self._rootWidget,transition=self._transitionOut)
         uiGlobals['mainMenuWindow'] = MainMenuWindow(transition='inLeft').getRootWidget()
 
-
+        
 class PartyWindow(Window):
 
     def __del__(self):
         bsInternal._setPartyWindowOpen(False)
-
+        
     def __init__(self,origin=(0,0)):
         bsInternal._setPartyWindowOpen(True)
         self._r = 'partyWindow'
@@ -16994,7 +17264,7 @@ class PartyWindow(Window):
             title = info['name']
         else:
             title = bs.Lstr(resource=self._r+'.titleText')
-
+        
         self._titleText = bs.textWidget(parent=self._rootWidget,scale=0.9,color=(0.5,0.7,0.5),text=title,
                                       size=(0,0),position=(self._width*0.5,self._height-29),
                                       maxWidth=self._width*0.7,hAlign='center',vAlign='center')
@@ -17008,12 +17278,12 @@ class PartyWindow(Window):
         self._columnWidget = bs.columnWidget(parent=self._scrollWidget)
 
         self._chatTexts = []
-
+        
         # add all existing messages
         msgs = bsInternal._getChatMessages()
         for msg in msgs:
             self._addMsg(msg)
-
+            
         self._textField = t = bs.textWidget(parent=self._rootWidget,editable=True,size=(530,40),position=(44,39),
                                             text='',maxWidth=494,shadow=0.3,flatness=1.0,
                                             description=bs.Lstr(resource=self._r+'.chatMessageText'),
@@ -17035,7 +17305,7 @@ class PartyWindow(Window):
 
     def onChatMessage(self,msg):
         self._addMsg(msg)
-
+    
     def _addMsg(self,msg):
         t = bs.textWidget(parent=self._columnWidget,text=msg,hAlign='left',vAlign='center',size=(0,13),
                           scale=0.55,maxWidth=self._scrollWidth*0.94,shadow=0.3,flatness=1.0)
@@ -17044,13 +17314,13 @@ class PartyWindow(Window):
             first = self._chatTexts.pop(0)
             first.delete()
         bs.containerWidget(edit=self._columnWidget,visibleChild=t)
-
+        
     def _update(self):
 
         roster = bsInternal._getGameRoster()
 
         if roster != self._roster:
-
+            
             self._roster = roster
 
             # clear out old
@@ -17074,7 +17344,7 @@ class PartyWindow(Window):
                         if index < len(self._roster):
                             tScale = 0.65
                             pos = (self._width*0.53-cWidthTotal*0.5+cWidth*x-23,self._height-65-cHeight*y-15)
-
+                            
                             # if there are players present for this client, use their names as a display string instead of the client spec-string
                             try:
                                 if self._roster[index]['players']:
@@ -17090,7 +17360,7 @@ class PartyWindow(Window):
                             except Exception:
                                 bs.printException('error calcing client name str')
                                 pStr = '???'
-
+                                
                             w = bs.textWidget(parent=self._rootWidget,position=(pos[0],pos[1]),scale=tScale,size=(cWidth*0.85,30),maxWidth=cWidth*0.85,
                                               color=(1,1,1) if index==0 else (1,1,1),selectable=True,autoSelect=True,clickActivate=True,
                                               #text=self._roster[index]['displayString'],
@@ -17129,10 +17399,10 @@ class PartyWindow(Window):
             if not result:
                 bs.playSound(bs.getSound('error'))
                 bs.screenMessage(bs.Lstr(resource='getTicketsWindow.unavailableText'),color=(1,0,0))
-
+        
     def popupMenuClosing(self,popupWindow):
         pass
-
+        
     def _onPartyMemberPress(self,clientID,isHost,widget):
         # if we're the host, pop up 'kick' options for all non-host members
         if bsInternal._getForegroundHostSession() is not None:
@@ -17150,20 +17420,20 @@ class PartyWindow(Window):
                             delegate=self).getRootWidget()
         self._popupPartyMemberClientID = clientID
         self._popupPartyMemberIsHost = isHost
-
-
-
+            
+                
+            
     def _sendChatMessage(self):
         bsInternal._chatMessage(bs.textWidget(query=self._textField))
         bs.textWidget(edit=self._textField,text='')
-
+        
     def close(self):
         bs.containerWidget(edit=self._rootWidget,transition='outScale')
-
+        
     def closeWithSound(self):
         bs.playSound(bs.getSound('swish'))
         self.close()
-
+        
 gPartyWindow = None
 def onPartyIconActivate(origin):
     global gPartyWindow
@@ -17171,13 +17441,13 @@ def onPartyIconActivate(origin):
     # if it exists, dismiss it; otherwise make a new one
     if gPartyWindow is not None and gPartyWindow() is not None: gPartyWindow().close()
     else: gPartyWindow = weakref.ref(PartyWindow(origin=origin))
-
+        
 class OnScreenKeyboardWindow(Window):
 
     def __init__(self, textWidget, label, maxChars):
 
         self._targetText = textWidget
-
+        
         self._width = 700
         self._height = 400
 
@@ -17192,10 +17462,10 @@ class OnScreenKeyboardWindow(Window):
                                            label=bs.Lstr(resource='doneText'),
                                            onActivateCall=self._done)
         bs.containerWidget(edit=self._rootWidget,onCancelCall=self._cancel,startButton=self._doneButton)
-
+        
         bs.textWidget(parent=self._rootWidget,position=(self._width*0.5,self._height - 41),size=(0,0),scale=0.95,
                       text=label+':',maxWidth=self._width-140,color=gTitleColor,hAlign='center',vAlign='center')
-
+        
         self._textField = bs.textWidget(parent=self._rootWidget,position=(70,self._height - 116),maxChars=maxChars,
                                         text=bs.textWidget(query=self._targetText),onReturnPressCall=self._done,
                                         autoSelect=True,
@@ -17206,7 +17476,7 @@ class OnScreenKeyboardWindow(Window):
         self._numModeButton = None
         self._charKeys = []
         self._mode = 'normal'
-
+        
         h = 79
         v = self._height - 180
         keyWidth = 46
@@ -17218,7 +17488,7 @@ class OnScreenKeyboardWindow(Window):
         rowStarts = (69,95,151)
 
         self._clickSound = bs.getSound('click01')
-
+        
         # kill prev char keys
         for key in self._charKeys:
             key.delete()
@@ -17228,7 +17498,7 @@ class OnScreenKeyboardWindow(Window):
         chars = [('q','u','e','r','t','y','u','i','o','p'),
                  ('a','s','d','f','g','h','j','k','l'),
                  ('z','x','c','v','b','n','m')]
-
+        
         for rowNum, row in enumerate(chars):
             h = rowStarts[rowNum]
             # shift key before row 3
@@ -17239,7 +17509,7 @@ class OnScreenKeyboardWindow(Window):
                                                     extraTouchBorderScale=0.3,
                                                     buttonType='square',
                 )
-
+            
             for char in row:
                 b = bs.buttonWidget(parent=self._rootWidget,position=(h,v),size=(keyWidth,keyHeight),autoSelect=True,
                                     enableSound=False,
@@ -17277,9 +17547,9 @@ class OnScreenKeyboardWindow(Window):
                 bs.widget(edit=self._doneButton,leftWidget=b2)
 
         bs.containerWidget(edit=self._rootWidget,selectedChild=self._charKeys[14])
-
+                
         self._refresh()
-
+        
     def _refresh(self):
 
         if self._mode in ['normal','caps']:
@@ -17298,7 +17568,7 @@ class OnScreenKeyboardWindow(Window):
             bs.buttonWidget(edit=self._shiftButton,color=self._keyColorDark,label='',
                             onActivateCall=self._nullPress)
             bs.buttonWidget(edit=self._numModeButton,label='abc',onActivateCall=self._abcMode)
-
+        
         for i,b in enumerate(self._charKeys):
             bs.buttonWidget(edit=b,label=chars[i],
                             onActivateCall=bs.Call(self._typeChar,chars[i]))
@@ -17310,25 +17580,25 @@ class OnScreenKeyboardWindow(Window):
         bs.playSound(self._clickSound)
         self._mode = 'normal'
         self._refresh()
-
+        
     def _numMode(self):
         bs.playSound(self._clickSound)
         self._mode = 'num'
         self._refresh()
-
+                    
     def _shift(self):
         bs.playSound(self._clickSound)
         if self._mode == 'normal': self._mode = 'caps'
         elif self._mode == 'caps': self._mode = 'normal'
         # self._shiftPressed = True
         self._refresh()
-
+        
     def _del(self):
         bs.playSound(self._clickSound)
         t = bs.textWidget(query=self._textField)
         t = t[:-1]
         bs.textWidget(edit=self._textField,text=t)
-
+        
     def _typeChar(self,char):
         bs.playSound(self._clickSound)
         # operate in unicode so we don't do anything funky like chop utf-8 chars in half
@@ -17339,31 +17609,31 @@ class OnScreenKeyboardWindow(Window):
         if self._mode == 'caps':
             self._mode = 'normal'
         self._refresh()
-
+        
     def _cancel(self):
         bs.playSound(bs.getSound('swish'))
         bs.containerWidget(edit=self._rootWidget,transition='outScale')
-
+        
     def _done(self):
 
         bs.containerWidget(edit=self._rootWidget,transition='outScale')
-
+        
         if self._targetText.exists():
             bs.textWidget(edit=self._targetText,text=bs.textWidget(query=self._textField))
-
-
+            
+        
 class StoreWindow(Window):
 
     def _updateGetTicketsButtonPos(self):
         if self._getTicketsButton.exists():
             p = (self._width-252-(47 if gSmallUI and bsInternal._isPartyIconVisible() else 0),self._height-70)
             bs.buttonWidget(edit=self._getTicketsButton,position=p)
-
+        
     def __init__(self,transition='inRight',modal=False,showTab=None,
                  onCloseCall=None,backLocation=None,originWidget=None):
 
         bsInternal._setAnalyticsScreen('Store Window')
-
+        
         # if they provided an origin-widget, scale up from that
         if originWidget is not None:
             self._transitionOut = 'outScale'
@@ -17372,7 +17642,7 @@ class StoreWindow(Window):
         else:
             self._transitionOut = 'outRight'
             scaleOrigin = None
-
+        
         self._backLocation = backLocation
         self._onCloseCall = onCloseCall
         self._showTab = showTab
@@ -17381,7 +17651,7 @@ class StoreWindow(Window):
         self._height = 578 if gSmallUI else 645 if gMedUI else 800
         self._currentTab = None
         extraTop = 30 if gSmallUI else 0
-
+        
         self._request = None
         self._r = 'store'
         self._lastBuyTime = 0
@@ -17410,7 +17680,7 @@ class StoreWindow(Window):
                                                      # textColor=(1,0.5,0),
                                                      textColor=(0.2, 1.0, 0.2),
                                                      label=bs.Lstr(resource='getTicketsWindow.titleText'))
-
+        
         # move this dynamically to keep it out of the way of the party icon :-(
         self._updateGetTicketsButtonPos()
         self._getTicketPosUpdateTimer = bs.Timer(1000,bs.WeakCall(self._updateGetTicketsButtonPos),repeat=True,timeType='real')
@@ -17441,7 +17711,7 @@ class StoreWindow(Window):
 
         scrollBufferH = 130
         tabBufferH = 250
-
+        
         tabsDef = [['extras',bs.Lstr(resource=self._r+'.extrasText')],
                    ['maps',bs.Lstr(resource=self._r+'.mapsText')],
                    ['minigames',bs.Lstr(resource=self._r+'.miniGamesText')],
@@ -17452,7 +17722,7 @@ class StoreWindow(Window):
                                              size=(self._width-tabBufferH,50),onSelectCall=self._setTab,returnExtraInfo=True)
 
         self._purchasableCountWidgets = {}
-
+        
         # create our purchasable-items tags and have them update over time..
         for i,tab in enumerate(tabsDef):
             pos = tabResults['positions'][i]
@@ -17483,12 +17753,12 @@ class StoreWindow(Window):
         self._updateTabs()
 
         self._tabButtons = tabResults['buttons']
-
+        
         if self._getTicketsButton is not None:
             lastTabButton = self._tabButtons[tabsDef[-1][0]]
             bs.widget(edit=self._getTicketsButton,downWidget=lastTabButton)
             bs.widget(edit=lastTabButton,upWidget=self._getTicketsButton,rightWidget=self._getTicketsButton)
-
+            
         self._scrollWidth = self._width-scrollBufferH
         self._scrollHeight = self._height-180
 
@@ -17501,10 +17771,8 @@ class StoreWindow(Window):
             showSignInPrompt()
         else:
             bsInternal._restorePurchases()
-
+        
     def _updateTabs(self):
-        if not self._rootWidget.exists():
-            return
         for tabName,tabData in self._purchasableCountWidgets.items():
             saleTime = _getAvailableSaleTime(tabName)
 
@@ -17527,7 +17795,7 @@ class StoreWindow(Window):
             else:
                 bs.textWidget(edit=tabData['text'],text='')
                 bs.imageWidget(edit=tabData['img'],opacity=0.0)
-
+        
     def _updateTicketsText(self):
         if bsInternal._getAccountState() == 'SIGNED_IN':
             s = bs.getSpecialChar('ticket')+str(bsInternal._getAccountTicketCount())
@@ -17535,7 +17803,7 @@ class StoreWindow(Window):
             #s = bs.getSpecialChar('ticket')+'?'
             s = bs.Lstr(resource='getTicketsWindow.titleText')
         bs.buttonWidget(edit=self._getTicketsButton,label=s)
-
+        
     def _setTab(self,tab):
 
         if self._currentTab == tab: return
@@ -17544,7 +17812,7 @@ class StoreWindow(Window):
         # we wanna preserve our current tab between runs
         bs.getConfig()['Store Tab'] = tab
         bs.writeConfig()
-
+        
         # update tab colors based on which is selected
         _updateTabButtonColors(self._tabButtons,tab)
 
@@ -17587,7 +17855,7 @@ class StoreWindow(Window):
 
         # kick off a server request
         self._request = _Request(self)
-
+        
     # actually start the purchase locally..
     def _purchaseCheckResult(self,item,isTicketPurchase,result):
         if result is None:
@@ -17628,7 +17896,7 @@ class StoreWindow(Window):
                                                     'buildNumber':env['buildNumber'],
                                                     'purchaseType':'ticket' if isTicketPurchase else 'real'},
                           callback=bs.WeakCall(self._purchaseCheckResult,item,isTicketPurchase))
-
+        
     def _buy(self,item):
         # prevent pressing buy within a few seconds of the last press
         # (gives the buttons time to disable themselves and whatnot)
@@ -17679,7 +17947,7 @@ class StoreWindow(Window):
                     sales[saleItem] = {'toEnd':toEnd,'originalPrice':saleInfo['op']}
         except Exception:
             bs.printException("Error parsing sales")
-
+        
         for bType,bInfo in self._buttonInfos.items():
 
             if bType in ['upgrades.pro','pro']: purchased = bsUtils._havePro()
@@ -17688,7 +17956,7 @@ class StoreWindow(Window):
             saleOpacity = 0.0
             saleTitleText = ''
             saleTimeText = ''
-
+            
             if purchased:
                 titleColor=(0.8,0.7,0.9,1.0)
                 color = (0.63,0.55,0.78)
@@ -17741,7 +18009,7 @@ class StoreWindow(Window):
                         priceText = ''
                         saleTitleText = bs.Lstr(resource='store.saleText')
                         saleTimeText = bs.getTimeString(int(sales[bType]['toEnd']*1000),centi=False)
-
+                    
                 descriptionColor = (0.5,1,0.5)
                 # priceColor = (1,0.5,0.0,1.0)
                 priceColor = (0.2,1,0.2,1.0)
@@ -17774,7 +18042,7 @@ class StoreWindow(Window):
         if self._statusTextWidget is not None and self._statusTextWidget.exists():
             self._statusTextWidget.delete()
             self._statusTextWidgetUpdateTimer = None
-
+        
         if data is None:
             self._statusTextWidget = bs.textWidget(parent=self._rootWidget,position=(self._width*0.5,self._height*0.5),size=(0,0),
                                                    scale=1.3,
@@ -17791,7 +18059,7 @@ class StoreWindow(Window):
                     self._width = width
                     self._rows = []
                     storeData = _getStoreLayout()
-
+                    
                     self._tab = data['tab']
                     self._sections = copy.deepcopy(storeData[data['tab']])
 
@@ -17813,7 +18081,7 @@ class StoreWindow(Window):
                         # section['xOffs'] = 100 if (self._tab == 'characters' and not bsInternal._getAccountMiscReadVal('xmas',False)) else 130 if self._tab == 'extras' else 270 if self._tab == 'maps' else 0
                         section['xOffs'] = 130 if self._tab == 'extras' else 270 if self._tab == 'maps' else 0
                         section['yOffs'] = 55 if (self._tab == 'extras' and gSmallUI) else -20 if self._tab == 'icons' else 0
-
+                        
                 def instantiate(self,scrollWidget,tabButton):
 
                     titleSpacing = 40
@@ -17821,7 +18089,7 @@ class StoreWindow(Window):
                     buttonSpacing = 4
                     # buttonVSpacing = -10
                     buttonOffsetH = 40
-
+                    
                     self._height = 80
 
                     # calc total height
@@ -17856,11 +18124,11 @@ class StoreWindow(Window):
                         bs.textWidget(parent=c,text=t,size=(0,0),position=(self._width*0.5,self._height - 28),
                                       hAlign='center',vAlign='center',color=(0.7,1,0.7,0.4),scale=0.7,shadow=0,flatness=1.0,
                                       maxWidth=700,transitionDelay=400)
-
+                        
                     prevRowButtons = None
                     thisRowButtons = []
 
-
+                    
                     delay = 300
                     for section in self._sections:
                         if section['title'] != '':
@@ -17889,7 +18157,7 @@ class StoreWindow(Window):
                             else: bOffsV2 = 0
 
                             bPos = (buttonOffsetH+bOffsH2+(bWidth+buttonSpacing)*col,v-bHeight+bOffsV2)
-
+                            
                             _instantiateStoreItemDisplay(itemName,item,
                                                          parentWidget=c,
                                                          bPos=bPos,
@@ -17898,7 +18166,7 @@ class StoreWindow(Window):
                                                          bOffsH2=bOffsH2,bOffsV2=bOffsV2,
                                                          delay=delay)
                             b = item['button']
-
+                            
                             delay = max(100,delay-100)
                             thisRowButtons.append(b)
 
@@ -17916,7 +18184,7 @@ class StoreWindow(Window):
                                     bs.widget(edit=b,upWidget=prevRowButtons[-1])
                             else:
                                 bs.widget(edit=b,upWidget=tabButton)
-
+                                
                             col += 1
                             if col == bColumnCount or i == bCount-1:
                                 prevRowButtons = thisRowButtons
@@ -17932,7 +18200,7 @@ class StoreWindow(Window):
                     self._storeWindow._updateButtonsTimer = bs.Timer(500,bs.WeakCall(self._storeWindow._updateButtons),repeat=True,timeType='real')
                     # also update them immediately
                     self._storeWindow._updateButtons()
-
+                    
             if self._currentTab in ('extras','minigames','characters','maps','icons'):
                 store = _Store(self,data,self._scrollWidth)
                 store.instantiate(scrollWidget=self._scrollWidget,tabButton=self._tabButtons[self._currentTab])
@@ -17980,7 +18248,7 @@ class StoreWindow(Window):
         except Exception:
             bs.printException('error restoring state for',self.__class__)
 
-
+                
     def _onGetMoreTicketsPress(self):
         if bsInternal._getAccountState() != 'SIGNED_IN':
             showSignInPrompt()
@@ -18000,7 +18268,7 @@ class StoreWindow(Window):
             else:
                 uiGlobals['mainMenuWindow'] = MainMenuWindow(transition='inLeft').getRootWidget()
         if self._onCloseCall is not None: self._onCloseCall()
-
+    
 def _handleLocalChatMessage(msg):
     global gPartyWindow
     if gPartyWindow is not None and gPartyWindow() is not None: gPartyWindow().onChatMessage(msg)
@@ -18009,13 +18277,13 @@ def _handleGainedTickets(count):
     bs.screenMessage(bs.Lstr(resource='getTicketsWindow.receivedTicketsText',subs=[('${COUNT}',str(count))]),
                      color=(0,1,0))
     bs.playSound(bs.getSound('cashRegister'))
-
+    
 gInviteConfirmWindows = []
 
 def _handlePartyInvite(name,inviteID):
     import bsMainMenu
     bs.playSound(bs.getSound('fanfare'))
-
+    
     # if we're not in the main menu, just print the invite
     # (don't want to screw up an in-progress game)
     inGame = not isinstance(bsInternal._getForegroundHostSession(),bsMainMenu.MainMenuSession)
@@ -18031,14 +18299,14 @@ def _handlePartyInvite(name,inviteID):
                           color=(0.75,1.0,0.0),
                           okText=bs.Lstr(resource='gatherWindow.partyInviteAcceptText'),
                           cancelText=bs.Lstr(resource='gatherWindow.partyInviteIgnoreText'))
-
+        
         # lets store the invite-id away on the confirm window so we know if we need to kill it later
         c._partyInviteID = inviteID
-
+        
         # store a weak-ref so we can get at this later
         global gInviteConfirmWindows
         gInviteConfirmWindows.append(weakref.ref(c))
-
+        
         # go ahead and prune our weak refs while we're here.
         gInviteConfirmWindows = [w for w in gInviteConfirmWindows if w() is not None]
 
@@ -18063,7 +18331,7 @@ class FileSelectorWindow(Window):
         self._showBasePath = showBasePath
         self._validFileExtensions = ['.'+ext for ext in validFileExtensions]
         self._allowFolders = allowFolders
-
+        
         self._scrollWidth = self._width-80
         self._scrollHeight = self._height-170
         self._r = 'fileSelectorWindow'
@@ -18075,7 +18343,7 @@ class FileSelectorWindow(Window):
                           text=bs.Lstr(resource=self._r+'.titleFolderText') if (allowFolders and not validFileExtensions) else bs.Lstr(resource=self._r+'.titleFileText') if not allowFolders else bs.Lstr(resource=self._r+'.titleFileFolderText'),
                           maxWidth=210)
 
-
+        
         self._buttonWidth = 146
         self._cancelButton = b = bs.buttonWidget(parent=self._rootWidget,position=(35,self._height-67),
                                                  autoSelect=True,size=(self._buttonWidth,50),label=bs.Lstr(resource='cancelText'),onActivateCall=self._cancel)
@@ -18136,7 +18404,7 @@ class FileSelectorWindow(Window):
         bs.containerWidget(edit=self._rootWidget,transition='outRight')
         if self._callback is not None:
             self._callback(self._path)
-
+        
     def _onEntryActivated(self,entry):
         try:
             newPath = None
@@ -18169,7 +18437,7 @@ class FileSelectorWindow(Window):
             self._setPath(newPath)
 
     class _RefreshThread(threading.Thread):
-
+            
         def __init__(self,path,callback):
             threading.Thread.__init__(self)
             self._callback = callback
@@ -18183,19 +18451,16 @@ class FileSelectorWindow(Window):
                 # make sure this takes at least 1/10 second so the user has time to see the selection highlight
                 if duration < minTime: time.sleep(minTime-duration)
                 bs.callInGameThread(bs.Call(self._callback,fileNames=files))
-            except Exception as e:
-                # ignore permission-denied
-                if 'Errno 13' not in str(e):
-                    bs.printException()
+            except Exception,e:
+                bs.printException()
                 bs.callInGameThread(bs.Call(self._callback,error=str(e)))
 
     def _setPath(self,path,addToRecent=True):
         self._path = path
         if addToRecent: self._recentPaths.append(path)
         self._RefreshThread(path,self._refresh).start()
-
+        
     def _refresh(self,fileNames=None,error=None):
-        if not self._rootWidget.exists(): return
 
         scrollWidgetSelected = (self._scrollWidget is None or self._rootWidget.getSelectedChild() == self._scrollWidget)
 
@@ -18269,7 +18534,7 @@ class FileSelectorWindow(Window):
                 bs.widget(edit=b,leftWidget=self._cancelButton,downWidget=self._scrollWidget)
                 bs.widget(edit=self._cancelButton,rightWidget=b)
                 bs.containerWidget(edit=self._rootWidget,startButton=b)
-
+                
 
             folderIconSize = 35
             for num,entry in enumerate(entries):
@@ -18292,10 +18557,10 @@ class FileSelectorWindow(Window):
                                   position=(10+folderIconSize*1.05,entryHeight*0.5),
                                   size=(0,0),maxWidth=self._scrollWidth*0.93-50,color=(1,1,1,1) if (isValidFilePath or isDir) else (0.5,0.5,0.5,1))
                 v -= entryHeight
-
+                
     def _isValidFilePath(self,path):
         return any(path.lower().endswith(ext) for ext in self._validFileExtensions)
-
+        
     def _cancel(self):
         bs.containerWidget(edit=self._rootWidget,transition='outRight')
         if self._callback is not None:
@@ -18366,7 +18631,7 @@ def _cacheTournamentInfo(info):
         # also store the time we received this, so we can adjust time-remaining values/etc
         cacheEntry['timeReceived'] = bs.getRealTime()
         cacheEntry['valid'] = True
-
+    
 def showSignInPrompt(accountType=None):
 
     if accountType == 'Google Play':
@@ -18384,14 +18649,14 @@ def showGetTicketsPrompt():
                   okText=bs.Lstr(resource='getTicketsWindow.titleText'),width=460,height=130)
 
 class PowerRankingButton(object):
-
+    
     def __init__(self,parent,position,size,scale,onActivateCall=None,transitionDelay=None,color=None,textColor=None,smoothUpdateDelay=None):
         if onActivateCall is None: onActivateCall = bs.WeakCall(self._defaultOnActivateCall)
         self._onActivateCall = onActivateCall
 
         if smoothUpdateDelay is None: smoothUpdateDelay = 1000
         self._smoothUpdateDelay = smoothUpdateDelay
-
+        
         self._size = size
         self._scale = scale
 
@@ -18409,7 +18674,7 @@ class PowerRankingButton(object):
                                         hAlign='center',vAlign='center',maxWidth=size[0]*scale*0.85,
                                         text=bs.Lstr(resource='league.leagueRankText',fallback='coopSelectWindow.powerRankingText'),
                                         color=self._headerColor,flatness=1.0,shadow=1.0,scale=scale*0.5,transitionDelay=transitionDelay)
-
+        
         self._valueText = bs.textWidget(parent=parent,size=(0,0),
                                         hAlign='center',vAlign='center',maxWidth=size[0]*scale*0.85,text='-',
                                         drawController=self._button,big=True,
@@ -18422,16 +18687,16 @@ class PowerRankingButton(object):
         self._tickingNode = None
         self._smoothIncreaseSpeed = 1.0
         self._league = None
-
+        
         # take note of our account state; we'll refresh later if this changes
         self._accountStateNum = bsInternal._getAccountStateNum()
         self._lastPowerRankingQueryTime = None
         self._doingPowerRankingQuery = False
-
+        
         self.setPosition(position)
 
         self._bgFlash = False
-
+        
         self._updateTimer = bs.Timer(1000,bs.WeakCall(self._update),timeType='real',repeat=True)
         self._update()
 
@@ -18443,26 +18708,26 @@ class PowerRankingButton(object):
     def _onActivate(self):
         bsInternal._incrementAnalyticsCount('League rank button press')
         self._onActivateCall()
-
+        
     def __del__(self):
         if self._tickingNode is not None:
             self._tickingNode.delete()
 
     def _startSmoothUpdate(self):
         self._smoothUpdateTimer = bs.Timer(50,bs.WeakCall(self._smoothUpdate),repeat=True,timeType='real')
-
+        
     def _smoothUpdate(self):
         try:
 
             if not self._button.exists(): return
-
+            
             if self._tickingNode is None:
                 with bs.Context('UI'):
                     self._tickingNode = bs.newNode('sound',attrs={'sound':bs.getSound('scoreIncrease'),'positional':False})
 
             # if self._rank is None and self._percent is None:
             #     print 'fixme; have neither rank nor percent in _smoothUpdate'
-
+                
             #if self._rank is not None or :
             self._bgFlash = (not self._bgFlash)
             colorUsed = (self._color[0]*2,self._color[1]*2,self._color[2]*2) if self._bgFlash else self._color
@@ -18510,7 +18775,7 @@ class PowerRankingButton(object):
         except Exception:
             bs.printException('error doing smooth update')
             self._smoothUpdateTimer = None
-
+            
     def _updateForPowerRankingInfo(self,data):
 
         # if our button has died, ignore..
@@ -18560,12 +18825,12 @@ class PowerRankingButton(object):
 
                     # print 'RUNNING INCREASE TEST'
                     # self._percent += random.randrange(40)
-
+                
             except Exception:
                 bs.printException('error updating power ranking')
                 self._percent = self._rank = None
                 statusText = '-'
-
+                
         # if we're doing a smooth update ,set a timer..
         if self._rank is not None and int(self._smoothRank) != self._rank:
             self._improvementText = str(-(int(self._rank)-int(self._smoothRank)))
@@ -18580,7 +18845,7 @@ class PowerRankingButton(object):
                 self._smoothIncreaseSpeed = diff/40.0
             self._smoothIncreaseSpeed = max(0.4,self._smoothIncreaseSpeed)
             bs.realTimer(self._smoothUpdateDelay,bs.WeakCall(self._startSmoothUpdate))
-
+            
         if self._percent is not None and int(self._smoothPercent) != self._percent:
             self._improvementText = str((int(self._percent)-int(self._smoothPercent)))
             diff = abs(self._percent - self._smoothPercent)
@@ -18598,7 +18863,7 @@ class PowerRankingButton(object):
                 tColor = gTitleColor
             bs.textWidget(edit=self._titleText,text=t,color=tColor)
         bs.textWidget(edit=self._valueText,text=statusText)
-
+        
     def _onPowerRankingQueryResponse(self,data):
         self._doingPowerRankingQuery = False
         _cachePowerRankingInfo(data)
@@ -18622,7 +18887,7 @@ class PowerRankingButton(object):
             self._lastPowerRankingQueryTime = curTime
             self._doingPowerRankingQuery = True
             bsInternal._powerRankingQuery(callback=bs.WeakCall(self._onPowerRankingQueryResponse))
-
+        
     def _defaultOnActivateCall(self):
         PowerRankingWindow(modal=True,originWidget=self._button)
 
@@ -18633,10 +18898,10 @@ class PowerRankingButton(object):
         bs.buttonWidget(edit=self._button,position=self._position)
         bs.textWidget(edit=self._titleText,position=(self._position[0]+self._size[0]*0.5*self._scale,self._position[1]+self._size[1]*0.82*self._scale))
         bs.textWidget(edit=self._valueText,position=(self._position[0]+self._size[0]*0.5*self._scale,self._position[1]+self._size[1]*0.36*self._scale))
-
+        
     def getButtonWidget(self):
         return self._button
-
+        
 class StoreButton(object):
 
     def __init__(self,parent,position,size,scale,onActivateCall=None,transitionDelay=None,color=None,
@@ -18644,10 +18909,10 @@ class StoreButton(object):
         self._position = position
         self._size = size
         self._scale = scale
-
+        
         if onActivateCall is None: onActivateCall = bs.WeakCall(self._defaultOnActivateCall)
         self._onActivateCall = onActivateCall
-
+        
         self._button = bs.buttonWidget(parent=parent,size=size,
                                        label='' if showTickets else bs.Lstr(resource='storeText'),
                                        scale=scale,
@@ -18696,7 +18961,7 @@ class StoreButton(object):
                                        drawController=self._button,
                                        color=(0,1,0),flatness=1.0,shadow=0.0,scale=0.4*scale*saleScale,
                                        maxWidth=self._saleCircleRad*1.5,transitionDelay=transitionDelay)
-
+        
         self.setPosition(position)
         self._updateTimer = bs.Timer(1000,bs.WeakCall(self._update),repeat=True,timeType='real')
         self._update()
@@ -18704,8 +18969,8 @@ class StoreButton(object):
     def _onActivate(self):
         bsInternal._incrementAnalyticsCount('Store button press')
         self._onActivateCall()
-
-
+        
+        
     def setPosition(self,position):
         self._position = position
         self._circleCenter = (position[0]+0.1*self._size[0]*self._scale,position[1]+self._size[1]*self._scale*0.8)
@@ -18726,20 +18991,20 @@ class StoreButton(object):
                        position=(self._saleCircleCenter[0]-self._saleCircleRad,self._saleCircleCenter[1]-self._saleCircleRad))
         bs.textWidget(edit=self._saleTitleText,position=(self._saleCircleCenter[0],self._saleCircleCenter[1]+self._saleCircleRad*0.3))
         bs.textWidget(edit=self._saleTimeText,position=(self._saleCircleCenter[0],self._saleCircleCenter[1]-self._saleCircleRad*0.3))
-
-
+        
+    
     def _defaultOnActivateCall(self):
         if bsInternal._getAccountState() != 'SIGNED_IN':
             showSignInPrompt()
             return
         StoreWindow(modal=True,originWidget=self._button)
-
+        
     def getButtonWidget(self):
         return self._button
 
     def _update(self):
         if not self._button.exists(): return # our instance may outlive our UI objects..
-
+        
         #print 'UPDATING STORE BUTTON'
         if self._ticketText is not None:
             if bsInternal._getAccountState() == 'SIGNED_IN':
@@ -18767,7 +19032,7 @@ class StoreButton(object):
                 bs.printException("Error parsing sales")
             if saleTimes:
                 saleTime = int(min(saleTimes)*1000)
-
+        
         if saleTime is not None:
             bs.textWidget(edit=self._saleTitleText,text=bs.Lstr(resource='store.saleText'))
             bs.textWidget(edit=self._saleTimeText,text=bsUtils.getTimeString(saleTime,centi=False))
@@ -18813,7 +19078,7 @@ def _getStoreItemNameTranslated(itemName):
     elif itemName.startswith('icons.'):
         return bs.Lstr(resource='editProfileWindow.iconText')
     else: raise Exception('unrecognized item: '+itemName)
-
+    
 
 def _instantiateStoreItemDisplay(itemName,item,parentWidget,bPos,bWidth,bHeight,buttonOffsetH=0,bOffsH2=0,bOffsV2=0,delay=0,button=True):
     itemInfo = _getStoreItem(itemName)
@@ -18835,7 +19100,7 @@ def _instantiateStoreItemDisplay(itemName,item,parentWidget,bPos,bWidth,bHeight,
                                              label='')
         bs.widget(edit=b,showBufferBottom=76.0)
     else: b = None
-
+    
     bOffsX = -0.015*bWidth
     checkPos = 0.76
 
@@ -18879,7 +19144,7 @@ def _instantiateStoreItemDisplay(itemName,item,parentWidget,bPos,bWidth,bHeight,
         baseTextScale = 0.8
         titleV = 0.48
         priceV = 0.17
-
+        
     elif itemName.startswith('icons.'):
         baseTextScale = 1.5
         priceV = 0.2
@@ -18923,7 +19188,7 @@ def _instantiateStoreItemDisplay(itemName,item,parentWidget,bPos,bWidth,bHeight,
         extraBackings = item['extraBackings'] = []
         extraImages = item['extraImages'] = []
         extraTexts = item['extraTexts'] = []
-
+        
         backingColor = (0.5,0.8,0.3) if button else (0.6,0.5,0.65)
         bSquareTexture = bs.getTexture('buttonSquare')
         charMaskTexture = bs.getTexture('characterIconMask')
@@ -18951,7 +19216,7 @@ def _instantiateStoreItemDisplay(itemName,item,parentWidget,bPos,bWidth,bHeight,
                                         transitionDelay=delay,hAlign='center',vAlign='center',maxWidth=tileSize[0]*0.7,scale=0.55,
                                         text=bs.Lstr(resource='getTicketsWindow.ticketsText',subs=[('${COUNT}',bonusTickets)]),
                                         flatness=1.0,shadow=0.0))
-
+        
         for charName,pos in [('Kronk',(0.4,0.4)),('Zoe',(0.58,0.4))]:
             tileSize = (bWidth * 0.16*1.2,bWidth*0.2*1.2)
             tilePos = (bPos[0]+bWidth*pos[0],bPos[1]+bHeight*pos[1])
@@ -19001,20 +19266,20 @@ def _instantiateStoreItemDisplay(itemName,item,parentWidget,bPos,bWidth,bHeight,
                                                   maskTexture=maskTex,
                                                   drawController=b,
                                                   texture=bs.getTexture(previewTexName)))
-
+            
             extraTexts.append(bs.textWidget(parent=parentWidget,drawController=b,position=(tilePos[0]-imSize*0.03,tilePos[1]-imSize*0.2),size=(0,0),color=(0.6,1,0.6),
                                             transitionDelay=delay,hAlign='center',vAlign='center',maxWidth=tileSize[0]*0.7,scale=0.55,
                                             text=bs.Lstr(translate=('coopLevelNames',levelName)),
                                             flatness=1.0,shadow=0.0))
-
-
+        
+        
 
     if itemName.startswith('icons.'):
         item['iconText'] = bs.textWidget(parent=parentWidget,text=itemInfo['icon'],position=(bPos[0]+bWidth*0.5,bPos[1]+bHeight*0.5),
                                          transitionDelay=delay,scale=bWidth*(1.0/230.0)*baseTextScale*2.0,
                                          maxWidth=bWidth*0.9,maxHeight=bHeight*0.9,size=(0,0),hAlign='center',vAlign='center',
                                          drawController=b)
-
+        
     if itemName.startswith('maps.'):
         frameSize = bWidth*0.9
         imDim = frameSize*(100.0/113.0)
@@ -19065,7 +19330,7 @@ def _instantiateStoreItemDisplay(itemName,item,parentWidget,bPos,bWidth,bHeight,
                                           drawController=b,
                                           color=(0.7,0.9,0.7,1.0))
                                           #color=(1,0,0,1))
-
+        
     item['purchaseCheck'] = bs.imageWidget(parent=parentWidget,
                                            position=(bPos[0]+bWidth*checkPos,bPos[1]+bHeight*0.05),
                                            transitionDelay=delay,
@@ -19114,7 +19379,7 @@ def _instantiateStoreItemDisplay(itemName,item,parentWidget,bPos,bWidth,bHeight,
                                            maxWidth=badgeRad*1.6,size=(0,0),hAlign='center',vAlign='center',
                                            drawController=b,shadow=0.0,flatness=1.0,
                                            color=(0.0,1,0.0,1))
-
+    
 def _getStoreItemDisplaySize(itemName):
     if itemName.startswith('characters.'): return (340*0.6,430*0.6)
     # elif itemName in ['pro','upgrades.pro']: return (650*0.9,500*0.75)
@@ -19132,8 +19397,6 @@ def _getStoreItems():
         import bsTargetPractice
         import bsEasterEggHunt
 
-        # IMPORTANT - keep this synced with the server
-        # (manually for now)
         _gStoreItems = {
             'characters.kronk':{'character':'Kronk'},
             'characters.zoe':{'character':'Zoe'},
@@ -19150,6 +19413,8 @@ def _getStoreItems():
             'characters.taobaomascot':{'character':'Taobao Mascot'},
             'characters.santa':{'character':'Santa Claus'},
             'characters.bunny':{'character':'Easter Bunny'},
+            'characters.wizard_mr':{'character':'Grumbledorf'},
+            'characters.cow_mr':{'character':'Milk'},
             'pro':{},
             'maps.lake_frigid':{'mapType':bsMap.LakeFrigidMap},
             'games.ninja_fight':{'gameType':bsNinjaFight.NinjaFightGame,'previewTex':'courtyardPreview'},
@@ -19202,6 +19467,7 @@ def _getStoreItems():
 # the store layout
 def _getStoreLayout():
     global _gStoreLayout
+    
     if _gStoreLayout is None:
 
         # whats available in the store at a given time; categorized by tab and by section
@@ -19217,21 +19483,16 @@ def _getStoreLayout():
                                             'icons.flag_saudi_arabia','icons.flag_malaysia','icons.flag_czech_republic','icons.flag_australia','icons.flag_singapore',
                                             'icons.moon','icons.fedora','icons.spider','icons.ninja_star','icons.skull','icons.dragon','icons.viking_helmet','icons.fireball','icons.helmet','icons.crown',
                                             ]}]}
-
     _gStoreLayout['characters'] = [{'items':['characters.kronk','characters.zoe','characters.jackmorgan','characters.mel','characters.snakeshadow',
                                              'characters.bones','characters.bernard','characters.agent',
                                              'characters.frosty','characters.pascal','characters.pixie']}]
     _gStoreLayout['minigames'] = [{'items':['games.ninja_fight','games.meteor_shower','games.target_practice']}]
-    if bsInternal._getAccountMiscReadVal('xmas',False):
-        _gStoreLayout['characters'][0]['items'].append('characters.santa')
-    env = bs.getEnvironment()
-    if (env['platform'] == 'android' and env['subplatform'] == 'alibaba'):
-        _gStoreLayout['characters'][0]['items'].append('characters.taobaomascot')
+    _gStoreLayout['characters'][0]['items'].append('characters.taobaomascot')
     _gStoreLayout['characters'][0]['items'].append('characters.cyborg')
-    if bsInternal._getAccountMiscReadVal('easter',False):
-        _gStoreLayout['characters'].append({'title':'store.holidaySpecialText','items':['characters.bunny']})
-        _gStoreLayout['minigames'].append({'title':'store.holidaySpecialText','items':['games.easter_egg_hunt']})
-
+    _gStoreLayout['characters'].append({'title':'store.jrmpText','items':['characters.wizard_mr','characters.cow_mr']})
+    _gStoreLayout['characters'].append({'title':'store.holidaySpecialText','items':['characters.bunny','characters.santa']})
+    _gStoreLayout['minigames'].append({'title':'store.holidaySpecialText','items':['games.easter_egg_hunt']})
+        
     return _gStoreLayout
 
 _gProSaleStartTime = None
@@ -19241,15 +19502,10 @@ def _getPurchasedIcons():
     icons = []
     storeItems = _getStoreItems()
     for itemName,item in storeItems.items():
-        #Bacon Changed Start
-        #Origianl:
-        # if itemName.startswith('icons.') and bsInternal._getPurchased(itemName):
-        #Original
-        if itemName.startswith('icons.'):
-        #Bacon Changed End
+        if itemName.startswith('icons.') and bsInternal._getPurchased(itemName):
             icons.append(item['icon'])
     return icons
-
+        
 def _getAvailableSaleTime(tab):
     try:
         import datetime
@@ -19278,9 +19534,9 @@ def _getAvailableSaleTime(tab):
                     # if we havn't heard from the server yet, no sale..
                     else:
                         return None
-
+                    
             val = max(0,_gProSaleStartVal - (bs.getRealTime()-_gProSaleStartTime))
-
+            
             # keep the value in the config up to date.. i suppose we should write the config
             # occasionally but it should happen often enough for other reasons..
             config['PSTR'] = val
@@ -19299,15 +19555,15 @@ def _getAvailableSaleTime(tab):
                         toEnd = (datetime.datetime.utcfromtimestamp(salesRaw[item]['e']) - datetime.datetime.utcnow()).total_seconds()
                         if toEnd > 0:
                             saleTimes.append(int(toEnd*1000))
-
+        
         # return the smallest time i guess?..
         return min(saleTimes) if saleTimes else None
-
+        
     except Exception:
         bs.printException('error calcing sale time')
         return None
 
-
+    
 
 def _getAvailablePurchaseCount(tab=None):
     try:
@@ -19349,7 +19605,7 @@ def doAppInvitesPress(forceCode=False):
 
     # FIXME - need to update this to grab a code before allowing the invite UI..
     # doAppInvites = False
-
+    
     if doAppInvites:
         AppInvitesWindow()
     else:
@@ -19393,7 +19649,7 @@ class AppInvitesWindow(Window):
                                    subs=[('${COUNT}',str(bsInternal._getAccountMiscReadVal('friendTryTickets',300))),
                                          ('${YOU_COUNT}',str(bsInternal._getAccountMiscReadVal('friendTryAwardTickets',100)))])
         )
-
+        
         orText = bs.Lstr(resource='orText',subs=[('${A}',''),('${B}','')]).evaluate().strip()
         bs.buttonWidget(parent=self._rootWidget,size=(250,150),position=(self._width*0.5-125,self._height*0.5-80),autoSelect=True,buttonType='square',
                         label=bs.Lstr(resource='gatherWindow.inviteFriendsText'),onActivateCall=bs.WeakCall(self._googleInvites))
@@ -19401,7 +19657,7 @@ class AppInvitesWindow(Window):
         bs.textWidget(parent=self._rootWidget,size=(0,0),position=(self._width*0.5,self._height*0.5-94),autoSelect=True,scale=0.9,
                       hAlign='center',vAlign='center',color=(0.5,0.5,0.5),flatness=1.0,
                       text=orText)
-
+        
         bs.buttonWidget(parent=self._rootWidget,size=(180,50),position=(self._width*0.5-90,self._height*0.5-170),autoSelect=True,
                         color=(0.5,0.5,0.6),
                         textColor=(0.7,0.7,0.8),
@@ -19419,10 +19675,10 @@ class AppInvitesWindow(Window):
     def _onCodeResult(self,result):
         if result is not None:
             self._data = result
-
+        
     def _sendCode(self):
         doAppInvitesPress(forceCode=True)
-
+    
     def _googleInvites(self):
         if self._data is None:
             bs.screenMessage(bs.Lstr(resource='getTicketsWindow.unavailableTemporarilyText'),color=(1,0,0))
@@ -19439,21 +19695,21 @@ class AppInvitesWindow(Window):
                                       self._data['code'])
         else:
             bs.playSound(bs.getSound('error'))
-
+            
 
     def close(self):
         bs.containerWidget(edit=self._rootWidget,transition='outScale')
 
-
+        
 class FriendPromoCodeWindow(Window):
-
+        
     def __init__(self,data,origin=(0,0)):
 
         bsInternal._setAnalyticsScreen('Friend Promo Code')
 
         env = bs.getEnvironment()
         ali = True if (env['platform'] == 'android' and env['subplatform'] == 'alibaba') else False
-
+        
         self._width = 750 if ali else 650
         self._height = 400
         self._rootWidget = bs.containerWidget(size=(self._width,self._height),
@@ -19476,7 +19732,7 @@ class FriendPromoCodeWindow(Window):
                               hAlign="center",vAlign="center",
                               text=bs.Lstr(resource='gatherWindow.shareThisCodeWithFriendsText'),
                               maxWidth=self._width*0.85)
-
+            
             t = bs.textWidget(parent=self._rootWidget,position=(self._width*0.3, self._height*0.7), size=(0,0),
                               color=(1.0,3.0,1.0),scale=2.0,
                               hAlign="center",vAlign="center",text=data['code'],maxWidth=self._width*0.4)
@@ -19499,10 +19755,10 @@ class FriendPromoCodeWindow(Window):
                               hAlign="center",vAlign="center",
                               text=msg,
                               maxWidth=self._width*0.5)
-
+            
             msg = ('\xe8\xaf\xb7\xe7\x94\xa8\xe3\x80\x90\xe5\xbe\xae\xe4\xbf\xa1\xe3\x80\x91\xe6\x88\x96\xe3\x80\x90\xe5\xbe\xae\xe5\x8d\x9a\xe3\x80\x91\xe5\xae\xa2\xe6\x88\xb7\xe7\xab\xaf\n'
                    '\xe6\x89\xab\xe7\xa0\x81\xe5\x88\x86\xe4\xba\xab\xe5\x88\xb0\xe6\x9c\x8b\xe5\x8f\x8b\xe5\x9c\x88\xe6\x88\x96\xe8\xbd\xac\xe5\x8f\x91\xe7\xbb\x99\xe5\xa5\xbd\xe5\x8f\x8b')
-
+                   
             t = bs.textWidget(parent=self._rootWidget,position=(self._width*0.75,self._height*0.15),size=(0,0),
                               color=gInfoTextColor,scale=0.8,flatness=1.0,
                               hAlign="center",vAlign="center",
@@ -19513,7 +19769,7 @@ class FriendPromoCodeWindow(Window):
             addr = bsInternal._getAccountMiscReadVal('aliQRFriendURL',"${SERVER}/aqr?c=${CODE}")
             bs.imageWidget(parent=self._rootWidget,position=(self._width * 0.75 - qrSize*0.5,self._height * 0.55 - qrSize * 0.5),size=(qrSize, qrSize),
                            texture=bsInternal._getQRCodeTexture(addr.replace('${SERVER}',bsInternal._getServerAddress()).replace('${CODE}',str(data['code']))))
-
+            
             pass
         else:
             t = bs.textWidget(parent=self._rootWidget,position=(self._width*0.5,self._height*0.8),size=(0,0),
@@ -19541,8 +19797,8 @@ class FriendPromoCodeWindow(Window):
                                                  ('${D}',bs.Lstr(resource='gatherWindow.friendPromoCodeExpireText',subs=[('${EXPIRE_HOURS}',str(self._data['expireHours']))]))]),
                               maxWidth=self._width*0.9,maxHeight=self._height*0.35)
 
-
-
+        
+        
         if bsUtils.isBrowserLikelyAvailable() and not ali:
             xoffs = 0
             bs.buttonWidget(parent=self._rootWidget,size=(200,40),position=(self._width*0.5-100+xoffs,39),autoSelect=True,
@@ -19556,14 +19812,8 @@ class FriendPromoCodeWindow(Window):
                                                 ('${NAME}',bsInternal._getAccountName().split()[0]),
                                                 ('${APP_NAME}',bs.Lstr(resource='titleText'))]).evaluate(),
                                   self._data['code'])
-
+        
     def _email(self):
-        # if somehow we got signed out...
-        if bsInternal._getAccountState() != 'SIGNED_IN':
-            bs.screenMessage(bs.Lstr(resource='notSignedInText'),color=(1,0,0))
-            bs.playSound(bs.getSound('error'))
-            return
-
         bsInternal._setAnalyticsScreen('Email Friend Code')
         import urllib
         subject = (bs.Lstr(resource='gatherWindow.friendHasSentPromoCodeText').evaluate()
@@ -19577,8 +19827,8 @@ class FriendPromoCodeWindow(Window):
                 +'\n'+bs.Lstr(resource='gatherWindow.friendPromoCodeExpireText').evaluate().replace('${EXPIRE_HOURS}',str(self._data['expireHours']))
                 +'\n'+bs.Lstr(resource='enjoyText').evaluate())
         bs.openURL('mailto:?subject='+urllib.quote(bs.utf8(subject))+'&body='+urllib.quote(bs.utf8(body)))
-
-
+        
+        
     def close(self):
         bs.containerWidget(edit=self._rootWidget,transition='outScale')
 
@@ -19608,3 +19858,4 @@ def _onGoldIconPress():
 
 def _onTicketIconPress():
     print 'TICKETS ICON PRESSED'
+        
