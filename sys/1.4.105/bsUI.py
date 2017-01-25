@@ -12945,16 +12945,18 @@ class CoopWindow(Window):
             # if random.random() < 0.5: unlocked = True
             # else: unlocked = False
 
-            # hard-code games we havn't unlocked..
-            if ((game in ('Challenges:Meteor Shower',) and not bsInternal._getPurchased('games.meteor_shower'))
-                or (game in ('Challenges:Target Practice','Challenges:Target Practice B') and not bsInternal._getPurchased('games.target_practice'))
-                or (game in ('Challenges:Ninja Fight',) and not bsInternal._getPurchased('games.ninja_fight'))
-                or (game in ('Challenges:Pro Ninja Fight',) and not bsInternal._getPurchased('games.ninja_fight'))
-                or (game in ('Challenges:Easter Egg Hunt','Challenges:Pro Easter Egg Hunt') and not bsInternal._getPurchased('games.easter_egg_hunt'))
-                or (game in ('Challenges:Nightmare','Challenges:Marathon') and not bsAchievement.getAchievement('Uber Runaround Victory').isComplete())):
-                unlocked = False
-
             #Bacon Changed Start
+            #Original:
+            # # hard-code games we havn't unlocked..
+            # if ((game in ('Challenges:Meteor Shower',) and not bsInternal._getPurchased('games.meteor_shower'))
+            #     or (game in ('Challenges:Target Practice','Challenges:Target Practice B') and not bsInternal._getPurchased('games.target_practice'))
+            #     or (game in ('Challenges:Ninja Fight',) and not bsInternal._getPurchased('games.ninja_fight'))
+            #     or (game in ('Challenges:Pro Ninja Fight',) and not bsInternal._getPurchased('games.ninja_fight'))
+            #     or (game in ('Challenges:Easter Egg Hunt','Challenges:Pro Easter Egg Hunt') and not bsInternal._getPurchased('games.easter_egg_hunt'))
+            #     or (game in ('Challenges:Nightmare','Challenges:Marathon') and not bsAchievement.getAchievement('Uber Runaround Victory').isComplete())):
+            #     unlocked = False
+            #Original
+
             unlocked = True
             #Bacon Changed End
 
@@ -13453,12 +13455,17 @@ class CoopWindow(Window):
                 PurchaseWindow(items=['pro'])
             return
 
-        if game in ['Challenges:Meteor Shower']: requiredPurchase = 'games.meteor_shower'
-        elif game in ['Challenges:Target Practice','Challenges:Target Practice B']: requiredPurchase = 'games.target_practice'
-        elif game in ['Challenges:Ninja Fight']:  requiredPurchase = 'games.ninja_fight'
-        elif game in ['Challenges:Pro Ninja Fight']: requiredPurchase = 'games.ninja_fight'
-        elif game in ['Challenges:Easter Egg Hunt','Challenges:Pro Easter Egg Hunt']: requiredPurchase = 'games.easter_egg_hunt'
-        else: requiredPurchase = None
+        #Bacon Change begin
+        #Original:
+        # if game in ['Challenges:Meteor Shower']: requiredPurchase = 'games.meteor_shower'
+        # elif game in ['Challenges:Target Practice','Challenges:Target Practice B']: requiredPurchase = 'games.target_practice'
+        # elif game in ['Challenges:Ninja Fight']:  requiredPurchase = 'games.ninja_fight'
+        # elif game in ['Challenges:Pro Ninja Fight']: requiredPurchase = 'games.ninja_fight'
+        # elif game in ['Challenges:Easter Egg Hunt','Challenges:Pro Easter Egg Hunt']: requiredPurchase = 'games.easter_egg_hunt'
+        # else: requiredPurchase = None
+        #Original
+        requiredPurchase = None
+        #Bacon Change End
 
         if tournamentButton is None and requiredPurchase is not None and not bsInternal._getPurchased(requiredPurchase):
             if bsInternal._getAccountState() != 'SIGNED_IN':
