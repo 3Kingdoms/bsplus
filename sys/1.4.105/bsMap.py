@@ -346,7 +346,7 @@ class HockeyStadium(Map):
         data['standsTex'] = bs.getTexture('footballStadium')
 
         m = bs.Material()
-        m.addActions(actions=('modifyPartCollision','friction',0.01))
+        m.addActions(actions=('modifyPartCollision','friction',0.5))
         data['iceMaterial'] = m
         return data
 
@@ -591,11 +591,18 @@ class BigGMap(Map):
     @classmethod
     def onPreload(cls):
         data = {}
-        data['modelTop'] = bs.getModel('bigG')
+        #Modified Begin
+        # data['modelTop'] = bs.getModel('bigG')
+        data['modelTop'] = bs.getModel('ModifiedBigG')
+        print(data['modelTop'])
+        #Modifoed end
         data['modelBottom'] = bs.getModel('bigGBottom')
         data['modelBG'] = bs.getModel('natureBackground')
         data['bgVRFillModel'] = bs.getModel('natureBackgroundVRFill')
-        data['collideModel'] = bs.getCollideModel('bigGCollide')
+        # Modified Begin
+        # data['collideModel'] = bs.getCollideModel('bigGCollide')
+        data['collideModel'] = bs.getCollideModel('ModifiedBigGCollide')
+        # Modified end
         data['tex'] = bs.getTexture('bigG')
         data['modelBGTex'] = bs.getTexture('natureBackgroundColor')
         data['collideBG'] = bs.getCollideModel('natureBackgroundCollide')

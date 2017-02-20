@@ -17,7 +17,7 @@ class FootballTeamGame(bs.TeamGameActivity):
     @classmethod
     def supportsSessionType(cls,sessionType):
         return True if issubclass(sessionType,bs.TeamsSession) else False
-    
+
     @classmethod
     def getDescription(cls,sessionType):
         return 'Get the flag to the enemy end zone.'
@@ -85,7 +85,7 @@ class FootballTeamGame(bs.TeamGameActivity):
                                                                  'scale':defs.boxes['goal1'][6:9],
                                                                  'type': 'box',
                                                                  'materials':(self.scoreRegionMaterial,)})))
-        
+
         self._scoreRegions.append(bs.NodeActor(bs.newNode('region',
                                                           attrs={'position':defs.boxes['goal2'][0:3],
                                                                  'scale':defs.boxes['goal2'][6:9],
@@ -236,7 +236,7 @@ class FootballCoopGame(bs.CoopGameActivity):
     # FIXME need to combine this call with getScoreInfo...
     def _getScoreType(self):
         return 'time'
-    
+
     def getInstanceDescription(self):
         tds = self._scoreToWin/7
         if tds > 1: return ('Score ${ARG1} touchdowns.',tds)
@@ -296,7 +296,7 @@ class FootballCoopGame(bs.CoopGameActivity):
                                                                 'scale':defs.boxes['goal1'][6:9],
                                                                 'type': 'box',
                                                                 'materials':[self._scoreRegionMaterial]})))
-        
+
         self.scoreRegions.append(bs.NodeActor(bs.newNode('region',
                                                          attrs={'position':defs.boxes['goal2'][0:3],
                                                                 'scale':defs.boxes['goal2'][6:9],
@@ -312,7 +312,7 @@ class FootballCoopGame(bs.CoopGameActivity):
         if bs.getEnvironment()['kioskMode']:
             import bsUtils
             bsUtils.ControlsHelpOverlay(delay=3000,lifespan=10000,bright=True).autoRetain()
-        
+
         if self._preset in ['rookie','rookieEasy']:
             self._excludePowerups = ['curse']
             self._haveTnt = False
@@ -377,7 +377,7 @@ class FootballCoopGame(bs.CoopGameActivity):
         self._timeTextInput = bs.NodeActor(bs.newNode('timeDisplay',attrs={'showSubSeconds':True}))
         bs.getSharedObject('globals').connectAttr('gameTime',self._timeTextInput.node,'time2')
         self._timeTextInput.node.connectAttr('output',self._timeText.node,'text')
-        
+
         # self._updateTime()
 
         # update fast enough so it looks continuous
@@ -398,7 +398,7 @@ class FootballCoopGame(bs.CoopGameActivity):
     def _onBotSpawn(self,spaz):
         # we want to move to the left by default
         spaz.targetPointDefault = bs.Vector(0,0,0)
-        
+
     def _spawnBot(self,spazType,immediate=False):
         pos = self.getMap().getStartPosition(self._botTeam.getID())
         self._bots.spawnBot(spazType,pos=pos,spawnTime=1 if immediate else 3000,onSpawnCall=self._onBotSpawn)
@@ -412,7 +412,7 @@ class FootballCoopGame(bs.CoopGameActivity):
         if self.isWaitingForContinue():
             self._bots.stopMoving()
             return
-            
+
         # if we've got a flag and no player are holding it, find the closest bot to it, and make them the designated flag-bearer
         if self._flag.node.exists():
             for p in self.players:
@@ -524,8 +524,8 @@ class FootballCoopGame(bs.CoopGameActivity):
         self._botTeam.gameData['score'] -= 7
         self._bots.startMoving()
         self.updateScores()
-        
-        
+
+
     def updateScores(self):
         """ update scoreboard and check for winners """
         haveScoringTeam = False
@@ -614,7 +614,7 @@ class FootballCoopGame(bs.CoopGameActivity):
             bs.gameTimer(3000,self._flagRespawnLight.node.delete)
         else:
             bs.CoopGameActivity.handleMessage(self,m)
-            
+
     def _handlePlayerDroppedBomb(self,player,bomb):
         self._playerHasDroppedBomb = True
 
@@ -655,4 +655,3 @@ class FootballCoopGame(bs.CoopGameActivity):
                                              'radius':0.1,
                                              'color': (0.9,0.7,0.0)})
         self._flag.node.connectAttr('position',self._flag.light,'position')
-

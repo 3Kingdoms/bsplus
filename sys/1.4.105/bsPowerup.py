@@ -12,9 +12,9 @@ class PowerupMessage(object):
     Tell something to get a powerup.
     This message is normally recieved by touching
     a bs.Powerup box.
-    
+
     Attributes:
-    
+
        powerupType
           The type of powerup to be granted (a string). See bs.Powerup.powerupType for available type values.
 
@@ -48,7 +48,7 @@ class _TouchedMessage(object):
 class PowerupFactory(object):
     """
     category: Game Flow Classes
-    
+
     Wraps up media and other resources used by bs.Powerups.
     A single instance of this is shared between all powerups
     and can be retrieved via bs.Powerup.getFactory().
@@ -180,12 +180,17 @@ class PowerupFactory(object):
         Passing 'forceType' forces a given returned type while still properly interacting
         with the non-random aspects of the system (ie: forcing a 'curse' powerup will result
         in the next powerup being health).
-        
+
         gameSpecificExcludeTypes include only the powerups that you don't want them in specific gamemodes where they
         are useless, like a Healing Bomb, why the hell would you want to heal enemies?
         """
         import weakref
-        
+
+        #Bacon Added Begin
+        speedDisable = []
+        hijumpDisable = []
+        #Bacon Added End
+
         # Disable some powerups based on the gamemode
         self._gamemode = bs.getActivity().getName()
         self._map = bs.getActivity()._map.getName()
@@ -207,14 +212,14 @@ class PowerupFactory(object):
             notFFA=[]
         if forceType: t = forceType
         else:
-            if isinstance(bs.getSession(),bs.FreeForAllSession): 
+            if isinstance(bs.getSession(),bs.FreeForAllSession):
                 self.healthPowerups = ['health']
             else:
                 self.healthPowerups = ['health','healBombs']
             if bs.getConfig().get('Easy Mode',True): self.shieldCounters = ['grenades', 'impactBombs']
             else: self.shieldCounters = ['grenades', 'impactBombs', 'combatBombs']
             if self._lastPowerupType == 'curse': t = random.choice(self.healthPowerups)
-            elif self._lastPowerupType == 'shield': 
+            elif self._lastPowerupType == 'shield':
                 if not isinstance(bs.getSession(),bs.CoopSession): t = random.choice(self.shieldCounters)
             while True:
                 t = self._powerupDist[random.randint(0,len(self._powerupDist)-1)]
@@ -229,26 +234,49 @@ def getDefaultPowerupDistribution():
     except Exception: pd = 'JRMP'
     if not isinstance(bs.getSession(),bs.CoopSession):
         if (pd == 'JRMP'):
-            return (('tripleBombs',2),
-                    ('iceBombs',1),
-                    ('punch',1),
-                    ('impactBombs',3),
-                    ('landMines',2),
-                    ('stickyBombs',3),
-                    ('combatBombs',3),
-                    ('dynamitePack',2),
-                    ('rangerBombs',2),
-                    ('knockerBombs',2),
-                    ('grenades',1),
-                    ('blastBuff',2),
+            return (('tripleBombs',0),
+                    ('iceBombs',0),
+                    ('punch',0),
+                    ('impactBombs',0),
+                    ('landMines',0),
+                    ('stickyBombs',0),
+                    ('combatBombs',0),
+                    ('dynamitePack',0),
+                    ('rangerBombs',0),
+                    ('knockerBombs',1),
+                    ('grenades',0),
+                    ('blastBuff',0),
                     ('fireBombs',0),
-                    ('healBombs',1),
-                    ('shield',1),
-                    ('overdrive',1),
-                    ('health',1),
-                    ('curse',1),
-                    ('hijump',1),
-                    ('speed',1))
+                    ('healBombs',0),
+                    ('shield',0),
+                    ('overdrive',0),
+                    ('health',0),
+                    ('curse',0),
+                    ('hijump',0),
+                    ('speed',0))
+                # (('tripleBombs',2),
+                #         ('iceBombs',1),
+                #         ('punch',1),
+                #         ('impactBombs',3),
+                #         ('landMines',2),
+                #         ('stickyBombs',3),
+                #         ('combatBombs',3),
+                #         ('dynamitePack',2),
+                #         ('rangerBombs',2),
+                #         ('knockerBombs',2),
+                #         ('grenades',1),
+                #         ('blastBuff',2),
+                #         ('fireBombs',0),
+                #         ('healBombs',1),
+                #         ('shield',1),
+                #         ('overdrive',1),
+                #         ('health',1),
+                #         ('curse',1),
+                #         ('hijump',1),
+                #         ('speed',1))
+
+
+
         if (pd == 'Classic'):
             return (('tripleBombs',3),
                     ('iceBombs',3),
@@ -298,7 +326,7 @@ def getDefaultPowerupDistribution():
                     ('impactBombs',0),
                     ('landMines',0),
                     ('stickyBombs',0),
-                    ('combatBombs',0),
+                    ('combatBombs',1),
                     ('dynamitePack',0),
                     ('rangerBombs',0),
                     ('grenades',0),
@@ -333,7 +361,7 @@ def getDefaultPowerupDistribution():
                 ('curse',0),
                 ('hijump',0),
                 ('speed',1))
-                    
+
 class Powerup(bs.Actor):
     """
     category: Game Flow Classes
@@ -359,7 +387,7 @@ class Powerup(bs.Actor):
 
         see bs.Powerup.powerupType for valid type strings.
         """
-        
+
         bs.Actor.__init__(self)
 
         factory = self.getFactory()
@@ -386,11 +414,11 @@ class Powerup(bs.Actor):
         elif powerupType == 'hijump': tex = factory.texHijump
         elif powerupType == 'speed': tex = factory.texSpeed
         elif powerupType == 'blastBuff': tex = factory.texBlast
-        
+
         else: raise Exception("invalid powerupType: "+str(powerupType))
 
         if len(position) != 3: raise Exception("expected 3 floats for position")
-        
+
         self.node = bs.newNode('prop',
                                delegate=self,
                                attrs={'body':'box',
@@ -422,11 +450,11 @@ class Powerup(bs.Actor):
         except Exception:
             f = activity._sharedPowerupFactory = PowerupFactory()
             return f
-            
+
     def _startFlashing(self):
         if self.node.exists(): self.node.flashing = True
 
-        
+
     def handleMessage(self,m):
         self._handleMessageSanityCheck()
 

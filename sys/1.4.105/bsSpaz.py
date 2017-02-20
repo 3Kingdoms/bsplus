@@ -378,7 +378,8 @@ class Spaz(bs.Actor):
     curseTime = 8000
 
     defaultBombCount = 1
-    defaultBombType = 'normal'
+    # defaultBombType = 'normal'
+    defaultBombType = 'knocker'
     defaultBlastRadius = 2.0
     defaultBoxingGloves = False
     defaultShields = False
@@ -409,6 +410,11 @@ class Spaz(bs.Actor):
         self._punchedNodes = set()
         self._cursed = False
         self._connectedToPlayer = None
+
+        #Added for fly
+        self.flyDirectionZ = 0.0
+        self.flyDirectionX = 0.0
+        #
 
         materials = [factory.spazMaterial,bs.getSharedObject('objectMaterial'),bs.getSharedObject('playerMaterial')]
         rollerMaterials = [factory.rollerMaterial,bs.getSharedObject('playerMaterial')]
@@ -483,7 +489,10 @@ class Spaz(bs.Actor):
         self.powerupsExpire = powerupsExpire
         self._punchCooldown = gBasePunchCooldown
         self._hasBoxingGloves = False
-        if self.defaultBoxingGloves: self.equipBoxingGloves()
+        if self.defaultBoxingGloves:
+            self.equipBoxingGloves()
+        if self.run:
+            self.equipSpeed()
         self.lastPunchTime = 0
         self.frozen = False
         self.burning = False
@@ -692,7 +701,11 @@ class Spaz(bs.Actor):
         if self._dead or self.frozen: return
         if self.node.knockout > 0.0: return
         self.node.bombPressed = True
-        if not self.node.holdNode.exists(): self.dropBomb()
+        if not self.node.holdNode.exists():
+            #Bacon added Start
+                self.dropBomb()
+            # self.dropBomb()
+            #Bacon added End
 
     def onBombRelease(self):
         """
@@ -734,6 +747,10 @@ class Spaz(bs.Actor):
         if not self.node.exists(): return
         self.node.handleMessage("move",x,y)
 
+    """
+    Actually the code used the onMoveUpDown and onMoveLeftRight to contorl the player when using smartphone.
+    """
+
     def onMoveUpDown(self,value):
         """
         Called to set the up/down joystick amount on this spaz;
@@ -743,6 +760,10 @@ class Spaz(bs.Actor):
         """
         if not self.node.exists(): return
         self.node.moveUpDown = value
+        # For fly
+        self.flyDirectionZ = value
+        # bs.screenMessage(str(self.flyDirectionZ))
+
 
     def onMoveLeftRight(self,value):
         """
@@ -753,6 +774,8 @@ class Spaz(bs.Actor):
         """
         if not self.node.exists(): return
         self.node.moveLeftRight = value
+        # For fly
+        self.flyDirectionX = value
 
     def onPunched(self,damage):
         """
@@ -805,11 +828,15 @@ class Spaz(bs.Actor):
         """
         activity = self.getActivity()
         factory = self.getFactory()
+        #
+        # if self.node.exists():
+        #     # print self.node.name
+        #     print self.node
 
         def _safeSetAttr(node,attr,val):
             if node.exists(): setattr(node,attr,val)
-        if not activity._map.isHockey:
-            bs.gameTimer(1,bs.Call(_safeSetAttr,self.node,'hockey',False))
+        # if not activity._map.isHockey:
+        #     bs.gameTimer(1,bs.Call(_safeSetAttr,self.node,'hockey',False))
         self.node.boxingGloves = 1
         self._hasBoxingGloves = True
         self._punchPowerScale = 1.9
@@ -1324,7 +1351,7 @@ class Spaz(bs.Actor):
             mag = m.magnitude * self._impactScale
             velocityMag = m.velocityMagnitude * self._impactScale
 
-            damageScale = 0.005 if m.hitSubType == 'knocker' else 0.22 # Knocker deals so much less damage
+            damageScale = -0.00001 if m.hitSubType == 'knocker' else 0.22 # Knocker deals so much less damage
 
             # if they've got a shield, deliver it to that instead..
             if self.shield is not None:
@@ -1662,12 +1689,27 @@ class Spaz(bs.Actor):
                 self.node.handleMessage("jumpSound")
             bs.gameTimer(75,bs.Call(_jumpSound,self.node))
 
-        bomb = bs.Bomb(position=(p[0],p[1] - 0.0,p[2]),
+        offsetx = 0.0
+        offsety = 0.0
+        offsetz = 0.0
+        # Bacon Added Start
+        if bombType == 'knocker':
+            offsety = 10
+            offsetx = self.flyDirectionX
+            offsetz = self.flyDirectionZ
+        bomb = bs.Bomb(position=(p[0]+offsetx,p[1] + offsety,p[2] - offsetz),
                        velocity=(v[0],v[1],v[2]),
                        bombType=bombType,
                        blastRadius=self.blastRadius,
                        sourcePlayer=self.sourcePlayer,
                        owner=self.node).autoRetain()
+    #    bomb = bs.Bomb(position=(p[0],p[1] - 0.0,p[2]),
+    #                   velocity=(v[0],v[1],v[2]),
+    #                   bombType=bombType,
+    #                   blastRadius=self.blastRadius,
+    #                   sourcePlayer=self.sourcePlayer,
+    #                   owner=self.node).autoRetain()
+        # Bacon Added Ended
 
         if droppingBomb:
             self.bombCount -= 1
@@ -1983,7 +2025,12 @@ class PlayerSpaz(Spaz):
         # convert None to an empty player-ref
         if player is None: player = bs.Player(None)
 
+        Spaz.run = True
+
         Spaz.__init__(self,color=color,highlight=highlight,character=character,sourcePlayer=player,startInvincible=True,powerupsExpire=powerupsExpire)
+
+        Spaz.run = False
+
         self.lastPlayerAttackedBy = None # FIXME - should use empty player ref
         self.lastAttackedTime = 0
         self.lastAttackedType = None
@@ -1995,6 +2042,9 @@ class PlayerSpaz(Spaz):
         if player.exists():
             playerNode = bs.getActivity()._getPlayerNode(player)
             self.node.connectAttr('torsoPosition',playerNode,'position')
+            def _safeSetAttr(node,attr,val):
+                if node.exists(): setattr(node,attr,val)
+            bs.gameTimer(1,bs.Call(_safeSetAttr,self.node,'hockey',False))
 
     def __superHandleMessage(self,m):
         super(PlayerSpaz,self).handleMessage(m)

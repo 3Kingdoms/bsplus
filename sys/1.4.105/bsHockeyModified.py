@@ -26,7 +26,7 @@ class Puck(bs.Actor):
         self.node = bs.newNode("prop",
                                attrs={'model': activity._puckModel,
                                       'colorTexture': activity._puckTex,
-                                      'body':'puck',
+                                      'body':'sphere',
                                       'reflection':'soft',
                                       'reflectionScale':[0.2],
                                       'shadowSize': 1.0,
@@ -67,7 +67,7 @@ class HockeyGame(bs.TeamGameActivity):
 
     @classmethod
     def getName(cls):
-        return 'Hockey'
+        return 'Hockeymodified'
 
     @classmethod
     def getDescription(cls,sessionType):
@@ -98,14 +98,14 @@ class HockeyGame(bs.TeamGameActivity):
         self._foghornSound = bs.getSound("foghorn")
         self._swipSound = bs.getSound("swip")
         self._whistleSound = bs.getSound("refWhistle")
-        self._puckModel = bs.getModel("puck")
-        self._puckTex = bs.getTexture("puckColor")
+        self._puckModel = bs.getModel("bombBasketball")
+        self._puckTex = bs.getTexture("bombBasketballColor")
         self._puckSound = bs.getSound("metalHit")
 
         self._puckMaterial = bs.Material()
         self._puckMaterial.addActions(actions=( ("modifyPartCollision","friction",0.5)))
-        self._puckMaterial.addActions(conditions=("theyHaveMaterial",bs.getSharedObject('pickupMaterial')),
-                                      actions=( ("modifyPartCollision","collide",False) ) )
+        # self._puckMaterial.addActions(conditions=("theyHaveMaterial",bs.getSharedObject('pickupMaterial')),
+        #                               actions=( ("modifyPartCollision","collide",False) ) )
         self._puckMaterial.addActions(conditions=( ("weAreYoungerThan",100),'and',
                                                    ("theyHaveMaterial",bs.getSharedObject('objectMaterial')) ),
                                       actions=( ("modifyNodeCollision","collide",False) ) )
@@ -275,6 +275,6 @@ class HockeyGame(bs.TeamGameActivity):
                                       owner=self._puck.node,
                                       attrs={'intensity':0.3,
                                              'heightAttenuated':False,
-                                             'radius':0.2,
+                                             'radius':0.01,
                                              'color': (0.3,0.0,1.0)})
         self._puck.node.connectAttr('position',self._puck.light,'position')

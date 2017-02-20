@@ -17,7 +17,7 @@ class BasketballTeamGame(bs.TeamGameActivity):
     @classmethod
     def supportsSessionType(cls,sessionType):
         return True if issubclass(sessionType,bs.TeamsSession) else False
-    
+
     @classmethod
     def getDescription(cls,sessionType):
         return 'Throw the ball to the enemy goalie.'
@@ -84,7 +84,7 @@ class BasketballTeamGame(bs.TeamGameActivity):
                                                                  'scale':defs.boxes['goal1'][6:9],
                                                                  'type': 'box',
                                                                  'materials':(self.scoreRegionMaterial,)})))
-        
+
         self._scoreRegions.append(bs.NodeActor(bs.newNode('region',
                                                           attrs={'position':defs.boxes['goal2'][0:3],
                                                                  'scale':defs.boxes['goal2'][6:9],

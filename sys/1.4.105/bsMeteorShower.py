@@ -33,7 +33,7 @@ class MeteorShowerGame(bs.TeamGameActivity):
     # we're currently hard-coded for one map..
     @classmethod
     def getSupportedMaps(cls, sessionType):
-        return ['Rampage', 'Doom Shroom Large']
+        return ['Doom Shroom Large']#, 'Rampage']
 
     @classmethod
     def getSettings(cls, sessionType):
@@ -162,18 +162,25 @@ class MeteorShowerGame(bs.TeamGameActivity):
     def _dropBombCluster(self):
 
         # random note: code like this is a handy way to plot out extents and debug things
-        if False:
-            bs.newNode('locator',attrs={'position':(8,6,-5.5)})
-            bs.newNode('locator',attrs={'position':(8,6,-2.3)})
-            bs.newNode('locator',attrs={'position':(-7.3,6,-5.5)})
-            bs.newNode('locator',attrs={'position':(-7.3,6,-2.3)})
+        if True:
+            bs.newNode('locator',attrs={'position':(7,2.8,-11)})
+            bs.newNode('locator',attrs={'position':(7,2.8,3)})
+            bs.newNode('locator',attrs={'position':(-7,2.8,-11)})
+            bs.newNode('locator',attrs={'position':(-7,2.8,3)})
 
         # drop several bombs in series..
         delay = 0
+        # for i in range(random.randrange(1,3)):
+        #     # drop them somewhere within our bounds with velocity pointing toward the opposite side
+        #     pos = (-7.3+15.3*random.random(),11,-5.5+2.1*random.random())
+        #     vel = ((-5.0+random.random()*30.0) * (-1.0 if pos[0] > 0 else 1.0), -4.0,0)
+        #     bs.gameTimer(delay,bs.Call(self._dropBomb,pos,vel))
+        #     delay += 100
+
         for i in range(random.randrange(1,3)):
             # drop them somewhere within our bounds with velocity pointing toward the opposite side
-            pos = (-7.3+15.3*random.random(),11,-5.5+2.1*random.random())
-            vel = ((-5.0+random.random()*30.0) * (-1.0 if pos[0] > 0 else 1.0), -4.0,0)
+            pos = (-5+10*random.random(),8-4*random.random(),-9+10*random.random())
+            vel = ((-5.0+random.random()*15)* (-1.0 if pos[0] > 0 else 1.0), -4.0,(-5.0+random.random()*15) * (-1.0 if pos[2] > 0 else 1.0))
             bs.gameTimer(delay,bs.Call(self._dropBomb,pos,vel))
             delay += 100
         self._setMeteorTimer()
