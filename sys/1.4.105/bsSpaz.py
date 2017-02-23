@@ -1708,14 +1708,14 @@ class Spaz(bs.Actor):
 
         if bombType == 'shockwave':
             for (x,z) in offsetpairs:
-                bomb = bs.Bomb(position=(p[0]+x,p[1] + offsety,p[2] - z),
+                bomb = bs.Bomb(position=(p[0] + x,p[1] + offsety,p[2] - z),
                                velocity=(v[0],v[1],v[2]),
                                bombType=bombType,
                                blastRadius=self.blastRadius,
                                sourcePlayer=self.sourcePlayer,
                                owner=self.node).autoRetain()
         else:
-            bomb = bs.Bomb(position=(p[0]+offsetx,p[1] + offsety,p[2] - offsetz),
+            bomb = bs.Bomb(position=(p[0] + offsetx,p[1] + offsety,p[2] - offsetz),
                            velocity=(v[0],v[1],v[2]),
                            bombType=bombType,
                            blastRadius=self.blastRadius,

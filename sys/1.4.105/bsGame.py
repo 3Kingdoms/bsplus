@@ -2479,6 +2479,7 @@ class GameActivity(Activity):
                              character=player.character,
                              player=player)
         player.setActor(spaz)
+        bs.screenMessage(player.character)
 
         # we want a bigger area-of-interest in co-op mode
         # if isinstance(self.getSession(),bs.CoopSession): spaz.node.areaOfInterestRadius = 5.0

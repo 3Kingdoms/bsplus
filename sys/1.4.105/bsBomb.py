@@ -548,8 +548,8 @@ class Blast(bs.Actor):
         elif self.blastType == 'shockwave':
             light = bs.newNode('light',
                            attrs={'position':position,
-                                  'color': (0.1,0.1,0.1),
-                                  'volumeIntensityScale': 0.1})
+                                  'color': (0,0,0),
+                                  'volumeIntensityScale': 0})
         else:
             light = bs.newNode('light',
                            attrs={'position':position,
@@ -572,8 +572,9 @@ class Blast(bs.Actor):
             lightRadius *= 0.15
             s *= 1.0
         elif self.blastType == 'shockwave':
-            lightRadius *= 0.001
-            s *= 0.001
+            lightRadius *= 0
+            scorchRadius *= 0
+            s *= 0
 
         iScale = 1.6
         bsUtils.animate(light,"intensity",{0:2.0*iScale, int(s*20):0.1*iScale, int(s*25):0.2*iScale, int(s*50):17.0*iScale, int(s*60):5.0*iScale, int(s*80):4.0*iScale, int(s*200):0.6*iScale, int(s*2000):0.00*iScale, int(s*3000):0.0})
@@ -737,7 +738,7 @@ class Bomb(bs.Actor):
 
         factory = self.getFactory()
 
-        if not bombType in ('ice','impact','landMine','normal','sticky','ranger','tnt','combat','knocker','shockwave','dynamite','miniDynamite','fire','healing','curse','grenade','hijump','basketball'): raise Exception("invalid bomb type: " + bombType)
+        if not bombType in ('ice','impact','landMine','normal','sticky','ranger','tnt','combat','knocker','shockwave','fly','dynamite','miniDynamite','fire','healing','curse','grenade','hijump','basketball'): raise Exception("invalid bomb type: " + bombType)
         self.bombType = bombType
 
         self._exploded = False
