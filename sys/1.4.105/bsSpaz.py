@@ -2,6 +2,7 @@ import bs
 import bsUtils
 import random
 import weakref
+import math
 
 
 # list of defined spazzes
@@ -379,7 +380,7 @@ class Spaz(bs.Actor):
 
     defaultBombCount = 1
     # defaultBombType = 'normal'
-    defaultBombType = 'knocker'
+    defaultBombType = 'shockwave'
     defaultBlastRadius = 2.0
     defaultBoxingGloves = False
     defaultShields = False
@@ -1351,7 +1352,7 @@ class Spaz(bs.Actor):
             mag = m.magnitude * self._impactScale
             velocityMag = m.velocityMagnitude * self._impactScale
 
-            damageScale = -0.00001 if m.hitSubType == 'knocker' else 0.22 # Knocker deals so much less damage
+            damageScale = -0.00001 if m.hitSubType == 'knocker' or m.hitSubType == 'shockwave' else 0.22 # Knocker deals so much less damage
 
             # if they've got a shield, deliver it to that instead..
             if self.shield is not None:
@@ -1693,16 +1694,33 @@ class Spaz(bs.Actor):
         offsety = 0.0
         offsetz = 0.0
         # Bacon Added Start
-        if bombType == 'knocker':
+        if bombType == 'fly':
             offsety = 10
             offsetx = self.flyDirectionX
             offsetz = self.flyDirectionZ
-        bomb = bs.Bomb(position=(p[0]+offsetx,p[1] + offsety,p[2] - offsetz),
-                       velocity=(v[0],v[1],v[2]),
-                       bombType=bombType,
-                       blastRadius=self.blastRadius,
-                       sourcePlayer=self.sourcePlayer,
-                       owner=self.node).autoRetain()
+        elif bombType == 'shockwave':
+            offsety = 1.5
+            offsetradius = 2.5
+            offsetdirections = 20
+            offsetpairs = []
+            for i in range(offsetdirections):
+                offsetpairs.append((offsetradius * math.cos(2 * math.pi * i / offsetdirections),offsetradius * math.sin(2 * math.pi * i / offsetdirections)))
+
+        if bombType == 'shockwave':
+            for (x,z) in offsetpairs:
+                bomb = bs.Bomb(position=(p[0]+x,p[1] + offsety,p[2] - z),
+                               velocity=(v[0],v[1],v[2]),
+                               bombType=bombType,
+                               blastRadius=self.blastRadius,
+                               sourcePlayer=self.sourcePlayer,
+                               owner=self.node).autoRetain()
+        else:
+            bomb = bs.Bomb(position=(p[0]+offsetx,p[1] + offsety,p[2] - offsetz),
+                           velocity=(v[0],v[1],v[2]),
+                           bombType=bombType,
+                           blastRadius=self.blastRadius,
+                           sourcePlayer=self.sourcePlayer,
+                           owner=self.node).autoRetain()
     #    bomb = bs.Bomb(position=(p[0],p[1] - 0.0,p[2]),
     #                   velocity=(v[0],v[1],v[2]),
     #                   bombType=bombType,
@@ -1715,7 +1733,8 @@ class Spaz(bs.Actor):
             self.bombCount -= 1
             bomb.node.addDeathAction(bs.WeakCall(self.handleMessage,_BombDiedMessage()))
 
-        self._pickUp(bomb.node)
+        if bombType != 'shockwave':
+            self._pickUp(bomb.node)
 
         for c in self._droppedBombCallbacks: c(self,bomb)
 
