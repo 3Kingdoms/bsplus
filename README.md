@@ -1,4 +1,4 @@
-# bsplus  
+# Bombsquad Plus  
 
 ##wishlist  
 ###Human:  
@@ -40,3 +40,17 @@
 - [ ] speed (let the person be hit be slowed)  
 - [ ] Air/shockwave (use large radius and mag but small damage scale)  
 - [x] Fly (use small bomb to hold player fly)  
+
+
+## Modeling
+
+### Blender
+
+#### Installation
+* [Download Page](https://www.blender.org/download/)
+* [Necessary Add-on: Import and Export BS models](https://github.com/Mrmaxmeier/BombSquad-Community-Mod-Manager/tree/master/utils/blender)
+
+#### References
+* [Tutorials](https://www.youtube.com/watch?v=LLV7h-WLIx0&list=PLrgQj91MOVfjTShOMRY8TLmkJ7OFr7bj6)
+* [Manual](https://docs.blender.org/manual/en/dev/getting_started/index.html)
+* [Wiki](https://wiki.blender.org/)
