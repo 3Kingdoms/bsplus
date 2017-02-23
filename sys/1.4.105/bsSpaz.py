@@ -1699,8 +1699,8 @@ class Spaz(bs.Actor):
             offsetx = self.flyDirectionX
             offsetz = self.flyDirectionZ
         elif bombType == 'shockwave':
-            offsety = 1.5
-            offsetradius = 2.5
+            offsety = -0.5
+            offsetradius = 3
             offsetdirections = 20
             offsetpairs = []
             for i in range(offsetdirections):

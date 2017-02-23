@@ -759,7 +759,7 @@ class Bomb(bs.Actor):
         elif self.bombType == 'healing': self.blastRadius *= 1.2
         elif self.bombType == 'grenade': self.blastRadius *= 1.45
         elif self.bombType == 'hijump': self.blastRadius *= 0.75
-        elif self.bombType == 'shockwave' : self.blastRadius *= 1.80
+        elif self.bombType == 'shockwave' : self.blastRadius *= 1.40
 
 
         self._explodeCallbacks = []
@@ -955,8 +955,8 @@ class Bomb(bs.Actor):
                 fuseTime = 1
                 sticky = False
                 model = factory.shockwaveBombModel
-                rType = 'sharper'
-                rScale = 1.8
+                rType = 'powerup'
+                rScale = 0.001
             elif self.bombType == 'dynamite':
                 fuseTime = 3000
                 sticky = False

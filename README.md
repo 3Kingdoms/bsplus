@@ -3,9 +3,13 @@
 ##wishlist  
 ###Human:  
 - [ ] Priest 牧师:heal  
+- [ ] Mystery 神秘人:chances to not be damaged and deals double damage  
+- [ ] Evil Doctor : gain the mutant's ability who is killed by him forever  
 
 ###Mutant:  
-- [ ] 小淘气  
+- [ ] 小淘气 : steal the superpower/powerup from the guy hit by her  
+- [ ] Magneto : remote control the bomb(impact) to drop at the place he want
+- [ ] Shadow : Cannot hit by bombs but only hits. However, hits will deal 3 times damages to him.
 
 ###powerup:  
 ####Original  

@@ -29,7 +29,7 @@ class Puck(bs.Actor):
                                       'body':'sphere',
                                       'reflection':'soft',
                                       'reflectionScale':[0.2],
-                                      'shadowSize': 1.0,
+                                      'shadowSize': 0.5,
                                       'isAreaOfInterest':True,
                                       'position':self._spawnPos,
                                       'materials': [bs.getSharedObject('objectMaterial'),activity._puckMaterial]
