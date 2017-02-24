@@ -64,5 +64,6 @@
 #### Installation
 * [Download Page](http://gimp.lisanet.de/Website/Support.html)
 * [Change Default Interface Language](http://www.ekenberg.se/blog/change-gimp-interface-language-on-mac/)
+
 #### References
 * [Tutorials](https://www.gimp.org/tutorials/)
