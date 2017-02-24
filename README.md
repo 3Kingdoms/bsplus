@@ -69,7 +69,7 @@
 
 #### Notice for use
 1. Save first before exporting to dds
-2. For export options, choose "YCoCg(DXT5)" for Compression, and "Generate mipmaps" for Mipmaps. (The game can load after such settings. Not sure if are optimal)
+2. For export options, choose "BC3(DXT5)" for Compression, and "Generate mipmaps" for Mipmaps. (The game can load after such settings. Not sure if are optimal)
 
 #### References
 * [Tutorials](https://www.gimp.org/tutorials/)
