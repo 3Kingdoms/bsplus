@@ -67,5 +67,9 @@
 * [Download Page](http://gimp.lisanet.de/Website/Support.html)
 * [Change Default Interface Language](http://www.ekenberg.se/blog/change-gimp-interface-language-on-mac/)
 
+#### Notice for use
+1. Save first before exporting to dds
+2. For export options, choose "YCoCg(DXT5)" for Compression, and "Generate mipmaps" for Mipmaps. (The game can load after such settings. Not sure if are optimal)
+
 #### References
 * [Tutorials](https://www.gimp.org/tutorials/)
