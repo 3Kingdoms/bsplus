@@ -58,3 +58,11 @@
 * [Tutorials](https://www.youtube.com/watch?v=LLV7h-WLIx0&list=PLrgQj91MOVfjTShOMRY8TLmkJ7OFr7bj6)
 * [Manual](https://docs.blender.org/manual/en/dev/getting_started/index.html)
 * [Wiki](https://wiki.blender.org/)
+
+## Texture
+### Gimp
+#### Installation
+* [Download Page](http://gimp.lisanet.de/Website/Support.html)
+* [Change Default Interface Language](http://www.ekenberg.se/blog/change-gimp-interface-language-on-mac/)
+#### References
+* [Tutorials](https://www.gimp.org/tutorials/)
