@@ -60,7 +60,9 @@
 * [Wiki](https://wiki.blender.org/)
 
 ## Texture
+
 ### Gimp
+
 #### Installation
 * [Download Page](http://gimp.lisanet.de/Website/Support.html)
 * [Change Default Interface Language](http://www.ekenberg.se/blog/change-gimp-interface-language-on-mac/)
